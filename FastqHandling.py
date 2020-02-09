@@ -7,6 +7,7 @@ from Bio.SeqRecord import SeqRecord
 
 
 #################################################################
+# @ Function: get_seq_id_offset
 # @ Input: seq_id
 # @ Description: Calculate the sequence id offset
 # @ Return: offset
@@ -33,6 +34,7 @@ def get_seq_id_offset(seq_id):
 #                a .txt file with the sorted Oligos by the barcode
 #################################################################
 class FastqHandling:
+
     #################################################################
     # @ Function: __init__
     # @ Input: number_of_barcode_letters, oligo_length, file_name
@@ -43,10 +45,10 @@ class FastqHandling:
 
         if fastq_input_file_name.__len__() == 0:
             raise NameError('The file name ' + file_name + ' does not exist')
-        # elif fastq_input_file_name.__len__() > 1:
-        #     raise NameError('There are too many files with the same name as ' + file_name + ', please make sure you '
-        #                                                                                     'have only one file with '
-        #                                                                                     'this specific name ')
+        elif fastq_input_file_name.__len__() > 1:
+            raise NameError('There are too many files with the same name as ' + file_name + ', please make sure you '
+                                                                                            'have only one file with '
+                                                                                            'this specific name ')
 
         file_name, file_extension = os.path.splitext(fastq_input_file_name[0])
         self.file_name = file_name
@@ -98,6 +100,11 @@ class FastqHandling:
         #     csv.write(record, self.file_full_name_set_ids, self.file_extension)
         #     id += 1
 
+    #################################################################
+    # @ Function: sort_oligo
+    # @ Description: Sort the oligo by barcode and insert
+    #                all the oligo into a .txt file
+    #################################################################
     def sort_oligo(self):
         try:
             file_name_set_ids = open(self.file_full_name_set_ids, "r")
