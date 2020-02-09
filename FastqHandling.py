@@ -12,8 +12,8 @@ from Bio.SeqRecord import SeqRecord
 # @ Description: Calculate the sequence id offset
 # @ Return: offset
 #################################################################
-def get_seq_id_offset(seq_id):
-    total_seq_index = seq_id
+def get_seq_id_offset(a_seq_id):
+    total_seq_index = a_seq_id
     multiply_offset = 9
     number_of_id_digits = 1
     offset = 0
@@ -40,11 +40,11 @@ class FastqHandling:
     # @ Input: number_of_barcode_letters, oligo_length, file_name
     # @ Description: init class FastqHandling
     #################################################################
-    def __init__(self, number_of_barcode_letters, oligo_length, file_name):
-        fastq_input_file_name = glob.glob(file_name + '*')
+    def __init__(self, a_number_of_barcode_letters, a_oligo_length, a_file_name):
+        fastq_input_file_name = glob.glob(a_file_name + '*')
 
         if fastq_input_file_name.__len__() == 0:
-            raise NameError('The file name ' + file_name + ' does not exist')
+            raise NameError('The file name ' + a_file_name + ' does not exist')
         elif fastq_input_file_name.__len__() > 1:
             raise NameError('There are too many files with the same name as ' + file_name + ', please make sure you '
                                                                                             'have only one file with '
@@ -56,8 +56,8 @@ class FastqHandling:
         self.file_extension = file_extension.replace(".", "")
         self.file_full_name_set_ids = self.file_full_name + "_set_ids.txt"
         self.file_full_name_sorted = self.file_full_name + "_sorted.txt"
-        self.number_of_barcode_letters = number_of_barcode_letters
-        self.oligo_length = oligo_length
+        self.number_of_barcode_letters = a_number_of_barcode_letters
+        self.oligo_length = a_oligo_length
 
     #################################################################
     # @ Function: set_oligo_id
@@ -76,29 +76,6 @@ class FastqHandling:
             print('There is a problem opening the file ' + file_name_set_ids)
 
         file_name_set_ids.close()
-
-        # fastq_parser = SeqIO.parse(self.file_full_name.lower(), self.file_extension)
-        # id = 1
-        # for fastq_rec in fastq_parser:
-        #     fastq_rec.id = str(id)
-        #     record = SeqRecord(Seq(str(fastq_rec.seq)), id=fastq_rec.id, letter_annotations=fastq_rec.letter_annotations)
-        #     SeqIO.write(record, self.file_full_name_set_ids, self.file_extension)
-        #     id += 1
-
-        # id = 0
-        # fastq_parser = SeqIO.parse(self.file_full_name.lower(), self.file_extension)
-        # with open(self.file_full_name_set_ids, "w") as fp:
-        #     for fastq_rec in fastq_parser:
-        #         seq_and_id = str(id) + " " + str(fastq_rec.seq) + "\n"
-        #         fp.write(seq_and_id)
-        #         id += 1
-
-        # id = 1
-        # for fastq_rec in fastq_parser:
-        #     fastq_rec.id = str(id)
-        #     record = SeqRecord(Seq(str(fastq_rec.seq)), id=fastq_rec.id, letter_annotations=fastq_rec.letter_annotations)
-        #     csv.write(record, self.file_full_name_set_ids, self.file_extension)
-        #     id += 1
 
     #################################################################
     # @ Function: sort_oligo
@@ -132,38 +109,11 @@ class FastqHandling:
             line = file_name_set_ids.readline()
             file_name_sorted.write(line)
 
+        file_name_set_ids.close()
+        file_name_sorted.close()
+
     def parse_fastq(self):
         self.set_oligo_id()
         self.sort_oligo()
-        # text_file = open("sample.txt", "w")
-        # for rec in SeqIO.parse(self.file_full_name.lower(), self.file_extension):
-
-        # with open(self.file_name + ".fastq", 'r') as fastq_file:
-        #     fastq_file
-        # len_and_ids = sorted(
-        #     (len(rec), rec.id, rec.seq) for rec in SeqIO.parse(self.file_full_name.lower(), self.file_extension)
-        # )
-        # len_and_ids = sorted(
-        #     (rec.seq[:self.number_of_barcode_letters], rec.id) for rec in
-        #     SeqIO.parse(self.file_full_name.lower(), self.file_extension)
-        # )
-
-        # len_and_ids = sorted(
-        #     (rec.seq[:self.number_of_barcode_letters], rec.id) for rec in
-        #     SeqIO.parse(self.file_full_name.lower(), self.file_extension)
-        # )
-
-        # len_ids_clean = []
-        # for seq, id in len_and_ids:
-        #     if id != '<unknown':
-        #         len_ids_clean.append(id)
-
-        # ids = reversed([id for (seq, id) in len_and_ids])
-        # del len_and_ids  # free this memory
-        # record_index = SeqIO.index(self.file_full_name, self.file_extension)
-        # records = (record_index[id] for id in ids)
-        # SeqIO.write(records, "sorted.fastq", self.file_extension)
-
-        # print(len_and_ids)
 
         print("Finished parsing the Fastq file")
