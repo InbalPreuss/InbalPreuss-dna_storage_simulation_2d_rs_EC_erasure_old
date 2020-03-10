@@ -1,5 +1,6 @@
 import glob
 import os
+import pathlib
 
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 
@@ -10,8 +11,8 @@ from Bio.SeqIO.QualityIO import FastqGeneralIterator
 # @ Description: Calculate the sequence id offset
 # @ Return: offset
 #################################################################
-def get_seq_id_offset(a_seq_id):
-    total_seq_index = a_seq_id
+def get_seq_id_offset(seq_id):
+    total_seq_index = seq_id
     multiply_offset = 9
     number_of_id_digits = 1
     offset = 0
@@ -38,29 +39,19 @@ class FastqHandling:
     # @ Input: number_of_barcode_letters, oligo_length, file_name
     # @ Description: init class FastqHandling
     #################################################################
-    def __init__(self, a_number_of_barcode_letters, a_oligo_length, a_file_name):
-        fastq_input_file_name = glob.glob(a_file_name + '*')
+    def __init__(self, number_of_barcode_letters: int, oligo_length: int, file_name: str):
+        fastq_input_file_name = pathlib.Path(r'data/input/' + file_name + '.fastq')
 
-        if fastq_input_file_name.__len__() == 0:
-            raise NameError('The file name ' + a_file_name + ' does not exist')
-        elif fastq_input_file_name.__len__() > 1:
-            raise NameError(
-                'There are too many files with the same name as ' + self.file_name + ', please make sure you '
-                                                                                     'have only one file with '
-                                                                                     'this specific name ')
+        if fastq_input_file_name.exists() == 0:
+            raise NameError('The file name ' + file_name + ' does not exist')
 
-        # TODO:
-        # import pathlib
-        # p = pathlib.Path(r'data/small_data_4_barcode_8_oligo.dna')
-        # p.stem, p.suffix
-        file_name, file_extension = os.path.splitext(fastq_input_file_name[0])
         self.file_name = file_name
-        self.file_full_name = file_name + file_extension
-        self.file_extension = file_extension.replace(".", "")
-        self.file_full_name_set_ids_output = "Fastq_output/" + file_name + "_set_ids.txt"
-        self.file_full_name_sorted_output = "Fastq_output/" + file_name + "_sorted.dna"
-        self.number_of_barcode_letters = a_number_of_barcode_letters
-        self.oligo_length = a_oligo_length
+        self.file_full_name = fastq_input_file_name
+        self.file_extension = fastq_input_file_name.suffix
+        self.file_full_name_set_ids_output = "data/fastq_output/" + file_name + "_set_ids.txt"
+        self.file_full_name_sorted_output = "data/fastq_output/" + file_name + "_sorted.dna"
+        self.number_of_barcode_letters = number_of_barcode_letters
+        self.oligo_length = oligo_length
 
     #################################################################
     # @ Function: set_oligo_id

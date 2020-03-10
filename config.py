@@ -21,15 +21,20 @@ shrink_dict_3_mer = {'AAT': 'X1',
                      'CGT': 'X16'}
 
 k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 2)
-# k_mer_representative = [set(k) for k in k_mer_representative]
+r = [set(k) for k in k_mer_representative]
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 2)
 all_binary_combinations = itertools.product([0, 1], repeat=12)
-k_mer_representative_to_binary = dict(zip(k_mer_representative, all_binary_combinations))
-binary_to_k_mer_representative = dict(zip(all_binary_combinations, k_mer_representative))
+z = itertools.combinations(['Z' + str(i) for i in range(1, len(r) + 1)], 1)
+z = [i[0] for i in z]
+z_to_binary = dict(zip(z, all_binary_combinations))
+
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 2)
+k_mer_representative_to_z = dict(zip(k_mer_representative, z))
+# binary_to_k_mer_representative = dict(zip(all_binary_combinations, k_mer_representative))
 
 config = {
     # 'NUMBER_OF_BARCODE_LETTERS': 16,
     # 'OLIGO_LENGTH': 151,
-    # 'BINARY_BITS_ON': 5,
     'NUMBER_OF_BARCODE_LETTERS': 3,
     'OLIGO_LENGTH': 9,
     'K_MER': 3,
@@ -43,7 +48,8 @@ config = {
     'do_retrieved_oligo': True,
     'do_oligo_handling': False,
     'algorithm': KMerAlgorithm,
-    'algorithm_config': {'binary_bits_on': 2,
-                         'k_mer_representative_to_binary': k_mer_representative_to_binary}
+    'algorithm_config': {'subset_size': 2,
+                         'k_mer_representative_to_z': k_mer_representative_to_z,
+                         'z_to_binary': z_to_binary}
 
 }

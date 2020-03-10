@@ -3,3 +3,8 @@
 /DNAStorage/.idea
 /DNAStorage/venv
 data/*
+venv/
+**/__pycahce__/**
+*.py[cod]
+.idea
+not relevent/

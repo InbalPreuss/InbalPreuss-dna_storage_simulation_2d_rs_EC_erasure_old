@@ -17,7 +17,9 @@ class OligoRetriever:
                  algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
                  shrink_dict: Dict,
                  k_mer: int,
-                 unique_oligo_results_file: Union[Path, str]
+                 k_mer_representative_to_z: Dict,
+                 z_to_binary: Dict,
+                 unique_oligo_results_file: Union[Path, str],
                  ):
         self.file_name = oligo_sorted_file_name
         self.number_of_barcode_letters = number_of_barcode_letters
@@ -25,57 +27,69 @@ class OligoRetriever:
         self.algorithm = algorithm
         self.shrink_dict = shrink_dict
         self.k_mer = k_mer
-        self.unique_oligo_results_file = open(unique_oligo_results_file, 'w+')
+        self.k_mer_representative_to_z = k_mer_representative_to_z
+        self.z_to_binary = z_to_binary
+        self.binary_results_file = open(unique_oligo_results_file, 'w+')
 
     def __del__(self):
-        self.unique_oligo_results_file.close()
+        self.binary_results_file.close()
 
     def run(self):
         barcode_prev = ''
-        oligo_accumulation = []
+        payload_accumulation = []
         with open(self.file_name, 'r') as file:
             for line in file:
-                barcode_and_oligo = line.split(sep=' ')[0].rstrip()
-                barcode, oligo = barcode_and_oligo[:self.number_of_barcode_letters], barcode_and_oligo[self.number_of_barcode_letters:]
+                barcode_and_payload = line.split(sep=' ')[0].rstrip()
+                barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[self.number_of_barcode_letters:]
                 if barcode != barcode_prev:
-                    if len(oligo_accumulation) != 0:
-                        unique_oligo_accumulation = self.retrieve_unique_oligo(oligo_accumulation=oligo_accumulation)
-                        for unique_oligo in unique_oligo_accumulation:
-                            self.save_unique_oligo(unique_oligo, barcode_prev)
-                    oligo_accumulation = [oligo]
+                    if len(payload_accumulation) != 0:
+                        binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
+                        self.save_binary(binary=binary, barcode_prev=barcode_prev)
+                    payload_accumulation = [payload]
                     barcode_prev = barcode
                 else:
-                    oligo_accumulation.append(oligo)
-            unique_oligo = self.retrieve_unique_oligo(oligo_accumulation=oligo_accumulation)
-            for unique_oligo in unique_oligo_accumulation:
-                self.save_unique_oligo(unique_oligo, barcode_prev)
+                    payload_accumulation.append(payload)
+            binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
+            self.save_binary(binary=binary, barcode_prev=barcode_prev)
 
-    def retrieve_unique_oligo(self, oligo_accumulation):
-        unique_oligo_accumulation = self.get_unique_oligo(oligo_accumulation=oligo_accumulation)
-        shrinked_unique_oligos = self.get_shrinked_unique_oligo(unique_oligo_accumulation=unique_oligo_accumulation)
-        binary_data = self.algorithm.decode(shrinked_oligos=shrinked_unique_oligos)
-        return unique_oligo_accumulation
+    def dna_to_binary(self, payload_accumulation):
+        shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
+        shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
+        unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
+        unique_payload = self.error_correction(payload=unique_payload)
+        binary = self.unique_payload_to_binary(payload=unique_payload)
+        return binary
 
-    def get_unique_oligo(self, oligo_accumulation):
-        oligo_accumulation_histogram = self.oligo_histogram(oligo_accumulation=oligo_accumulation)
-        unique_oligo_accumulation = self.hist_accumulation_to_unique_oligo_accumulation(hist_accumulation=oligo_accumulation_histogram)
-        unique_oligo_accumulation = self.error_correction(unique_oligo_accumulation)
-        return unique_oligo_accumulation
+    def unique_payload_to_binary(self, payload):
+        binary = []
+        for z in payload:
+            for key, val in self.z_to_binary.items():
+                if key == z:
+                    binary.append(val)
+                    break
+        binary = ["".join(map(str, tup)) for tup in binary]
+        return "".join(binary)
 
-    def get_shrinked_unique_oligo(self, unique_oligo_accumulation):
-        shrinked_unique_oligos = self.shrink_oligo(oligo_accumulation=unique_oligo_accumulation)
+    def get_unique_payload(self, payload_accumulation):
+        payload_accumulation_histogram = self.payload_histogram(oligo_accumulation=payload_accumulation)
+        unique_payload_accumulation = self.payload_histogram_to_payload(hist_accumulation=payload_accumulation_histogram)
+        unique_payload_accumulation = self.error_correction(unique_payload_accumulation)
+        return unique_payload_accumulation
+
+    def get_shrunk_unique_payload(self, unique_payload_accumulation):
+        shrunk_unique_payload = self.shrink_payload(payload_accumulation=unique_payload_accumulation)
         # barcode_histogram = self.barcode_histogram(shrinked_oligo=shrinked_oligo)
-        return shrinked_unique_oligos
+        return shrunk_unique_payload
 
-    def shrink_oligo(self, oligo_accumulation):
+    def shrink_payload(self, payload_accumulation):
         """ Note that missing k-mers will be removed from the oligo_accumulation """
         if self.k_mer == 1:
-            return oligo_accumulation
+            return payload_accumulation
         k_mer_accumulation = []
-        for oligo in oligo_accumulation:
+        for payload in payload_accumulation:
             k_mer_list = []
             oligo_valid = True
-            for k_letters in [oligo[i:i+self.k_mer] for i in range(0, self.oligo_length, self.k_mer)]:
+            for k_letters in [payload[i:i+self.k_mer] for i in range(0, self.oligo_length, self.k_mer)]:
                 try:
                     k_mer_list.append(self.shrink_dict[k_letters])
                 except KeyError:
@@ -85,28 +99,30 @@ class OligoRetriever:
                 k_mer_accumulation.append(k_mer_list)
         return k_mer_accumulation
 
-    def barcode_histogram(self, shrinked_oligo):
+    def payload_histogram(self, payload):
         hist = []
         for col_idx in range(int(self.oligo_length/self.k_mer)):
-            col = [letter[col_idx] for letter in shrinked_oligo]
+            col = [letter[col_idx] for letter in payload]
             letter_counts = Counter(col)
             hist.append(letter_counts)
         return hist
 
-    def oligo_histogram(self, oligo_accumulation):
-        return Counter(tuple(item) for item in oligo_accumulation)
+    def error_correction(self, payload):
+        return payload
 
-    def error_correction(self, oligo):
-        return oligo
+    def payload_histogram_to_payload(self, payload_histogram):
+        result_payload = []
+        for counter in payload_histogram:
+            reps = counter.most_common(self.algorithm.subset_size)
+            if len(reps) != self.algorithm.subset_size:
+                return []
+            k_mer_rep = set([rep[0] for rep in reps])
+            for key, val in self.k_mer_representative_to_z.items():
+                if set(key) == k_mer_rep:
+                    result_payload.append(val)
+                    break
+        return result_payload
 
-    def hist_accumulation_to_unique_oligo_accumulation(self, hist_accumulation):
-        list_of_hists = hist_accumulation.most_common(self.algorithm.binary_bits_on)
-        return [''.join(tup[0]) for tup in list_of_hists]
-
-    def hist_to_unique_oligo(self, barcode_histogram):
-        unique_oligo = self.algorithm.decode(barcode_histogram=barcode_histogram)
-        return unique_oligo
-
-    def save_unique_oligo(self, unique_oligo, barcode_prev):
-        self.unique_oligo_results_file.write(barcode_prev + unique_oligo + '\n')
+    def save_binary(self, binary, barcode_prev):
+        self.binary_results_file.write(barcode_prev + binary + '\n')
 

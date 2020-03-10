@@ -30,6 +30,8 @@ def main(config):
                                          algorithm=algorithm,
                                          shrink_dict=shrink_dict,
                                          k_mer=config['K_MER'],
+                                         k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
+                                         z_to_binary=config['algorithm_config']['z_to_binary'],
                                          unique_oligo_results_file=config['unique_oligo_results_file'])
         oligo_retriever.run()
 
