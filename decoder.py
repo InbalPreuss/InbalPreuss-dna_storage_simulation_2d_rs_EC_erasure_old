@@ -5,12 +5,13 @@ from pathlib import Path
 from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
+
 #################################################################
-# @ Class: OligoRetriever
+# @ Class: Decoder
 # @ Description: Retrieve the oligo to the oligo that was written
 #                in originally
 #################################################################
-class OligoRetriever:
+class Decoder:
     def __init__(self, number_of_barcode_letters: int,
                  oligo_length: int,
                  oligo_sorted_file_name: str,
@@ -19,7 +20,7 @@ class OligoRetriever:
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
                  z_to_binary: Dict,
-                 unique_oligo_results_file: Union[Path, str],
+                 results_file: Union[Path, str],
                  ):
         self.file_name = oligo_sorted_file_name
         self.number_of_barcode_letters = number_of_barcode_letters
@@ -29,10 +30,10 @@ class OligoRetriever:
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.z_to_binary = z_to_binary
-        self.binary_results_file = open(unique_oligo_results_file, 'w+')
+        self.results_file = open(results_file, 'w+')
 
     def __del__(self):
-        self.binary_results_file.close()
+        self.results_file.close()
 
     def run(self):
         barcode_prev = ''
@@ -113,5 +114,5 @@ class OligoRetriever:
         return result_payload
 
     def save_binary(self, binary, barcode_prev):
-        self.binary_results_file.write(barcode_prev + binary + '\n')
+        self.results_file.write(barcode_prev + binary + '\n')
 

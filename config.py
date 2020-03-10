@@ -20,15 +20,15 @@ shrink_dict_3_mer = {'AAT': 'X1',
                      'CTA': 'X15',
                      'CGT': 'X16'}
 
-k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 2)
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 5)
 r = [set(k) for k in k_mer_representative]
-k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 2)
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 5)
 all_binary_combinations = itertools.product([0, 1], repeat=12)
 z = itertools.combinations(['Z' + str(i) for i in range(1, len(r) + 1)], 1)
 z = [i[0] for i in z]
 z_to_binary = dict(zip(z, all_binary_combinations))
 
-k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 2)
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 5)
 k_mer_representative_to_z = dict(zip(k_mer_representative, z))
 # binary_to_k_mer_representative = dict(zip(all_binary_combinations, k_mer_representative))
 
@@ -42,10 +42,14 @@ config = {
     'OLIGO_FILE_NAME': 'Oligo_Input',
     'FASTQ_FILE_NAME': 'Bible4_sample',
     'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
-    'unique_oligo_results_file': pathlib.Path(
+    'binary_file_name': pathlib.Path(r'data/testing/small_data_binary'),
+    'binary_results_file': pathlib.Path(
         r'data/testing/small_data_3_barcode_9_oligo.unique_oligo_results_file.dna'),
+    'z_results_file': pathlib.Path(
+            r'data/testing/small_data_binary.results_file.dna'),
     'do_fastq_handling': False,
-    'do_retrieved_oligo': True,
+    'do_decode': False,
+    'do_encode': True,
     'do_oligo_handling': False,
     'algorithm': KMerAlgorithm,
     'algorithm_config': {'subset_size': 2,
