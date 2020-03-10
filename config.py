@@ -47,13 +47,18 @@ config = {
         r'data/testing/small_data_3_barcode_9_oligo.unique_oligo_results_file.dna'),
     'z_results_file': pathlib.Path(
             r'data/testing/small_data_binary.results_file.dna'),
+    'synthesis_results_file': pathlib.Path(
+                r'data/testing/small_data_binary.synthesis_results_file.dna'),
+    'do_oligo_handling': False,
+    'do_encode': False,
+    'do_synthesize': True,
     'do_fastq_handling': False,
     'do_decode': False,
-    'do_encode': True,
-    'do_oligo_handling': False,
     'algorithm': KMerAlgorithm,
     'algorithm_config': {'subset_size': 2,
                          'k_mer_representative_to_z': k_mer_representative_to_z,
-                         'z_to_binary': z_to_binary}
+                         'z_to_binary': z_to_binary},
+    'synthesis': {'number_of_oligos_per_barcode': 100_000,
+                  'letter_error_ratio': 1e-4}
 
 }
