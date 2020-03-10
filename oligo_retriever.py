@@ -70,17 +70,6 @@ class OligoRetriever:
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
-    def get_unique_payload(self, payload_accumulation):
-        payload_accumulation_histogram = self.payload_histogram(oligo_accumulation=payload_accumulation)
-        unique_payload_accumulation = self.payload_histogram_to_payload(hist_accumulation=payload_accumulation_histogram)
-        unique_payload_accumulation = self.error_correction(unique_payload_accumulation)
-        return unique_payload_accumulation
-
-    def get_shrunk_unique_payload(self, unique_payload_accumulation):
-        shrunk_unique_payload = self.shrink_payload(payload_accumulation=unique_payload_accumulation)
-        # barcode_histogram = self.barcode_histogram(shrinked_oligo=shrinked_oligo)
-        return shrunk_unique_payload
-
     def shrink_payload(self, payload_accumulation):
         """ Note that missing k-mers will be removed from the oligo_accumulation """
         if self.k_mer == 1:
