@@ -7,10 +7,9 @@ class KMerAlgorithm:
     def encode(self):
         pass
 
-
     def decode(self, shrunk_payload):
         binary_data = []
-        for col_idx in range(int(self.oligo_length/self.k_mer)):
+        for col_idx in range(int(self.oligo_length / self.k_mer)):
             oligo = [shrinked_oligo[col_idx] for shrinked_oligo in shrunk_payload]
             for key, val in self.k_mer_representative_to_binary.items():
                 if set(key) == set(oligo):

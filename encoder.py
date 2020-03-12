@@ -20,7 +20,8 @@ class Encoder:
                  shrink_dict: Dict,
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
-                 z_to_binary: Dict,
+                 binary_to_z: Dict,
+                 bits_per_z: int,
                  results_file: Union[Path, str],
                  ):
         self.file_name = binary_file_name
@@ -30,36 +31,35 @@ class Encoder:
         self.shrink_dict = shrink_dict
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
-        self.z_to_binary = z_to_binary
-        self.results_file = open(results_file, 'w+')
+        self.binary_to_z_dict = binary_to_z
+        self.bits_per_z = bits_per_z
+        self.results_file = results_file
+        open(self.results_file, 'w').close()
         self.barcode_generator = self.get_barcode_generator()
-
-    def __del__(self):
-        self.results_file.close()
 
     def run(self):
         with open(self.file_name, 'r') as file:
             z_list = []
             for line in file:
                 line = line.strip('\n')
-                if len(line) < 12:
-                    pass  # TODO
-                if len(z_list) < int(self.oligo_length / self.k_mer):
-                    z = self.binary_to_z(binary=line)
-                    z_list.append(z)
-                else:
+                if len(line) < self.bits_per_z:
+                    pass
+                    # TODO: handle less than 12 bits on last line,
+                    # TODO: zero pad last oligo with not enough z's
+                z = self.binary_to_z(binary=line)
+                z_list.append(z)
+                if len(z_list) == int(self.oligo_length / self.k_mer):
                     oligo = self.z_to_oligo(z_list)
                     self.save_oligo(oligo=oligo)
                     z_list = []
+
             if len(z_list) > 0:
                 oligo = self.z_to_oligo(z_list)
                 self.save_oligo(oligo=oligo)
 
     def binary_to_z(self, binary):
         binary_tuple = tuple([int(b) for b in binary])
-        for key, val in self.z_to_binary.items():
-            if val == binary_tuple:
-                return key
+        return self.binary_to_z_dict[binary_tuple]
 
     def z_to_oligo(self, z_list):
         oligo = self.error_correction(payload=z_list)
@@ -81,6 +81,7 @@ class Encoder:
         return payload
 
     def save_oligo(self, oligo):
-        self.results_file.write(oligo + '\n')
+        with open(self.results_file, 'a+') as f:
+            f.write(oligo + '\n')
 
 

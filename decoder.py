@@ -1,4 +1,5 @@
 from collections import Counter
+import re
 from typing import Union, Dict
 from pathlib import Path
 
@@ -14,7 +15,7 @@ from k_mer_algorithm import KMerAlgorithm
 class Decoder:
     def __init__(self, number_of_barcode_letters: int,
                  oligo_length: int,
-                 oligo_sorted_file_name: str,
+                 input_file: str,
                  algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
                  shrink_dict: Dict,
                  k_mer: int,
@@ -22,7 +23,7 @@ class Decoder:
                  z_to_binary: Dict,
                  results_file: Union[Path, str],
                  ):
-        self.file_name = oligo_sorted_file_name
+        self.input_file = input_file
         self.number_of_barcode_letters = number_of_barcode_letters
         self.oligo_length = oligo_length
         self.algorithm = algorithm
@@ -30,18 +31,17 @@ class Decoder:
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.z_to_binary = z_to_binary
-        self.results_file = open(results_file, 'w+')
-
-    def __del__(self):
-        self.results_file.close()
+        self.results_file = results_file
+        open(self.results_file, 'w').close()
 
     def run(self):
         barcode_prev = ''
         payload_accumulation = []
-        with open(self.file_name, 'r') as file:
+        with open(self.input_file, 'r') as file:
             for line in file:
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
-                barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[self.number_of_barcode_letters:]
+                barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
+                                                                                         self.number_of_barcode_letters:]
                 if barcode != barcode_prev:
                     if len(payload_accumulation) != 0:
                         binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
@@ -64,10 +64,7 @@ class Decoder:
     def unique_payload_to_binary(self, payload):
         binary = []
         for z in payload:
-            for key, val in self.z_to_binary.items():
-                if key == z:
-                    binary.append(val)
-                    break
+            binary.append(self.z_to_binary[z])
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
@@ -79,7 +76,7 @@ class Decoder:
         for payload in payload_accumulation:
             k_mer_list = []
             oligo_valid = True
-            for k_letters in [payload[i:i+self.k_mer] for i in range(0, self.oligo_length, self.k_mer)]:
+            for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.oligo_length, self.k_mer)]:
                 try:
                     k_mer_list.append(self.shrink_dict[k_letters])
                 except KeyError:
@@ -91,7 +88,7 @@ class Decoder:
 
     def payload_histogram(self, payload):
         hist = []
-        for col_idx in range(int(self.oligo_length/self.k_mer)):
+        for col_idx in range(int(self.oligo_length / self.k_mer)):
             col = [letter[col_idx] for letter in payload]
             letter_counts = Counter(col)
             hist.append(letter_counts)
@@ -106,13 +103,17 @@ class Decoder:
             reps = counter.most_common(self.algorithm.subset_size)
             if len(reps) != self.algorithm.subset_size:
                 return []
-            k_mer_rep = set([rep[0] for rep in reps])
-            for key, val in self.k_mer_representative_to_z.items():
-                if set(key) == k_mer_rep:
-                    result_payload.append(val)
-                    break
+            k_mer_rep = tuple(self.sorted_human([rep[0] for rep in reps]))
+            result_payload.append(self.k_mer_representative_to_z[k_mer_rep])
         return result_payload
 
     def save_binary(self, binary, barcode_prev):
-        self.results_file.write(barcode_prev + binary + '\n')
+        with open(self.results_file, 'a+') as f:
+            f.write(barcode_prev + binary + '\n')
 
+    @staticmethod
+    def sorted_human(iterable):
+        """ Sort the given iterable in the way that humans expect."""
+        convert = lambda text: int(text) if text.isdigit() else text
+        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        return sorted(iterable, key=alphanum_key)

@@ -26,17 +26,22 @@ def main(config):
                           shrink_dict=shrink_dict,
                           k_mer=config['K_MER'],
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
-                          z_to_binary=config['algorithm_config']['z_to_binary'],
-                          results_file=config['z_results_file'])
+                          binary_to_z=config['algorithm_config']['binary_to_z'],
+                          bits_per_z=config['algorithm_config']['bits_per_z'],
+                          results_file=config['encoder_results_file'])
         encoder.run()
 
     # Synthesize
     if config['do_synthesize']:
-        synthesizer = Synthesizer(input_file=config['z_results_file'],
+        algorithm = config['algorithm'](algorithm_config=config['algorithm_config'],
+                                        oligo_length=config['OLIGO_LENGTH'],
+                                        k_mer=config['K_MER'])
+        synthesizer = Synthesizer(input_file=config['encoder_results_file'],
                                   results_file=config['synthesis_results_file'],
-                                  number_of_oligos_per_barcode=config['synthesis']['number_of_oligos_per_barcode'],
-                                  letter_error_ratio=config['synthesis']['letter_error_ratio'],
-                                  k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],)
+                                  synthesis_config=config['synthesis'],
+                                  algorithm=algorithm,
+                                  k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
+                                  k_mer_to_dna=config['algorithm_config']['k_mer_to_dna'])
         synthesizer.synthesize()
 
     # Parsing Fastq data
@@ -52,13 +57,13 @@ def main(config):
         shrink_dict = config['shrink_dict']
         decoder = Decoder(number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
                           oligo_length=config['OLIGO_LENGTH'],
-                          oligo_sorted_file_name=config['file_name_sorted'],
+                          input_file=config['synthesis_results_file'],
                           algorithm=algorithm,
                           shrink_dict=shrink_dict,
                           k_mer=config['K_MER'],
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                           z_to_binary=config['algorithm_config']['z_to_binary'],
-                          results_file=config['binary_results_file'])
+                          results_file=config['decoder_results_file'])
         decoder.run()
 
 

@@ -20,17 +20,26 @@ shrink_dict_3_mer = {'AAT': 'X1',
                      'CTA': 'X15',
                      'CGT': 'X16'}
 
-k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 5)
+subset_size = 2
+shrink_dict_size = len(shrink_dict_3_mer)
+bits_per_z = 12
+
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
 r = [set(k) for k in k_mer_representative]
-k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 5)
-all_binary_combinations = itertools.product([0, 1], repeat=12)
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
+all_binary_combinations = itertools.product([0, 1], repeat=bits_per_z)
 z = itertools.combinations(['Z' + str(i) for i in range(1, len(r) + 1)], 1)
 z = [i[0] for i in z]
 z_to_binary = dict(zip(z, all_binary_combinations))
+all_binary_combinations = itertools.product([0, 1], repeat=bits_per_z)
+binary_to_z = dict(zip(all_binary_combinations, z))
 
-k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, 16 + 1)], 5)
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
 k_mer_representative_to_z = dict(zip(k_mer_representative, z))
-# binary_to_k_mer_representative = dict(zip(all_binary_combinations, k_mer_representative))
+k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
+z_to_k_mer_representative = dict(zip(z, k_mer_representative))
+
+k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
 config = {
     # 'NUMBER_OF_BARCODE_LETTERS': 16,
@@ -43,22 +52,30 @@ config = {
     'FASTQ_FILE_NAME': 'Bible4_sample',
     'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
     'binary_file_name': pathlib.Path(r'data/testing/small_data_binary'),
-    'binary_results_file': pathlib.Path(
-        r'data/testing/small_data_3_barcode_9_oligo.unique_oligo_results_file.dna'),
-    'z_results_file': pathlib.Path(
-            r'data/testing/small_data_binary.results_file.dna'),
+    'encoder_results_file': pathlib.Path(
+            r'data/testing/small_data_binary.encoder_results_file.dna'),
     'synthesis_results_file': pathlib.Path(
                 r'data/testing/small_data_binary.synthesis_results_file.dna'),
+    'decoder_results_file': pathlib.Path(
+            r'data/testing/small_data_binary.decoder_results_file.dna'),
     'do_oligo_handling': False,
-    'do_encode': False,
+    'do_encode': True,
     'do_synthesize': True,
     'do_fastq_handling': False,
-    'do_decode': False,
+    'do_decode': True,
     'algorithm': KMerAlgorithm,
-    'algorithm_config': {'subset_size': 2,
+    'algorithm_config': {'subset_size': subset_size,
+                         'bits_per_z': bits_per_z,
+                         'shrink_dict_size': shrink_dict_size,
                          'k_mer_representative_to_z': k_mer_representative_to_z,
-                         'z_to_binary': z_to_binary},
-    'synthesis': {'number_of_oligos_per_barcode': 100_000,
-                  'letter_error_ratio': 1e-4}
+                         'z_to_k_mer_representative': z_to_k_mer_representative,
+                         'z_to_binary': z_to_binary,
+                         'binary_to_z': binary_to_z,
+                         'k_mer_to_dna': k_mer_to_dna},
+    'synthesis': {'number_of_oligos_per_barcode': 20,
+                  'letter_replace_error_ratio': 0,
+                  'letter_remove_error_ratio': 0,
+                  'letter_add_error_ratio': 0
+                  }
 
 }
