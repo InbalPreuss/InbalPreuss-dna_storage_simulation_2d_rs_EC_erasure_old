@@ -74,6 +74,7 @@ class BinaryResultToText:
         with open(self.input_file, 'r') as input_file, open(self.output_file, 'w') as output_file:
             last_two_payloads = ['', '']
             accumulation = ''
+            utf_chars_sizes = [32, 24, 16, 8]
             for idx, line in enumerate(input_file):
                 payload = line.strip()
 
@@ -81,10 +82,18 @@ class BinaryResultToText:
                 last_two_payloads[1] = payload
                 accumulation += payload
                 while len(accumulation) >= 32:
-                    bits = accumulation[:32]
-                    accumulation = accumulation[32:]
-                    text = text_from_bits(bits)
-                    output_file.write(text)
+                    for size in utf_chars_sizes:
+                        try:
+                            bits = accumulation[:size]
+                            text = text_from_bits(bits)
+                            accumulation = accumulation[size:]
+                            output_file.write(text)
+                            break
+                        except:
+                            pass
+
+
+
 
             z_fill = int(last_two_payloads[1], 2)
             payload = last_two_payloads[0]
