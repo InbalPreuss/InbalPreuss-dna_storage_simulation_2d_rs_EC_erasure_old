@@ -52,20 +52,15 @@ def test_full_flow():
     config['synthesis']['letter_remove_error_ratio'] = 0
     config['synthesis']['letter_add_error_ratio'] = 0
     input_data = ''
-    with open('data/testing/small_data_binary', 'r') as input_file:
+    with open('data/testing/small_data.input_text.dna', 'r') as input_file:
         input_data = input_file.read()
     input_data = input_data.rsplit()
     main(config)
-    with open('data/testing/small_data_binary.decoder_results_file.dna', 'r') as file:
+    with open('data/testing/small_data.text_results_file.dna', 'r') as file:
         data = file.read()
     data = data.rsplit()
-    data = [d[config['NUMBER_OF_BARCODE_LETTERS']:] for d in data]
-    bpz = config['algorithm_config']['bits_per_z']
-    result = []
-    for d in data:
-        res = [d[i:i+bpz] for i in range(0, len(d), bpz)]
-        result.extend(res)
-    assert input_data == result
+    data = [d.rstrip('\x00') for d in data]
+    assert input_data == data
 
 
 if __name__ == '__main__':

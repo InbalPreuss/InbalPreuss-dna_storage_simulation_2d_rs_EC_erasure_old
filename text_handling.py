@@ -89,7 +89,7 @@ class BinaryResultToText:
                             accumulation = accumulation[size:]
                             output_file.write(text)
                             break
-                        except:
+                        except UnicodeDecodeError:
                             pass
 
 
