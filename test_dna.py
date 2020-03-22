@@ -59,7 +59,7 @@ def test_full_flow():
     with open('data/testing/small_data_binary.decoder_results_file.dna', 'r') as file:
         data = file.read()
     data = data.rsplit()
-    data = [d[3:] for d in data]
+    data = [d[config['NUMBER_OF_BARCODE_LETTERS']:] for d in data]
     bpz = config['algorithm_config']['bits_per_z']
     result = []
     for d in data:

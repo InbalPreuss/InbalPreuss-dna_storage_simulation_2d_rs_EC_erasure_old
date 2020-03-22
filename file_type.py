@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class FileType:
     def __init__(self, file_name, file_extension):
         self.file_extension = file_extension

@@ -1,8 +1,10 @@
 from oligo_handling import OligoHandling
 from fastq_handling import FastqHandling
+from text_handling import TextFileToBinaryFile, DecoderResultToBinary, BinaryResultToText
 from decoder import Decoder
 from encoder import Encoder
 from mock_synthesizer import Synthesizer
+
 
 # User parameters: barcode, Oligo file name, Fastq file name
 
@@ -13,6 +15,13 @@ def main(config):
         OligoHandling(number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
                       file_name=config['OLIGO_FILE_NAME']).parse_oligo()
 
+    if config['write_text_to_binary']:
+        text_file_to_binary = TextFileToBinaryFile(input_file=config['input_text_file'],
+                                                   output_file=config['binary_file_name'],
+                                                   oligo_length=config['OLIGO_LENGTH'],
+                                                   bits_per_z=config['algorithm_config']['bits_per_z'],
+                                                   k_mer=config['K_MER'])
+        text_file_to_binary.run()
     # Encode
     if config['do_encode']:
         algorithm = config['algorithm'](algorithm_config=config['algorithm_config'],
@@ -39,6 +48,8 @@ def main(config):
         synthesizer = Synthesizer(input_file=config['encoder_results_file'],
                                   results_file=config['synthesis_results_file'],
                                   synthesis_config=config['synthesis'],
+                                  number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
+                                  subset_size=config['algorithm_config']['subset_size'],
                                   algorithm=algorithm,
                                   k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                                   k_mer_to_dna=config['algorithm_config']['k_mer_to_dna'])
@@ -65,6 +76,18 @@ def main(config):
                           z_to_binary=config['algorithm_config']['z_to_binary'],
                           results_file=config['decoder_results_file'])
         decoder.run()
+
+    if config['decoder_results_to_binary']:
+        decoder_results_to_binary = DecoderResultToBinary(input_file=config['decoder_results_file'],
+                                                          output_file=config['binary_results_file'],
+                                                          number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'])
+        decoder_results_to_binary.run()
+
+    if config['binary_results_to_text']:
+        binary_results_to_text = BinaryResultToText(input_file=config['binary_results_file'],
+                                                    output_file=config['text_results_file'],
+                                                    number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'])
+        binary_results_to_text.run()
 
 
 if __name__ == "__main__":

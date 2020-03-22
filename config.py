@@ -20,7 +20,7 @@ shrink_dict_3_mer = {'AAT': 'X1',
                      'CTA': 'X15',
                      'CGT': 'X16'}
 
-subset_size = 2
+subset_size = 5
 shrink_dict_size = len(shrink_dict_3_mer)
 bits_per_z = 12
 
@@ -43,7 +43,7 @@ k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
 config = {
     # 'NUMBER_OF_BARCODE_LETTERS': 16,
-    # 'OLIGO_LENGTH': 151,
+    # 'OLIGO_LENGTH': 150,
     'NUMBER_OF_BARCODE_LETTERS': 3,
     'OLIGO_LENGTH': 9,
     'K_MER': 3,
@@ -51,18 +51,24 @@ config = {
     'OLIGO_FILE_NAME': 'Oligo_Input',
     'FASTQ_FILE_NAME': 'Bible4_sample',
     'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
-    'binary_file_name': pathlib.Path(r'data/testing/small_data_binary'),
+    'input_text_file': pathlib.Path(r'data/testing/small_data.input_text.dna'),
+    'binary_file_name': pathlib.Path(r'data/testing/small_data.binary.dna'),
     'encoder_results_file': pathlib.Path(
             r'data/testing/small_data_binary.encoder_results_file.dna'),
     'synthesis_results_file': pathlib.Path(
                 r'data/testing/small_data_binary.synthesis_results_file.dna'),
     'decoder_results_file': pathlib.Path(
             r'data/testing/small_data_binary.decoder_results_file.dna'),
+    'binary_results_file': pathlib.Path(r'data/testing/small_data.binary_results_file.dna'),
+    'text_results_file':  pathlib.Path(r'data/testing/small_data.text_results_file.dna'),
     'do_oligo_handling': False,
+    'write_text_to_binary': True,
     'do_encode': True,
     'do_synthesize': True,
     'do_fastq_handling': False,
     'do_decode': True,
+    'decoder_results_to_binary': True,
+    'binary_results_to_text': True,
     'algorithm': KMerAlgorithm,
     'algorithm_config': {'subset_size': subset_size,
                          'bits_per_z': bits_per_z,
@@ -75,7 +81,8 @@ config = {
     'synthesis': {'number_of_oligos_per_barcode': 20,
                   'letter_replace_error_ratio': 0,
                   'letter_remove_error_ratio': 0,
-                  'letter_add_error_ratio': 0
+                  'letter_add_error_ratio': 0,
+                  'seed': 0
                   }
 
 }

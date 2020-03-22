@@ -1,4 +1,5 @@
 import itertools
+from textwrap import wrap
 from collections import Counter
 from typing import Union, Dict
 from pathlib import Path
@@ -40,18 +41,16 @@ class Encoder:
     def run(self):
         with open(self.file_name, 'r') as file:
             z_list = []
+            oligo_len_binary = self.oligo_length * self.bits_per_z
             for line in file:
                 line = line.strip('\n')
-                if len(line) < self.bits_per_z:
-                    pass
-                    # TODO: handle less than 12 bits on last line,
-                    # TODO: zero pad last oligo with not enough z's
-                z = self.binary_to_z(binary=line)
-                z_list.append(z)
-                if len(z_list) == int(self.oligo_length / self.k_mer):
-                    oligo = self.z_to_oligo(z_list)
-                    self.save_oligo(oligo=oligo)
-                    z_list = []
+                for binary_to_transform in wrap(line, self.bits_per_z):
+                    z = self.binary_to_z(binary=binary_to_transform)
+                    z_list.append(z)
+                    if len(z_list) == int(self.oligo_length / self.k_mer):
+                        oligo = self.z_to_oligo(z_list)
+                        self.save_oligo(oligo=oligo)
+                        z_list = []
 
             if len(z_list) > 0:
                 oligo = self.z_to_oligo(z_list)
