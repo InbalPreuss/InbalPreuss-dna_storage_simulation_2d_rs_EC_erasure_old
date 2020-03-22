@@ -51,7 +51,7 @@ config = {
     'OLIGO_FILE_NAME': 'Oligo_Input',
     'FASTQ_FILE_NAME': 'Bible4_sample',
     'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
-    'input_text_file': pathlib.Path(r'data/testing/small_data.input_text.dna'),
+    'input_text_file': pathlib.Path(r'data/testing/input_text.dna'),
     'binary_file_name': pathlib.Path(r'data/testing/small_data.binary.dna'),
     'encoder_results_file': pathlib.Path(
             r'data/testing/small_data_binary.encoder_results_file.dna'),
