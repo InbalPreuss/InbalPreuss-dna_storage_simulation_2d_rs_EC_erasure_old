@@ -43,10 +43,11 @@ k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
 config = {
     # 'NUMBER_OF_BARCODE_LETTERS': 16,
-    # 'OLIGO_LENGTH': 150,
+    # 'oligo_length': 150,
     'NUMBER_OF_BARCODE_LETTERS': 3,
-    'OLIGO_LENGTH': 9,
+    'oligo_length': 9,
     'K_MER': 3,
+    'oligo_len_binary': None,
     'shrink_dict': shrink_dict_3_mer,
     'OLIGO_FILE_NAME': 'Oligo_Input',
     'FASTQ_FILE_NAME': 'Bible4_sample',
@@ -86,3 +87,5 @@ config = {
                   }
 
 }
+
+config['oligo_len_binary'] = int(config['oligo_length'] / config['K_MER'] * config['algorithm_config']['bits_per_z'])

@@ -21,18 +21,18 @@ def main(config):
     if config['write_text_to_binary']:
         text_file_to_binary = TextFileToBinaryFile(input_file=config['input_text_file'],
                                                    output_file=config['binary_file_name'],
-                                                   oligo_length=config['OLIGO_LENGTH'],
+                                                   oligo_length=config['oligo_length'],
                                                    bits_per_z=config['algorithm_config']['bits_per_z'],
                                                    k_mer=config['K_MER'])
         text_file_to_binary.run()
     # Encode
     if config['do_encode']:
         algorithm = config['algorithm'](algorithm_config=config['algorithm_config'],
-                                        oligo_length=config['OLIGO_LENGTH'],
+                                        oligo_length=config['oligo_length'],
                                         k_mer=config['K_MER'])
         shrink_dict = config['shrink_dict']
         encoder = Encoder(number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
-                          oligo_length=config['OLIGO_LENGTH'],
+                          oligo_length=config['oligo_length'],
                           binary_file_name=config['binary_file_name'],
                           algorithm=algorithm,
                           shrink_dict=shrink_dict,
@@ -46,7 +46,7 @@ def main(config):
     # Synthesize
     if config['do_synthesize']:
         algorithm = config['algorithm'](algorithm_config=config['algorithm_config'],
-                                        oligo_length=config['OLIGO_LENGTH'],
+                                        oligo_length=config['oligo_length'],
                                         k_mer=config['K_MER'])
         synthesizer = Synthesizer(input_file=config['encoder_results_file'],
                                   results_file=config['synthesis_results_file'],
@@ -61,16 +61,16 @@ def main(config):
     # Parsing Fastq data
     if config['do_fastq_handling']:
         file_name_sorted = FastqHandling(number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
-                                         oligo_length=config['OLIGO_LENGTH'],
+                                         oligo_length=config['oligo_length'],
                                          file_name=config['FASTQ_FILE_NAME']).parse_fastq()
     # Decode
     if config['do_decode']:
         algorithm = config['algorithm'](algorithm_config=config['algorithm_config'],
-                                        oligo_length=config['OLIGO_LENGTH'],
+                                        oligo_length=config['oligo_length'],
                                         k_mer=config['K_MER'])
         shrink_dict = config['shrink_dict']
         decoder = Decoder(number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
-                          oligo_length=config['OLIGO_LENGTH'],
+                          oligo_length=config['oligo_length'],
                           input_file=config['synthesis_results_file'],
                           algorithm=algorithm,
                           shrink_dict=shrink_dict,
@@ -89,7 +89,8 @@ def main(config):
     if config['binary_results_to_text']:
         binary_results_to_text = BinaryResultToText(input_file=config['binary_results_file'],
                                                     output_file=config['text_results_file'],
-                                                    number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'])
+                                                    number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],
+                                                    oligo_len_binary=config['oligo_len_binary'])
         binary_results_to_text.run()
 
 

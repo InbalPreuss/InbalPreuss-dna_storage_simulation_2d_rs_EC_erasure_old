@@ -39,7 +39,7 @@ class Encoder:
         self.barcode_generator = self.get_barcode_generator()
 
     def run(self):
-        with open(self.file_name, 'r') as file:
+        with open(self.file_name, 'r', encoding='utf-8') as file:
             z_list = []
             oligo_len_binary = self.oligo_length * self.bits_per_z
             for line in file:
@@ -80,7 +80,7 @@ class Encoder:
         return payload
 
     def save_oligo(self, oligo):
-        with open(self.results_file, 'a+') as f:
+        with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(oligo + '\n')
 
 

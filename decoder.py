@@ -37,7 +37,7 @@ class Decoder:
     def run(self):
         barcode_prev = ''
         payload_accumulation = []
-        with open(self.input_file, 'r') as file:
+        with open(self.input_file, 'r', encoding='utf-8') as file:
             for line in file:
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
                 barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
@@ -108,7 +108,7 @@ class Decoder:
         return result_payload
 
     def save_binary(self, binary, barcode_prev):
-        with open(self.results_file, 'a+') as f:
+        with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(barcode_prev + binary + '\n')
 
     @staticmethod

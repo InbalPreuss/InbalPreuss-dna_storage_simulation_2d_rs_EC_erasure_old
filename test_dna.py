@@ -10,7 +10,7 @@ from main import main
 #     from config import config
 #     config = copy.deepcopy(config)
 #     config['NUMBER_OF_BARCODE_LETTERS'] = 4
-#     config['OLIGO_LENGTH'] = 8
+#     config['oligo_length'] = 8
 #     config['K_MER'] = 1
 #     config['file_name_sorted'] = pathlib.Path(r'data/testing/small_data_4_barcode_8_oligo.dna')
 #     config['unique_oligo_results_file'] = pathlib.Path(
@@ -52,11 +52,11 @@ def test_full_flow():
     config['synthesis']['letter_remove_error_ratio'] = 0
     config['synthesis']['letter_add_error_ratio'] = 0
     input_data = ''
-    with open('data/testing/small_data.input_text.dna', 'r') as input_file:
+    with open('data/testing/small_data.input_text.dna', 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
     input_data = input_data.rsplit()
     main(config)
-    with open('data/testing/small_data.text_results_file.dna', 'r') as file:
+    with open('data/testing/small_data.text_results_file.dna', 'r', encoding='utf-8') as file:
         data = file.read()
     data = data.rsplit()
     data = [d.rstrip('\x00') for d in data]

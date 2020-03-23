@@ -1,3 +1,4 @@
+import os
 from textwrap import wrap
 
 import numpy as np
@@ -12,7 +13,7 @@ class TextFileToBinaryFile:
         self.k_mer = k_mer
 
     def run(self):
-        with open(self.input_file, 'r') as input_file, open(self.output_file, 'w') as output_file:
+        with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             oligo_len_binary = int(self.oligo_length / self.k_mer * self.bits_per_z)
             accumulation = ''
             for line in input_file:
@@ -25,11 +26,13 @@ class TextFileToBinaryFile:
                     accumulation = accumulation[oligo_len_binary:]
                     output_file.write(to_write + '\n')
             z_fill = 0
+
             if len(accumulation) > 0:
                 binary_data_padded, z_fill = self.transform_text_to_binary_string(binary_data=accumulation)
                 output_file.write(binary_data_padded + '\n')
 
             z_fill_text = "{0:b}".format(z_fill).rjust(oligo_len_binary, '0')
+            # output_file.seek(0)
             output_file.write(z_fill_text + '\n')
             a = 3
 
@@ -41,11 +44,8 @@ class TextFileToBinaryFile:
         total_binary_len = int(number_of_binary_oligos * oligo_len_binary)
 
         binary_data_padded = binary_data.ljust(total_binary_len, '0')
-        # binary_data_padded = binary_data.zfill(total_binary_len)
         z_fill = total_binary_len - binary_data_len
 
-        # binary_data_padded = "{0:b}".format(z_fill).rjust(oligo_len_binary, '0') + binary_data_padded
-        # binary_data_padded += "{0:b}".format(z_fill).rjust(oligo_len_binary, '0')
         return binary_data_padded, z_fill
 
 
@@ -56,7 +56,7 @@ class DecoderResultToBinary:
         self.number_of_barcode_letters = number_of_barcode_letters
 
     def run(self):
-        with open(self.input_file, 'r') as input_file, open(self.output_file, 'w') as output_file:
+        with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             for idx, line in enumerate(input_file):
                 barcode_and_payload = line.strip()
                 barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
@@ -65,21 +65,32 @@ class DecoderResultToBinary:
 
 
 class BinaryResultToText:
-    def __init__(self, input_file: str, output_file: str, number_of_barcode_letters: int):
+    def __init__(self, input_file: str, output_file: str, number_of_barcode_letters: int, oligo_len_binary: int):
         self.input_file = input_file
         self.output_file = output_file
         self.number_of_barcode_letters = number_of_barcode_letters
+        self.oligo_len_binary = oligo_len_binary
 
     def run(self):
-        with open(self.input_file, 'r') as input_file, open(self.output_file, 'w') as output_file:
-            last_two_payloads = ['', '']
+        with open(self.input_file, 'r+', encoding='utf-8') as input_file:
+            input_file.seek(0, os.SEEK_END)
+            input_file.seek(input_file.tell() - 36 - 1, os.SEEK_SET)
+            for idx, line in enumerate(input_file):
+                if idx == 0:
+                    payload = line.strip()
+                    z_fill = int(payload, 2)
+                    input_file.seek(0, os.SEEK_END)
+                    input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2, os.SEEK_SET)
+                    input_file.truncate()
+                    input_file.seek(0)
+                    break
+
+        with open(self.input_file, 'r+', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             accumulation = ''
             utf_chars_sizes = [32, 24, 16, 8]
             for idx, line in enumerate(input_file):
                 payload = line.strip()
 
-                last_two_payloads[0] = last_two_payloads[1]
-                last_two_payloads[1] = payload
                 accumulation += payload
                 while len(accumulation) >= 32:
                     for size in utf_chars_sizes:
@@ -91,15 +102,16 @@ class BinaryResultToText:
                             break
                         except UnicodeDecodeError:
                             pass
-
-
-
-
-            z_fill = int(last_two_payloads[1], 2)
-            payload = last_two_payloads[0]
-            payload = payload[z_fill:]
-            text = text_from_bits(payload)
-            output_file.write(text)
+            if len(accumulation) > 0:
+                text = text_from_bits(accumulation)
+                output_file.write(text)
+            a = 3
+            #
+            # z_fill = int(last_two_payloads[1], 2)
+            # payload = last_two_payloads[0]
+            # payload = payload[z_fill:]
+            # text = text_from_bits(payload)
+            # output_file.write(text)
 
 
 def text_to_bits(text: str, encoding='utf-8', errors='surrogatepass') -> str:
