@@ -72,20 +72,24 @@ class BinaryResultToText:
         self.oligo_len_binary = oligo_len_binary
 
     def run(self):
-        with open(self.input_file, 'r+', encoding='utf-8', newline='\n') as input_file:
+        with open(self.input_file, 'r+', encoding='utf-8') as input_file:
+            if os.name == 'nt':
+                newline_size = 2
+            else:
+                newline_size = 1
             input_file.seek(0, os.SEEK_END)
-            input_file.seek(input_file.tell() - self.oligo_len_binary - 1, os.SEEK_SET)
+            input_file.seek(input_file.tell() - self.oligo_len_binary - 1*newline_size, os.SEEK_SET)
             for idx, line in enumerate(input_file):
                 if idx == 0:
                     payload = line.strip()
                     z_fill = int(payload, 2)
                     input_file.seek(0, os.SEEK_END)
-                    input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2, os.SEEK_SET)
+                    input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2*newline_size, os.SEEK_SET)
                     input_file.truncate()
                     input_file.seek(0)
                     break
 
-        with open(self.input_file, 'r+', encoding='utf-8', newline='\n') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
+        with open(self.input_file, 'r+', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             accumulation = ''
             utf_chars_sizes = [32, 24, 16, 8]
             for idx, line in enumerate(input_file):
