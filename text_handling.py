@@ -72,9 +72,9 @@ class BinaryResultToText:
         self.oligo_len_binary = oligo_len_binary
 
     def run(self):
-        with open(self.input_file, 'r+', encoding='utf-8') as input_file:
+        with open(self.input_file, 'r+', encoding='utf-8', newline='\n') as input_file:
             input_file.seek(0, os.SEEK_END)
-            input_file.seek(input_file.tell() - 36 - 1, os.SEEK_SET)
+            input_file.seek(input_file.tell() - self.oligo_len_binary - 1, os.SEEK_SET)
             for idx, line in enumerate(input_file):
                 if idx == 0:
                     payload = line.strip()
@@ -85,7 +85,7 @@ class BinaryResultToText:
                     input_file.seek(0)
                     break
 
-        with open(self.input_file, 'r+', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
+        with open(self.input_file, 'r+', encoding='utf-8', newline='\n') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             accumulation = ''
             utf_chars_sizes = [32, 24, 16, 8]
             for idx, line in enumerate(input_file):
