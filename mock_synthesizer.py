@@ -28,8 +28,8 @@ class Synthesizer:
         self.k_mer_to_dna = k_mer_to_dna
 
     def synthesize(self):
-        np.random.seed(self.synthesis_config['seed'])
-        random.seed(self.synthesis_config['seed'])
+        # np.random.seed(self.synthesis_config['seed'])
+        # random.seed(self.synthesis_config['seed'])
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.results_file, 'w+', encoding='utf-8') as results_file:
             for line in input_file:
                 line_list = line.strip('\n').split(',')

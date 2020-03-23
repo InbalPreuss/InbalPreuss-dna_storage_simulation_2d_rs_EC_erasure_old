@@ -34,7 +34,6 @@ class TextFileToBinaryFile:
             z_fill_text = "{0:b}".format(z_fill).rjust(oligo_len_binary, '0')
             # output_file.seek(0)
             output_file.write(z_fill_text + '\n')
-            a = 3
 
     def transform_text_to_binary_string(self, binary_data: str):
         oligo_len_binary = int(self.oligo_length / self.k_mer * self.bits_per_z)
@@ -82,10 +81,13 @@ class BinaryResultToText:
             for idx, line in enumerate(input_file):
                 if idx == 0:
                     payload = line.strip()
-                    z_fill = int(payload, 2)
-                    input_file.seek(0, os.SEEK_END)
-                    input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2*newline_size, os.SEEK_SET)
-                    input_file.truncate()
+                    try:
+                        z_fill = int(payload, 2)
+                        input_file.seek(0, os.SEEK_END)
+                        input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2*newline_size, os.SEEK_SET)
+                        input_file.truncate()
+                    except ValueError:
+                        pass
                     input_file.seek(0)
                     break
 
@@ -96,7 +98,8 @@ class BinaryResultToText:
                 payload = line.strip()
 
                 accumulation += payload
-                while len(accumulation) >= 32:
+                stop = False
+                while len(accumulation) >= 32 and stop is False:
                     for size in utf_chars_sizes:
                         try:
                             bits = accumulation[:size]
@@ -105,17 +108,17 @@ class BinaryResultToText:
                             output_file.write(text)
                             break
                         except UnicodeDecodeError:
-                            pass
+                            if size == utf_chars_sizes[-1]:
+                                stop = True
+                                break
+
             if len(accumulation) > 0:
-                text = text_from_bits(accumulation)
-                output_file.write(text)
-            a = 3
-            #
-            # z_fill = int(last_two_payloads[1], 2)
-            # payload = last_two_payloads[0]
-            # payload = payload[z_fill:]
-            # text = text_from_bits(payload)
-            # output_file.write(text)
+                try:
+                    text = text_from_bits(accumulation)
+                    output_file.write(text)
+                except UnicodeDecodeError:
+                    pass
+
 
 
 def text_to_bits(text: str, encoding='utf-8', errors='surrogatepass') -> str:

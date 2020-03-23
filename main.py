@@ -12,7 +12,6 @@ from mock_synthesizer import Synthesizer
 
 
 def main(config):
-    Path('data/testing').mkdir(parents=True, exist_ok=True)
     # Parsing Oligo data
     if config['do_oligo_handling']:
         OligoHandling(number_of_barcode_letters=config['NUMBER_OF_BARCODE_LETTERS'],

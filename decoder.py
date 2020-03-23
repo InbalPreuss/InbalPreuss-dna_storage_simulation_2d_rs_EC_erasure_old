@@ -64,7 +64,10 @@ class Decoder:
     def unique_payload_to_binary(self, payload):
         binary = []
         for z in payload:
-            binary.append(self.z_to_binary[z])
+            try:
+                binary.append(self.z_to_binary[z])
+            except KeyError:
+                return ''
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
