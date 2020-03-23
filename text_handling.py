@@ -76,20 +76,27 @@ class BinaryResultToText:
                 newline_size = 2
             else:
                 newline_size = 1
-            input_file.seek(0, os.SEEK_END)
-            input_file.seek(input_file.tell() - self.oligo_len_binary - 1*newline_size, os.SEEK_SET)
-            for idx, line in enumerate(input_file):
-                if idx == 0:
-                    payload = line.strip()
-                    try:
-                        z_fill = int(payload, 2)
-                        input_file.seek(0, os.SEEK_END)
-                        input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2*newline_size, os.SEEK_SET)
-                        input_file.truncate()
-                    except ValueError:
-                        pass
-                    input_file.seek(0)
-                    break
+            failed_on_seek = False
+            try:
+                input_file.seek(0, os.SEEK_END)
+                input_file.seek(input_file.tell() - self.oligo_len_binary - 1*newline_size, os.SEEK_SET)
+            except ValueError:
+                input_file.seek(0)
+                failed_on_seek = True
+
+            if not failed_on_seek:
+                for idx, line in enumerate(input_file):
+                    if idx == 0:
+                        payload = line.strip()
+                        try:
+                            z_fill = int(payload, 2)
+                            input_file.seek(0, os.SEEK_END)
+                            input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2*newline_size, os.SEEK_SET)
+                            input_file.truncate()
+                        except ValueError:
+                            pass
+                        input_file.seek(0)
+                        break
 
         with open(self.input_file, 'r+', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             accumulation = ''
