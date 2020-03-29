@@ -51,7 +51,7 @@ class Synthesizer:
                 dna_list = self.add_remove_replace(dna_list)
                 results_file.write('\n'.join(dna_list) + '\n')
 
-    def add_remove_replace(self, dna_list):
+    def add_remove_replace(self, dna_list: List[str]):
         for row_idx, oligo in enumerate(dna_list):
             remove = [np.random.binomial(1, self.synthesis_config['letter_remove_error_ratio']) for i in range(len(oligo))]
             oligo = ''.join([char if remove[idx] == 0 else '' for idx, char in enumerate(oligo)])
@@ -67,7 +67,7 @@ class Synthesizer:
             dna_list[row_idx] = oligo
         return dna_list
 
-    def get_x_list(self, payload):
+    def get_x_list(self, payload: List[str]):
         x_list = []
         for z in payload:
             for key, val, in self.k_mer_representative_to_z.items():
