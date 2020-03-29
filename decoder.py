@@ -42,6 +42,8 @@ class Decoder:
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
                 barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
                                                                                          self.number_of_barcode_letters:]
+                if self.wrong_len_barcode_and_oligos(barcode=barcode, payload=payload):
+                    continue
                 if barcode != barcode_prev:
                     if len(payload_accumulation) != 0:
                         binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
@@ -54,7 +56,7 @@ class Decoder:
             self.save_binary(binary=binary, barcode_prev=barcode_prev)
 
     def dna_to_binary(self, payload_accumulation: List[str]):
-        payload_accumulation = self.remove_wrong_len_oligos(payload_accumulation)
+        # payload_accumulation = self.remove_wrong_len_oligos(payload_accumulation)
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
@@ -72,12 +74,8 @@ class Decoder:
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
-    def remove_wrong_len_oligos(self, payload_accumulation: List[str]):
-        _payload_accumulation = []
-        for payload in payload_accumulation:
-            if len(payload) == self.oligo_length:
-                _payload_accumulation.append(payload)
-        return _payload_accumulation
+    def wrong_len_barcode_and_oligos(self, barcode: str, payload: str):
+        return len(barcode) + len(payload) != self.number_of_barcode_letters + self.oligo_length
 
     def shrink_payload(self, payload_accumulation: List[str]):
         """ Note that missing k-mers will be removed from the oligo_accumulation """
