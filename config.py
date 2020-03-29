@@ -54,10 +54,8 @@ def build_config(subset_size: int = 5,
     k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
     config = {
-        # 'NUMBER_OF_BARCODE_LETTERS': 16,
-        # 'oligo_length': 150,
-        'NUMBER_OF_BARCODE_LETTERS': 6,
-        'oligo_length': 9,
+        # 'mode': 'prod',
+        'mode': 'test',
         'K_MER': 3,
         'oligo_len_binary': None,
         'shrink_dict': shrink_dict_3_mer,
@@ -99,6 +97,13 @@ def build_config(subset_size: int = 5,
                       }
 
     }
+
+    if config['mode'] == 'prod':
+        config['NUMBER_OF_BARCODE_LETTERS'] = 16
+        config['oligo_length'] = 150
+    elif config['mode'] == 'test':
+        config['NUMBER_OF_BARCODE_LETTERS'] = 16
+        config['oligo_length'] = 9
 
     config['oligo_len_binary'] = int(
         config['oligo_length'] / config['K_MER'] * config['algorithm_config']['bits_per_z'])

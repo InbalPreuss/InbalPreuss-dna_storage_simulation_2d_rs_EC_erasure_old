@@ -16,7 +16,8 @@ class Synthesizer:
                  subset_size: int,
                  algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
                  k_mer_representative_to_z: Dict,
-                 k_mer_to_dna: Dict):
+                 k_mer_to_dna: Dict,
+                 mode: str):
         self.input_file = input_file
         self.results_file = results_file
         open(self.results_file, 'w').close()
@@ -26,10 +27,12 @@ class Synthesizer:
         self.algorithm = algorithm
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.k_mer_to_dna = k_mer_to_dna
+        self.mode = mode
 
     def synthesize(self):
-        # np.random.seed(self.synthesis_config['seed'])
-        # random.seed(self.synthesis_config['seed'])
+        if self.mode == 'test':
+            np.random.seed(self.synthesis_config['seed'])
+            random.seed(self.synthesis_config['seed'])
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.results_file, 'w+', encoding='utf-8') as results_file:
             for line in input_file:
                 line_list = line.strip('\n').split(',')
@@ -40,10 +43,12 @@ class Synthesizer:
                 x_mat = np.empty([number_of_nuc, self.number_of_barcode_letters], dtype=np.dtype(('U', 5)))
                 x_mat[:] = np.array(tuple(barcode))
                 for idx, x_tuple in enumerate(x_list, 1):
-                    while True:
-                        vec = np.random.choice(x_tuple, size=(number_of_nuc,))
-                        if len(np.unique(vec)) == self.subset_size:
-                            break
+                    vec = np.random.choice(x_tuple, size=(number_of_nuc,))
+                    if self.mode == 'test':
+                        while True:
+                            if len(np.unique(vec)) == self.subset_size:
+                                break
+                            vec = np.random.choice(x_tuple, size=(number_of_nuc,))
                     col = np.array([tuple(self.k_mer_to_dna[k_mer]) for k_mer in vec])
                     x_mat = np.hstack((x_mat, col))
 

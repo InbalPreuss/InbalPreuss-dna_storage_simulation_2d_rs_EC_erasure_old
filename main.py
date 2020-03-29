@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 from oligo_handling import OligoHandling
@@ -54,7 +55,8 @@ def main(config):
                                   subset_size=config['algorithm_config']['subset_size'],
                                   algorithm=algorithm,
                                   k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
-                                  k_mer_to_dna=config['algorithm_config']['k_mer_to_dna'])
+                                  k_mer_to_dna=config['algorithm_config']['k_mer_to_dna'],
+                                  mode=config['mode'])
         synthesizer.synthesize()
 
     # Parsing Fastq data
@@ -95,5 +97,4 @@ def main(config):
 
 if __name__ == "__main__":
     from config import config
-
     main(config)
