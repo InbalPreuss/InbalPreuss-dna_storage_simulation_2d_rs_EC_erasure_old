@@ -1,6 +1,6 @@
 from collections import Counter
 import re
-from typing import Union, Dict
+from typing import Union, Dict, List
 from pathlib import Path
 
 from compoiste_algorithm import CompositeAlgorithm
@@ -53,7 +53,8 @@ class Decoder:
             binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
             self.save_binary(binary=binary, barcode_prev=barcode_prev)
 
-    def dna_to_binary(self, payload_accumulation):
+    def dna_to_binary(self, payload_accumulation: List[str]):
+        payload_accumulation = self.remove_wrong_len_oligos(payload_accumulation)
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
@@ -61,7 +62,7 @@ class Decoder:
         binary = self.unique_payload_to_binary(payload=unique_payload)
         return binary
 
-    def unique_payload_to_binary(self, payload):
+    def unique_payload_to_binary(self, payload: List[str]):
         binary = []
         for z in payload:
             try:
@@ -71,7 +72,14 @@ class Decoder:
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
-    def shrink_payload(self, payload_accumulation):
+    def remove_wrong_len_oligos(self, payload_accumulation: List[str]):
+        _payload_accumulation = []
+        for payload in payload_accumulation:
+            if len(payload) == self.oligo_length:
+                _payload_accumulation.append(payload)
+        return _payload_accumulation
+
+    def shrink_payload(self, payload_accumulation: List[str]):
         """ Note that missing k-mers will be removed from the oligo_accumulation """
         if self.k_mer == 1:
             return payload_accumulation
@@ -89,7 +97,7 @@ class Decoder:
                 k_mer_accumulation.append(k_mer_list)
         return k_mer_accumulation
 
-    def payload_histogram(self, payload):
+    def payload_histogram(self, payload: List[List[str]]):
         hist = []
         for col_idx in range(int(self.oligo_length / self.k_mer)):
             col = [letter[col_idx] for letter in payload]
@@ -97,10 +105,10 @@ class Decoder:
             hist.append(letter_counts)
         return hist
 
-    def error_correction(self, payload):
+    def error_correction(self, payload: List[str]):
         return payload
 
-    def payload_histogram_to_payload(self, payload_histogram):
+    def payload_histogram_to_payload(self, payload_histogram: List[Counter]):
         result_payload = []
         for counter in payload_histogram:
             reps = counter.most_common(self.algorithm.subset_size)

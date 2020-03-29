@@ -13,7 +13,7 @@
 7. The error graph should be logarithmic graph
 8. Remove the exactly 5 bins to distribute the oligos in the synthesis phase - in real life it could be that not all oligos are chosen to In big numbers it probably wouldn't happen). We can cahnge the number of generated oligos to be 100 and not 20.
 9. Make graphs for different number of oligos copies: 20, 100, 1000, 10000. Each graph should use all the M samples
-10. Make graphs for different M: 20, 20, 100. Each graph should use 10000 copies for one oligo.    
+10. Make graphs for different M: 20, 50, 100. Each graph should use 10000 copies for one oligo.    
 11. Make tests for RS
 12. Make RS for 16c3 
 13. Make RS for 16c7
