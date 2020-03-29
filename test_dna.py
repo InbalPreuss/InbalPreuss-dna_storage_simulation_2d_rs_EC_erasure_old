@@ -51,14 +51,16 @@ def test_with_subset_size():
             y = [list(r.values())[0]['dist'] for r in prod0]
             x, y = zip(*sorted(zip(x, y), reverse=True))
 
-            plt.plot(x, y)
-            plt.xlabel('error rate')
-            plt.ylabel('Levenshtein distance')
+            fig, ax = plt.subplots()
+            ax.plot(x, y)
+            ax.set_xlabel('error rate')
+            ax.set_ylabel('Levenshtein distance')
+            ax.set_xscale('log')
             name = f'subset size {size} ' \
                    f'replace {1 if len(triple[0]) > 1 else 0} ' \
                    f'remove {1 if len(triple[1]) > 1 else 0} ' \
                    f'add {1 if len(triple[2]) > 1 else 0}'
-            plt.title(name)
+            ax.title(name)
             plt.savefig(f'data/testing/output/{name}.png')
             fig = plt.gcf()
             plt.close(fig)
