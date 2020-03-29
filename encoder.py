@@ -41,13 +41,13 @@ class Encoder:
     def run(self):
         with open(self.file_name, 'r', encoding='utf-8') as file:
             z_list = []
-            oligo_len_binary = self.oligo_length * self.bits_per_z
+            z_list_len = int(self.oligo_length / self.k_mer)
             for line in file:
                 line = line.strip('\n')
                 for binary_to_transform in wrap(line, self.bits_per_z):
                     z = self.binary_to_z(binary=binary_to_transform)
                     z_list.append(z)
-                    if len(z_list) == int(self.oligo_length / self.k_mer):
+                    if len(z_list) == z_list_len:
                         oligo = self.z_to_oligo(z_list)
                         self.save_oligo(oligo=oligo)
                         z_list = []
