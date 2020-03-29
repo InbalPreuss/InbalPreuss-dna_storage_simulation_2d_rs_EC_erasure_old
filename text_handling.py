@@ -1,7 +1,11 @@
 import os
 from textwrap import wrap
+from random import choice
+from string import ascii_letters
 
 import numpy as np
+
+from config import PathLike
 
 
 class TextFileToBinaryFile:
@@ -49,12 +53,15 @@ class TextFileToBinaryFile:
 
 
 class DecoderResultToBinary:
-    def __init__(self, input_file: str, output_file: str, number_of_barcode_letters: int):
+    def __init__(self, input_file: PathLike,
+                 output_file: PathLike,
+                 number_of_barcode_letters: int) -> None:
+
         self.input_file = input_file
         self.output_file = output_file
         self.number_of_barcode_letters = number_of_barcode_letters
 
-    def run(self):
+    def run(self) -> None:
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             for idx, line in enumerate(input_file):
                 barcode_and_payload = line.strip()
@@ -64,13 +71,17 @@ class DecoderResultToBinary:
 
 
 class BinaryResultToText:
-    def __init__(self, input_file: str, output_file: str, number_of_barcode_letters: int, oligo_len_binary: int):
+    def __init__(self, input_file: PathLike,
+                 output_file: PathLike,
+                 number_of_barcode_letters: int,
+                 oligo_len_binary: int) -> None:
+
         self.input_file = input_file
         self.output_file = output_file
         self.number_of_barcode_letters = number_of_barcode_letters
         self.oligo_len_binary = oligo_len_binary
 
-    def run(self):
+    def run(self) -> None:
         with open(self.input_file, 'r+', encoding='utf-8') as input_file:
             if os.name == 'nt':
                 newline_size = 2
@@ -127,12 +138,17 @@ class BinaryResultToText:
                     pass
 
 
+def generate_random_text_file(size_kb: int, file: PathLike) -> None:
+    text = ''.join(choice(ascii_letters) for i in range(1024*size_kb))
+    with open(file, 'w') as f:
+        f.write(text)
 
-def text_to_bits(text: str, encoding='utf-8', errors='surrogatepass') -> str:
+
+def text_to_bits(text: str, encoding: str = 'utf-8', errors: str = 'surrogatepass') -> str:
     bits = bin(int.from_bytes(text.encode(encoding, errors), 'big'))[2:]
     return bits.zfill(8 * ((len(bits) + 7) // 8))
 
 
-def text_from_bits(bits: str, encoding='utf-8', errors='surrogatepass') -> str:
+def text_from_bits(bits: str, encoding: str = 'utf-8', errors: str ='surrogatepass') -> str:
     n = int(bits, 2)
     return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'
