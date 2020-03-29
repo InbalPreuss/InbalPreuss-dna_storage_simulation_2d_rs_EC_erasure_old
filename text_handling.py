@@ -106,7 +106,7 @@ class BinaryResultToText:
 
                 accumulation += payload
                 stop = False
-                while len(accumulation) >= 32 and stop is False:
+                while len(accumulation) >= utf_chars_sizes[0] and stop is False:
                     for size in utf_chars_sizes:
                         try:
                             bits = accumulation[:size]

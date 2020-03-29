@@ -116,12 +116,12 @@ class Decoder:
             result_payload.append(self.k_mer_representative_to_z[k_mer_rep])
         return result_payload
 
-    def save_binary(self, binary, barcode_prev):
+    def save_binary(self, binary: str, barcode_prev: str):
         with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(barcode_prev + binary + '\n')
 
     @staticmethod
-    def sorted_human(iterable):
+    def sorted_human(iterable: List[str]):
         """ Sort the given iterable in the way that humans expect."""
         convert = lambda text: int(text) if text.isdigit() else text
         alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]

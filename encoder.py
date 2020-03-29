@@ -1,7 +1,7 @@
 import itertools
 from textwrap import wrap
 from collections import Counter
-from typing import Union, Dict
+from typing import Union, Dict, List
 from pathlib import Path
 
 from compoiste_algorithm import CompositeAlgorithm
@@ -56,11 +56,11 @@ class Encoder:
                 oligo = self.z_to_oligo(z_list)
                 self.save_oligo(oligo=oligo)
 
-    def binary_to_z(self, binary):
+    def binary_to_z(self, binary: str):
         binary_tuple = tuple([int(b) for b in binary])
         return self.binary_to_z_dict[binary_tuple]
 
-    def z_to_oligo(self, z_list):
+    def z_to_oligo(self, z_list: List[str]):
         oligo = self.error_correction(payload=z_list)
         barcode = next(self.barcode_generator)
         barcode = self.error_correction(payload=barcode)
@@ -76,10 +76,10 @@ class Encoder:
             except StopIteration:
                 return
 
-    def error_correction(self, payload):
+    def error_correction(self, payload: List[str]):
         return payload
 
-    def save_oligo(self, oligo):
+    def save_oligo(self, oligo: str):
         with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(oligo + '\n')
 
