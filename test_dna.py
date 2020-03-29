@@ -13,7 +13,7 @@ from config import build_config
 from main import main
 
 
-def test_with_subset_size():
+def subset_size_and_error_plot():
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
@@ -27,7 +27,7 @@ def test_with_subset_size():
                                       letter_replace_error_ratio=prod[0],
                                       letter_remove_error_ratio=prod[1],
                                       letter_add_error_ratio=prod[2])
-                dist, input_data, output_data = test_config(config)
+                dist, input_data, output_data = run_pipe_with_config(config)
                 pos = size, *prod
                 print(pos)
                 results[pos] = {'dist': dist, 'input_data': input_data, 'output_data': output_data}
@@ -66,7 +66,38 @@ def test_with_subset_size():
             plt.close(fig)
 
 
-def test_config(config):
+def timing():
+    import time
+    from config import build_config
+    from text_handling import generate_random_text_file
+    config = build_config(input_text_file=pathlib.Path(r'data/testing/random_file_1_KiB.txt'))
+    print('Generating 1 KiB file')
+    generate_random_text_file(size_kb=1, file='data/testing/random_file_1_KiB.txt')
+    t = time.time()
+    print('Running 1 KiB file')
+    main(config)
+    kb_time = time.time() - t
+    print(f"1 KiB took {kb_time} seconds")
+
+    config = build_config(input_text_file=pathlib.Path(r'data/testing/random_file_1_MiB.txt'))
+    print('\nGenerating 1 MiB file')
+    generate_random_text_file(size_kb=16, file='data/testing/random_file_1_MiB.txt')
+    t = time.time()
+    print('Running 1 MiB file')
+    main(config)
+    mb_time = time.time() - t
+    print(f"1 MiB took {mb_time} seconds")
+
+    with open('data/testing/timings.txt', 'w') as f:
+        f.write(f"Timings:\n========\n1 KiB time: {kb_time}\n1 MiB time: {mb_time}\n")
+
+
+def code_profiling():
+    config = build_config(input_text_file=pathlib.Path(r'data/testing/random_file_1_MiB.txt'))
+    main(config)
+
+
+def run_pipe_with_config(config):
     with open('data/testing/input_text.dna', 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
     input_data = input_data.rsplit()
@@ -97,5 +128,7 @@ def test_full_flow():
 
 
 if __name__ == '__main__':
-    test_with_subset_size()
+    code_profiling()
+    # timing()
+    # subset_size_and_error_plot()
     # test_full_flow()
