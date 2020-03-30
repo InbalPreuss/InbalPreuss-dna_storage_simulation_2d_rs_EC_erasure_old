@@ -2,6 +2,11 @@ from reedsolomon import ff16, ff4096, rs
 import itertools
 import string
 
+# max error correction (d-1)/2 errors where d = n-k+1
+# So for d = n-k+1 = 134-120+1 = 15
+# We can fix (15-1)/2 = 7 errors
+# So if we have 134 Z's and we have 127 correct Z's we can reconstruct the original 120 Z's.
+
 
 # BARCODE error correction
 # takes a 12 letter (STD DNA) barcode and returns a 16 letter barcode
@@ -67,7 +72,7 @@ ff4096_rev_trantab = {i:l for l,i in ff4096_trantab.items()}
 # encode!
 # input = a list of 120 letters from Sigma
 # output = a list of 134 letters from Sigma
-def rs4096(payload):
+def rs4096_encode(payload):
     message = payload
     message_int = [ff4096_trantab[l] for l in message]
     codeword = rs4096_coder.encode(message_int)
@@ -78,7 +83,7 @@ def rs4096(payload):
 # input = a list of 134 letters from Sigma
 # output = a list of 120 letters from Sigma
 # We want verify_only = False
-def rs4096_decoder(received, verify_only = True):
+def rs4096_decode(received, verify_only = True):
     received_int = [ff4096_trantab[l] for l in received]
     if rs4096_coder.verify(received_int):
         return received[0:120]

@@ -60,7 +60,7 @@ class GFint(int):
         if a == 0 or b == 0:
             return GFint(0)
         x = GFint.logtable[a]
-        y = GFint.logtable[int(b)]
+        y = GFint.logtable[b]
         z = (x + y) % 15
         return GFint(GFint.exptable[z])
     __rmul__ = __mul__
