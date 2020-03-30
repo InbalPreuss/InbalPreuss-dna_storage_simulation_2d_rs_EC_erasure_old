@@ -3,6 +3,7 @@ import re
 from typing import Union, Dict, List
 from pathlib import Path
 
+from reedsolomon.trimer_RS import rs4096_decode, barcode_rs_decode
 from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
@@ -42,6 +43,7 @@ class Decoder:
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
                 barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
                                                                                          self.number_of_barcode_letters:]
+                barcode = self.error_correction_barcode(barcode=barcode)
                 if self.wrong_len_barcode_and_oligos(barcode=barcode, payload=payload):
                     continue
                 if barcode != barcode_prev:
@@ -60,7 +62,7 @@ class Decoder:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
-        unique_payload = self.error_correction(payload=unique_payload)
+        unique_payload = self.error_correction_payload(payload=unique_payload)
         binary = self.unique_payload_to_binary(payload=unique_payload)
         return binary
 
@@ -103,8 +105,26 @@ class Decoder:
             hist.append(letter_counts)
         return hist
 
-    def error_correction(self, payload: List[str]):
-        return payload
+    def error_correction_payload(self, payload: Union[str, List[str]]) -> List[str]:
+        if isinstance(payload, str):
+            payload = [c for c in payload]
+        try:
+            payload_decoded = rs4096_decode(payload, verify_only=False)
+        except:
+            payload_decoded = payload[:self.oligo_length]
+        return payload_decoded
+
+    def error_correction_barcode(self, barcode: Union[str, List[str]]) -> str:
+        if isinstance(barcode, str):
+            barcode = [c for c in barcode]
+        try:
+            barcode_decoded = barcode_rs_decode(barcode, verify_only=False)
+        except:
+            barcode_decoded = barcode[:self.number_of_barcode_letters]
+
+        if isinstance(barcode_decoded, list):
+            barcode_decoded = ''.join(barcode_decoded)
+        return barcode_decoded
 
     def payload_histogram_to_payload(self, payload_histogram: List[Counter]):
         result_payload = []
