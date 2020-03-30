@@ -56,11 +56,11 @@ def build_config(subset_size: int = 5,
     config = {
         # 'mode': 'prod',
         'mode': 'test',
-        'K_MER': 3,
+        'k_mer': 3,
         'oligo_len_binary': None,
         'shrink_dict': shrink_dict_3_mer,
-        'OLIGO_FILE_NAME': 'Oligo_Input',
-        'FASTQ_FILE_NAME': 'Bible4_sample',
+        'oligo_file_name': 'Oligo_Input',
+        'fastq_file_name': 'Bible4_sample',
         'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
         'input_text_file': input_text_file,
         'binary_file_name': pathlib.Path(r'data/testing/small_data.binary.dna'),
@@ -99,14 +99,14 @@ def build_config(subset_size: int = 5,
     }
 
     if config['mode'] == 'prod':
-        config['NUMBER_OF_BARCODE_LETTERS'] = 16
+        config['number_of_barcode_letters'] = 16
         config['oligo_length'] = 150
     elif config['mode'] == 'test':
-        config['NUMBER_OF_BARCODE_LETTERS'] = 16
+        config['number_of_barcode_letters'] = 16
         config['oligo_length'] = 9
 
     config['oligo_len_binary'] = int(
-        config['oligo_length'] / config['K_MER'] * config['algorithm_config']['bits_per_z'])
+        config['oligo_length'] / config['k_mer'] * config['algorithm_config']['bits_per_z'])
 
     return config
 
