@@ -92,8 +92,11 @@ def timing():
         f.write(f"Timings:\n========\n1 KiB time: {kb_time}\n1 MiB time: {mb_time}\n")
 
 
-def code_profiling():
-    config = build_config(input_text_file=pathlib.Path(r'data/testing/random_file_1_MiB.txt'))
+def code_profiling(size_kb: int = 1):
+    from text_handling import generate_random_text_file
+    file = pathlib.Path(f'data/testing/random_file_{size_kb}_KiB.txt')
+    generate_random_text_file(size_kb=size_kb, file=file)
+    config = build_config(input_text_file=file)
     main(config)
 
 
@@ -128,7 +131,7 @@ def test_full_flow():
 
 
 if __name__ == '__main__':
-    code_profiling()
+    code_profiling(size_kb=1)
     # timing()
     # subset_size_and_error_plot()
     # test_full_flow()

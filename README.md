@@ -30,8 +30,6 @@ python -m cProfile -s time test_dna.py > temp_file && head -n 10 temp_file
 
 ## TODO:
 2. Make RS for each oligo
-4. Run KB Data and measure the time
-5. Run MB Data and measure the time
 6. After synthesising the DNA we should 
     1) Shuffle the data and then use the sort algorithm to sort the oligo according the barcode
     2) Take M(= density of the sequencing) samples each time for the reading   
@@ -39,6 +37,12 @@ python -m cProfile -s time test_dna.py > temp_file && head -n 10 temp_file
 10. Make graphs for different number of oligos copies: 20, 100, 1000, 10000. Each graph should use all the M samples
 10. Make graphs for different M: 20, 50, 100. Each graph should use 10000 copies for one oligo.    
 11. Make tests for RS
+
+
+## Inbal:
+
+4. Run KB Data and measure the time
+5. Run MB Data and measure the time
 
 ## Future:
 
