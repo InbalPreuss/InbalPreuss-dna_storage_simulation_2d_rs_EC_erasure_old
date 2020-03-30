@@ -62,7 +62,7 @@ class Decoder:
             binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
             self.save_binary(binary=binary, barcode_prev=barcode_prev)
 
-    def dna_to_binary(self, payload_accumulation: List[str]):
+    def dna_to_binary(self, payload_accumulation: List[str]) -> str:
         # payload_accumulation = self.remove_wrong_len_oligos(payload_accumulation)
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
@@ -71,7 +71,7 @@ class Decoder:
         binary = self.unique_payload_to_binary(payload=unique_payload)
         return binary
 
-    def unique_payload_to_binary(self, payload: List[str]):
+    def unique_payload_to_binary(self, payload: List[str]) -> str:
         binary = []
         for z in payload:
             try:
@@ -81,10 +81,10 @@ class Decoder:
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
-    def wrong_len_barcode_and_oligos(self, barcode: str, payload: str):
+    def wrong_len_barcode_and_oligos(self, barcode: str, payload: str) -> bool:
         return len(barcode) + len(payload) != self.barcode_len + self.payload_total_len
 
-    def shrink_payload(self, payload_accumulation: List[str]):
+    def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
         """ Note that missing k-mers will be removed from the oligo_accumulation """
         if self.k_mer == 1:
             return payload_accumulation
@@ -102,7 +102,7 @@ class Decoder:
                 k_mer_accumulation.append(k_mer_list)
         return k_mer_accumulation
 
-    def payload_histogram(self, payload: List[List[str]]):
+    def payload_histogram(self, payload: List[List[str]]) -> List[Counter]:
         hist = []
         for col_idx in range(int(self.payload_total_len / self.k_mer)):
             col = [letter[col_idx] for letter in payload]
@@ -131,7 +131,7 @@ class Decoder:
             barcode_decoded = ''.join(barcode_decoded)
         return barcode_decoded
 
-    def payload_histogram_to_payload(self, payload_histogram: List[Counter]):
+    def payload_histogram_to_payload(self, payload_histogram: List[Counter]) -> List[str]:
         result_payload = []
         for counter in payload_histogram:
             reps = counter.most_common(self.algorithm.subset_size)
@@ -141,12 +141,12 @@ class Decoder:
             result_payload.append(self.k_mer_representative_to_z[k_mer_rep])
         return result_payload
 
-    def save_binary(self, binary: str, barcode_prev: str):
+    def save_binary(self, binary: str, barcode_prev: str) -> None:
         with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(barcode_prev + binary + '\n')
 
     @staticmethod
-    def sorted_human(iterable: List[str]):
+    def sorted_human(iterable: List[str]) -> List[str]:
         """ Sort the given iterable in the way that humans expect."""
         convert = lambda text: int(text) if text.isdigit() else text
         alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]

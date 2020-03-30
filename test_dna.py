@@ -13,7 +13,13 @@ from config import build_config
 from main import main
 
 
-def subset_size_and_error_plot():
+def test_number_of_oligos_per_barcode():
+    for number_of_oligos_per_barcode in [20, 100, 1000, 10000]:
+        subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode)
+
+
+def subset_size_and_error_plot(number_of_oligos_per_barcode):
+    plt.ion()
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
@@ -56,11 +62,12 @@ def subset_size_and_error_plot():
             ax.set_xlabel('error rate')
             ax.set_ylabel('Levenshtein distance')
             ax.set_xscale('log')
-            name = f'subset size {size} ' \
-                   f'replace {1 if len(triple[0]) > 1 else 0} ' \
-                   f'remove {1 if len(triple[1]) > 1 else 0} ' \
-                   f'add {1 if len(triple[2]) > 1 else 0}'
-            ax.title(name)
+            name = f'[ subset size {size} ]' \
+                   f'[ number of oligos created {number_of_oligos_per_barcode} ]\n' \
+                   f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
+                   f'[ remove {1 if len(triple[1]) > 1 else 0} ]' \
+                   f'[ add {1 if len(triple[2]) > 1 else 0} ]'
+            ax.set_title(name)
             plt.savefig(f'data/testing/output/{name}.png')
             fig = plt.gcf()
             plt.close(fig)
@@ -131,7 +138,8 @@ def test_full_flow():
 
 
 if __name__ == '__main__':
-    code_profiling(size_kb=1)
+    test_number_of_oligos_per_barcode()
+    # code_profiling(size_kb=1)
     # timing()
     # subset_size_and_error_plot()
     # test_full_flow()
