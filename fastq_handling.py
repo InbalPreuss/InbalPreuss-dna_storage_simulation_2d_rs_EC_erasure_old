@@ -36,10 +36,10 @@ class FastqHandling:
 
     #################################################################
     # @ Function: __init__
-    # @ Input: number_of_barcode_letters, oligo_length, file_name
+    # @ Input: barcode_len, payload_len, file_name
     # @ Description: init class FastqHandling
     #################################################################
-    def __init__(self, number_of_barcode_letters: int, oligo_length: int, file_name: str):
+    def __init__(self, barcode_len: int, payload_len: int, file_name: str):
         fastq_input_file_name = pathlib.Path(r'data/input/' + file_name + '.fastq')
 
         if fastq_input_file_name.exists() == 0:
@@ -50,8 +50,8 @@ class FastqHandling:
         self.file_extension = fastq_input_file_name.suffix
         self.file_full_name_set_ids_output = "data/fastq_output/" + file_name + "_set_ids.txt"
         self.file_full_name_sorted_output = "data/fastq_output/" + file_name + "_sorted.dna"
-        self.number_of_barcode_letters = number_of_barcode_letters
-        self.oligo_length = oligo_length
+        self.barcode_len = barcode_len
+        self.payload_len = payload_len
 
     #################################################################
     # @ Function: set_oligo_id
@@ -91,7 +91,7 @@ class FastqHandling:
         for line in file_name_set_ids:
             # line = id, seq
             id_and_seq = line.split()
-            id_by_barcode_list.append([id_and_seq[0], id_and_seq[1][:self.number_of_barcode_letters]])
+            id_by_barcode_list.append([id_and_seq[0], id_and_seq[1][:self.barcode_len]])
 
         # Sort ids by Oligo barcode
         sorted_oligo_by_barcode = sorted(id_by_barcode_list, key=lambda x: x[1])
@@ -100,8 +100,8 @@ class FastqHandling:
         # We do not want to read every time the entire lines to get to the specific line that we want,
         # therefore we calculate the location of the line and jump to that location
         for seq_id, barcode in sorted_oligo_by_barcode:
-            # line_offset = prev_line_number * (oligo_length + space + new_line) + seq_id_offset + prev_line_number
-            line_offset = (int(seq_id) - 1) * (self.oligo_length + 1 + 1) + get_seq_id_offset(int(seq_id)) + (
+            # line_offset = prev_line_number * (payload_len + space + new_line) + seq_id_offset + prev_line_number
+            line_offset = (int(seq_id) - 1) * (self.payload_len + 1 + 1) + get_seq_id_offset(int(seq_id)) + (
                     int(seq_id) - 1)
 
             # Jumps to the Oligo line and writes the line to the file

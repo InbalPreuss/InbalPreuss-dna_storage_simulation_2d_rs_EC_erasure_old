@@ -12,7 +12,7 @@ class Synthesizer:
     def __init__(self, input_file: Union[Path, str],
                  results_file: Union[Path, str],
                  synthesis_config: Dict,
-                 number_of_barcode_letters: int,
+                 barcode_total_len: int,
                  subset_size: int,
                  algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
                  k_mer_representative_to_z: Dict,
@@ -22,7 +22,7 @@ class Synthesizer:
         self.results_file = results_file
         open(self.results_file, 'w').close()
         self.synthesis_config = synthesis_config
-        self.number_of_barcode_letters = number_of_barcode_letters
+        self.barcode_total_len = barcode_total_len
         self.subset_size = subset_size
         self.algorithm = algorithm
         self.k_mer_representative_to_z = k_mer_representative_to_z
@@ -40,7 +40,7 @@ class Synthesizer:
                 x_list = self.get_x_list(payload=payload)
                 number_of_nuc = random.randint(self.synthesis_config['number_of_oligos_per_barcode'] * 0.7,
                                                self.synthesis_config['number_of_oligos_per_barcode'] * 1.3)
-                x_mat = np.empty([number_of_nuc, self.number_of_barcode_letters], dtype=np.dtype(('U', 5)))
+                x_mat = np.empty([number_of_nuc, self.barcode_total_len], dtype=np.dtype(('U', 5)))
                 x_mat[:] = np.array(tuple(barcode))
                 for idx, x_tuple in enumerate(x_list, 1):
                     vec = np.random.choice(x_tuple, size=(number_of_nuc,))

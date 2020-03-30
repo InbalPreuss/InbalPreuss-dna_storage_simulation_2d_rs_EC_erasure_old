@@ -1,9 +1,10 @@
 import itertools
 from textwrap import wrap
 from collections import Counter
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Tuple
 from pathlib import Path
 
+from reedsolomon.trimer_RS import rs4096_encode, barcode_rs_encode
 from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
@@ -13,9 +14,14 @@ from k_mer_algorithm import KMerAlgorithm
 # @ Description: Retrieve the oligo to the oligo that was written
 #                in originally
 #################################################################
+
+
+
 class Encoder:
-    def __init__(self, number_of_barcode_letters: int,
-                 oligo_length: int,
+    def __init__(self, barcode_len: int,
+                 barcode_rs_len: int,
+                 payload_len: int,
+                 payload_rs_len: int,
                  binary_file_name: str,
                  algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
                  shrink_dict: Dict,
@@ -26,8 +32,10 @@ class Encoder:
                  results_file: Union[Path, str],
                  ):
         self.file_name = binary_file_name
-        self.number_of_barcode_letters = number_of_barcode_letters
-        self.oligo_length = oligo_length
+        self.barcode_len = barcode_len
+        self.barcode_rs_len = barcode_rs_len
+        self.payload_len = payload_len
+        self.payload_rs_len = payload_rs_len
         self.algorithm = algorithm
         self.shrink_dict = shrink_dict
         self.k_mer = k_mer
@@ -41,7 +49,7 @@ class Encoder:
     def run(self):
         with open(self.file_name, 'r', encoding='utf-8') as file:
             z_list = []
-            z_list_len = int(self.oligo_length / self.k_mer)
+            z_list_len = int(self.payload_len / self.k_mer)
             for line in file:
                 line = line.strip('\n')
                 for binary_to_transform in wrap(line, self.bits_per_z):
@@ -61,23 +69,39 @@ class Encoder:
         return self.binary_to_z_dict[binary_tuple]
 
     def z_to_oligo(self, z_list: List[str]):
-        oligo = self.error_correction(payload=z_list)
+        oligo = self.add_payload_rs_symbols_for_error_correction(payload=z_list)
         barcode = next(self.barcode_generator)
-        barcode = self.error_correction(payload=barcode)
+        barcode = self.add_barcode_rs_symbols_for_error_correction(barcode=barcode)
         barcode = "".join(barcode)
         oligo.insert(0, barcode)
         return ",".join(oligo)
 
     def get_barcode_generator(self):
-        barcodes = itertools.product(['A', 'C', 'G', 'T'], repeat=self.number_of_barcode_letters)
+        barcodes = itertools.product(['A', 'C', 'G', 'T'], repeat=self.barcode_len)
         while True:
             try:
                 yield next(barcodes)
             except StopIteration:
                 return
 
-    def error_correction(self, payload: List[str]):
-        return payload
+    def add_payload_rs_symbols_for_error_correction(self, payload: Union[str, List[str]]) -> List[str]:
+        if isinstance(payload, str):
+            payload = [c for c in payload]
+        try:
+            payload_encoded = rs4096_encode(payload)
+        except:
+            payload_encoded = payload + ['Z1' for i in range(int(self.payload_rs_len / self.k_mer))]
+            # TODO: check possible failure reasons
+        return payload_encoded
+
+    def add_barcode_rs_symbols_for_error_correction(self, barcode: Tuple[str]) -> List[str]:
+        barcode = list(barcode)
+        try:
+            barcode_encoded = barcode_rs_encode(barcode)
+        except:
+            barcode_encoded = barcode + ['A' for i in range(self.barcode_rs_len)]
+
+        return barcode_encoded
 
     def save_oligo(self, oligo: str):
         with open(self.results_file, 'a+', encoding='utf-8') as f:

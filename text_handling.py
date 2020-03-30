@@ -9,16 +9,16 @@ from config import PathLike
 
 
 class TextFileToBinaryFile:
-    def __init__(self, input_file: str, output_file: str, oligo_length: int, bits_per_z: int, k_mer: int):
+    def __init__(self, input_file: str, output_file: str, payload_len: int, bits_per_z: int, k_mer: int):
         self.input_file = input_file
         self.output_file = output_file
-        self.oligo_length = oligo_length
+        self.payload_len = payload_len
         self.bits_per_z = bits_per_z
         self.k_mer = k_mer
 
     def run(self):
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
-            oligo_len_binary = int(self.oligo_length / self.k_mer * self.bits_per_z)
+            oligo_len_binary = int(self.payload_len / self.k_mer * self.bits_per_z)
             accumulation = ''
             for line in input_file:
                 text_data = line
@@ -40,7 +40,7 @@ class TextFileToBinaryFile:
             output_file.write(z_fill_text + '\n')
 
     def transform_text_to_binary_string(self, binary_data: str):
-        oligo_len_binary = int(self.oligo_length / self.k_mer * self.bits_per_z)
+        oligo_len_binary = int(self.payload_len / self.k_mer * self.bits_per_z)
         binary_data_len = len(binary_data)
 
         number_of_binary_oligos = np.ceil(binary_data_len / oligo_len_binary)
@@ -55,30 +55,30 @@ class TextFileToBinaryFile:
 class DecoderResultToBinary:
     def __init__(self, input_file: PathLike,
                  output_file: PathLike,
-                 number_of_barcode_letters: int) -> None:
+                 barcode_len: int) -> None:
 
         self.input_file = input_file
         self.output_file = output_file
-        self.number_of_barcode_letters = number_of_barcode_letters
+        self.barcode_len = barcode_len
 
     def run(self) -> None:
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             for idx, line in enumerate(input_file):
                 barcode_and_payload = line.strip()
-                barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
-                                                        self.number_of_barcode_letters:]
+                barcode, payload = barcode_and_payload[:self.barcode_len], barcode_and_payload[
+                                                        self.barcode_len:]
                 output_file.write(payload + '\n')
 
 
 class BinaryResultToText:
     def __init__(self, input_file: PathLike,
                  output_file: PathLike,
-                 number_of_barcode_letters: int,
+                 barcode_len: int,
                  oligo_len_binary: int) -> None:
 
         self.input_file = input_file
         self.output_file = output_file
-        self.number_of_barcode_letters = number_of_barcode_letters
+        self.barcode_len = barcode_len
         self.oligo_len_binary = oligo_len_binary
 
     def run(self) -> None:

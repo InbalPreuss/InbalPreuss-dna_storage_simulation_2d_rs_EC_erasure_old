@@ -99,14 +99,21 @@ def build_config(subset_size: int = 5,
     }
 
     if config['mode'] == 'prod':
-        config['number_of_barcode_letters'] = 16
-        config['oligo_length'] = 150
+        config['barcode_len'] = 12
+        config['barcode_rs_len'] = 4
+        config['payload_len'] = 120
+        config['payload_rs_len'] = 14
     elif config['mode'] == 'test':
-        config['number_of_barcode_letters'] = 16
-        config['oligo_length'] = 9
+        config['barcode_len'] = 12
+        config['barcode_rs_len'] = 4
+        config['payload_len'] = 9
+        config['payload_rs_len'] = 3*3
+    
+    config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']
+    config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']
 
     config['oligo_len_binary'] = int(
-        config['oligo_length'] / config['k_mer'] * config['algorithm_config']['bits_per_z'])
+        config['payload_len'] / config['k_mer'] * config['algorithm_config']['bits_per_z'])
 
     return config
 

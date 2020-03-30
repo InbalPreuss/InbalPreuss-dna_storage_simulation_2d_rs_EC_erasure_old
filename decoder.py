@@ -14,8 +14,10 @@ from k_mer_algorithm import KMerAlgorithm
 #                in originally
 #################################################################
 class Decoder:
-    def __init__(self, number_of_barcode_letters: int,
-                 oligo_length: int,
+    def __init__(self, barcode_len: int,
+                 barcode_total_len: int,
+                 payload_len: int,
+                 payload_total_len: int,
                  input_file: str,
                  algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
                  shrink_dict: Dict,
@@ -25,8 +27,10 @@ class Decoder:
                  results_file: Union[Path, str],
                  ):
         self.input_file = input_file
-        self.number_of_barcode_letters = number_of_barcode_letters
-        self.oligo_length = oligo_length
+        self.barcode_len = barcode_len
+        self.barcode_total_len = barcode_total_len
+        self.payload_len = payload_len
+        self.payload_total_len = payload_total_len
         self.algorithm = algorithm
         self.shrink_dict = shrink_dict
         self.k_mer = k_mer
@@ -41,8 +45,9 @@ class Decoder:
         with open(self.input_file, 'r', encoding='utf-8') as file:
             for line in file:
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
-                barcode, payload = barcode_and_payload[:self.number_of_barcode_letters], barcode_and_payload[
-                                                                                         self.number_of_barcode_letters:]
+                barcode = barcode_and_payload[:self.barcode_total_len]
+                payload = barcode_and_payload[self.barcode_total_len:]
+
                 barcode = self.error_correction_barcode(barcode=barcode)
                 if self.wrong_len_barcode_and_oligos(barcode=barcode, payload=payload):
                     continue
@@ -77,7 +82,7 @@ class Decoder:
         return "".join(binary)
 
     def wrong_len_barcode_and_oligos(self, barcode: str, payload: str):
-        return len(barcode) + len(payload) != self.number_of_barcode_letters + self.oligo_length
+        return len(barcode) + len(payload) != self.barcode_len + self.payload_total_len
 
     def shrink_payload(self, payload_accumulation: List[str]):
         """ Note that missing k-mers will be removed from the oligo_accumulation """
@@ -87,7 +92,7 @@ class Decoder:
         for payload in payload_accumulation:
             k_mer_list = []
             oligo_valid = True
-            for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.oligo_length, self.k_mer)]:
+            for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.payload_total_len, self.k_mer)]:
                 try:
                     k_mer_list.append(self.shrink_dict[k_letters])
                 except KeyError:
@@ -99,7 +104,7 @@ class Decoder:
 
     def payload_histogram(self, payload: List[List[str]]):
         hist = []
-        for col_idx in range(int(self.oligo_length / self.k_mer)):
+        for col_idx in range(int(self.payload_total_len / self.k_mer)):
             col = [letter[col_idx] for letter in payload]
             letter_counts = Counter(col)
             hist.append(letter_counts)
@@ -111,7 +116,7 @@ class Decoder:
         try:
             payload_decoded = rs4096_decode(payload, verify_only=False)
         except:
-            payload_decoded = payload[:self.oligo_length]
+            payload_decoded = payload[:int(self.payload_len / self.k_mer)]
         return payload_decoded
 
     def error_correction_barcode(self, barcode: Union[str, List[str]]) -> str:
@@ -120,7 +125,7 @@ class Decoder:
         try:
             barcode_decoded = barcode_rs_decode(barcode, verify_only=False)
         except:
-            barcode_decoded = barcode[:self.number_of_barcode_letters]
+            barcode_decoded = barcode[:self.barcode_len]
 
         if isinstance(barcode_decoded, list):
             barcode_decoded = ''.join(barcode_decoded)
