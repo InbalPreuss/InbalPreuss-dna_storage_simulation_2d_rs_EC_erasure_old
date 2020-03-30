@@ -56,11 +56,11 @@ class Encoder:
                 oligo = self.z_to_oligo(z_list)
                 self.save_oligo(oligo=oligo)
 
-    def binary_to_z(self, binary: str):
+    def binary_to_z(self, binary: str) -> str:
         binary_tuple = tuple([int(b) for b in binary])
         return self.binary_to_z_dict[binary_tuple]
 
-    def z_to_oligo(self, z_list: List[str]):
+    def z_to_oligo(self, z_list: List[str]) -> str:
         oligo = self.error_correction(payload=z_list)
         barcode = next(self.barcode_generator)
         barcode = self.error_correction(payload=barcode)
@@ -76,10 +76,10 @@ class Encoder:
             except StopIteration:
                 return
 
-    def error_correction(self, payload: List[str]):
+    def error_correction(self, payload: List[str]) -> List[str]:
         return payload
 
-    def save_oligo(self, oligo: str):
+    def save_oligo(self, oligo: str) -> None:
         with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(oligo + '\n')
 
