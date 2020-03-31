@@ -49,7 +49,7 @@ class Encoder:
     def run(self):
         with open(self.file_name, 'r', encoding='utf-8') as file:
             z_list = []
-            z_list_len = int(self.payload_len / self.k_mer)
+            z_list_len = int(self.payload_len)
             for line in file:
                 line = line.strip('\n')
                 for binary_to_transform in wrap(line, self.bits_per_z):
@@ -90,7 +90,7 @@ class Encoder:
         try:
             payload_encoded = rs4096_encode(payload)
         except:
-            payload_encoded = payload + ['Z1' for i in range(int(self.payload_rs_len / self.k_mer))]
+            payload_encoded = payload + ['Z1'] * self.payload_rs_len
             # TODO: check possible failure reasons
         return payload_encoded
 
@@ -99,7 +99,7 @@ class Encoder:
         try:
             barcode_encoded = barcode_rs_encode(barcode)
         except:
-            barcode_encoded = barcode + ['A' for i in range(self.barcode_rs_len)]
+            barcode_encoded = barcode + ['A'] * self.barcode_rs_len
 
         return barcode_encoded
 

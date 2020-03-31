@@ -18,7 +18,7 @@ class TextFileToBinaryFile:
 
     def run(self):
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
-            oligo_len_binary = int(self.payload_len / self.k_mer * self.bits_per_z)
+            oligo_len_binary = int(self.payload_len * self.bits_per_z)
             accumulation = ''
             for line in input_file:
                 text_data = line
@@ -40,7 +40,7 @@ class TextFileToBinaryFile:
             output_file.write(z_fill_text + '\n')
 
     def transform_text_to_binary_string(self, binary_data: str):
-        oligo_len_binary = int(self.payload_len / self.k_mer * self.bits_per_z)
+        oligo_len_binary = int(self.payload_len * self.bits_per_z)
         binary_data_len = len(binary_data)
 
         number_of_binary_oligos = np.ceil(binary_data_len / oligo_len_binary)

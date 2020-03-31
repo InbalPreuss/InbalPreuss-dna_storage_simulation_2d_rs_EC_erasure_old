@@ -63,7 +63,6 @@ class Decoder:
             self.save_binary(binary=binary, barcode_prev=barcode_prev)
 
     def dna_to_binary(self, payload_accumulation: List[str]) -> str:
-        # payload_accumulation = self.remove_wrong_len_oligos(payload_accumulation)
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
@@ -82,7 +81,7 @@ class Decoder:
         return "".join(binary)
 
     def wrong_len_barcode_and_oligos(self, barcode: str, payload: str) -> bool:
-        return len(barcode) + len(payload) != self.barcode_len + self.payload_total_len
+        return len(barcode) + int(len(payload) / self.k_mer) != self.barcode_len + self.payload_total_len
 
     def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
         """ Note that missing k-mers will be removed from the oligo_accumulation """
@@ -92,7 +91,7 @@ class Decoder:
         for payload in payload_accumulation:
             k_mer_list = []
             oligo_valid = True
-            for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.payload_total_len, self.k_mer)]:
+            for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.payload_total_len * self.k_mer, self.k_mer)]:
                 try:
                     k_mer_list.append(self.shrink_dict[k_letters])
                 except KeyError:
@@ -104,7 +103,7 @@ class Decoder:
 
     def payload_histogram(self, payload: List[List[str]]) -> List[Counter]:
         hist = []
-        for col_idx in range(int(self.payload_total_len / self.k_mer)):
+        for col_idx in range(self.payload_total_len):
             col = [letter[col_idx] for letter in payload]
             letter_counts = Counter(col)
             hist.append(letter_counts)
@@ -116,7 +115,7 @@ class Decoder:
         try:
             payload_decoded = rs4096_decode(payload, verify_only=False)
         except:
-            payload_decoded = payload[:int(self.payload_len / self.k_mer)]
+            payload_decoded = payload[:self.payload_len]
         return payload_decoded
 
     def error_correction_barcode(self, barcode: Union[str, List[str]]) -> str:

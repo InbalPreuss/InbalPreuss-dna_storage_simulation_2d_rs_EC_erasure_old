@@ -55,8 +55,8 @@ def build_config(subset_size: int = 5,
     k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
     config = {
-        # 'mode': 'prod',
-        'mode': 'test',
+        'mode': 'prod',
+        # 'mode': 'test',
         'k_mer': 3,
         'oligo_len_binary': None,
         'shrink_dict': shrink_dict_3_mer,
@@ -100,18 +100,18 @@ def build_config(subset_size: int = 5,
     }
 
     if config['mode'] == 'prod':
-        config['barcode_len'] = 12
-        config['barcode_rs_len'] = 4
-        config['payload_len'] = 120
-        config['payload_rs_len'] = 14
+        config['barcode_len'] = 12  # in ACGT
+        config['barcode_rs_len'] = 4  # in ACGT
+        config['payload_len'] = 120  # in Z
+        config['payload_rs_len'] = 14  # in Z
     elif config['mode'] == 'test':
-        config['barcode_len'] = 12
-        config['barcode_rs_len'] = 4
-        config['payload_len'] = 9
-        config['payload_rs_len'] = 3*3
+        config['barcode_len'] = 12  # in ACGT
+        config['barcode_rs_len'] = 4  # in ACGT
+        config['payload_len'] = 9  # in Z
+        config['payload_rs_len'] = 3*3  # in Z
     
-    config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']
-    config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']
+    config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
+    config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z
 
     config['oligo_len_binary'] = int(
         config['payload_len'] / config['k_mer'] * config['algorithm_config']['bits_per_z'])
