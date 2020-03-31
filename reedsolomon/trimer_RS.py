@@ -12,7 +12,7 @@ import string
 # takes a 12 letter (STD DNA) barcode and returns a 16 letter barcode
 # We use GF(16) since RS is limited to n<|GF|. We want n>4 so we use GF(4^2) - every pair of bases are a field element.
 # Translate pairs of letters ('AA','AC',...'TG','TT') to integers (0,1,...,14,15)
-ff16_trantab = {''.join(vv): i for i, vv in enumerate(itertools.product('ACGT','ACGT'))}
+ff16_trantab = {''.join(vv): i for i, vv in enumerate(itertools.product('ACGT', 'ACGT'))}
 ff16_rev_trantab = {i: vv for vv, i in ff16_trantab.items()}
 
 # RS coder using GF(16) with input message u is a 6 letters (12 DNA letters, every 2 letters = 1 letter for the encoding) and output codeword c is an 8 letters (16 DNA letters)

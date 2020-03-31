@@ -475,7 +475,7 @@ class GF4096int(int):
         e = GF4096int.logtable[self]
         return GF4096int(GF4096int.exptable[4095 - e])
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         return self * GF4096int(other).inverse()
     def __rdiv__(self, other):
         return self.inverse() * other

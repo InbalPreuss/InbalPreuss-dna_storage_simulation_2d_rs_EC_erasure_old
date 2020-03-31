@@ -5,6 +5,7 @@ def int2base2(x):
     assert x < 16
     return [(x % 2 ** (4 - i)) // 2 ** (3 - i) for i in range(4)]
 
+
 def base2toint(x):
     assert len(x) == 4
     assert all(xx<2 for xx in x)
@@ -76,7 +77,7 @@ class GFint(int):
         e = GFint.logtable[self]
         return GFint(GFint.exptable[15 - e])
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         return self * GFint(other).inverse()
     def __rdiv__(self, other):
         return self.inverse() * other
