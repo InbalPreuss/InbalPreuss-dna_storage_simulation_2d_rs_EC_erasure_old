@@ -74,14 +74,17 @@ class BinaryResultToText:
     def __init__(self, input_file: PathLike,
                  output_file: PathLike,
                  barcode_len: int,
-                 oligo_len_binary: int) -> None:
+                 payload_len: int,
+                 bits_per_z: int) -> None:
 
         self.input_file = input_file
         self.output_file = output_file
         self.barcode_len = barcode_len
-        self.oligo_len_binary = oligo_len_binary
+        self.payload_len = payload_len
+        self.bits_per_z = bits_per_z
 
     def run(self) -> None:
+        oligo_len_binary = int(self.payload_len * self.bits_per_z)
         with open(self.input_file, 'r+', encoding='utf-8') as input_file:
             if os.name == 'nt':
                 newline_size = 2
@@ -90,7 +93,7 @@ class BinaryResultToText:
             failed_on_seek = False
             try:
                 input_file.seek(0, os.SEEK_END)
-                input_file.seek(input_file.tell() - self.oligo_len_binary - 1*newline_size, os.SEEK_SET)
+                input_file.seek(input_file.tell() - oligo_len_binary - 1*newline_size, os.SEEK_SET)
             except ValueError:
                 input_file.seek(0)
                 failed_on_seek = True
@@ -102,7 +105,7 @@ class BinaryResultToText:
                         try:
                             z_fill = int(payload, 2)
                             input_file.seek(0, os.SEEK_END)
-                            input_file.seek(input_file.tell() - z_fill - self.oligo_len_binary - 2*newline_size, os.SEEK_SET)
+                            input_file.seek(input_file.tell() - z_fill - oligo_len_binary - 2*newline_size, os.SEEK_SET)
                             input_file.truncate()
                         except ValueError:
                             pass

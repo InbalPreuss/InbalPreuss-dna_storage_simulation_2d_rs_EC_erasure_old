@@ -7,6 +7,7 @@ from text_handling import TextFileToBinaryFile, DecoderResultToBinary, BinaryRes
 from decoder import Decoder
 from encoder import Encoder
 from mock_synthesizer import Synthesizer
+from shuffle import shuffle, sort_oligo_file
 
 
 # User parameters: barcode, Oligo file name, Fastq file name
@@ -61,6 +62,21 @@ def main(config):
                                   mode=config['mode'])
         synthesizer.synthesize()
 
+    # Shuffling the sorted sythesis results
+    if config['do_shuffle']:
+
+        shuffle(shuffle_db_file=config['shuffle_db_file'],
+                input_file=config['synthesis_results_file'],
+                output_file=config['shuffle_results_file'])
+
+    # Sorting the shuffled sythesis results
+    if config['do_sort_oligo_file']:
+        sort_oligo_file(barcode_len=config['barcode_len'],
+                        barcode_rs_len=config['barcode_rs_len'],
+                        sort_db_file=config['sort_oligo_db_file'],
+                        input_file=config['shuffle_results_file'],
+                        output_file=config['sort_oligo_results_file'])
+
     # Parsing Fastq data
     if config['do_fastq_handling']:
         file_name_sorted = FastqHandling(barcode_len=config['barcode_len'],
@@ -76,7 +92,7 @@ def main(config):
                           barcode_total_len=config['barcode_total_len'],
                           payload_len=config['payload_len'],
                           payload_total_len=config['payload_total_len'],
-                          input_file=config['synthesis_results_file'],
+                          input_file=config['sort_oligo_results_file'],
                           algorithm=algorithm,
                           shrink_dict=shrink_dict,
                           k_mer=config['k_mer'],
@@ -95,7 +111,8 @@ def main(config):
         binary_results_to_text = BinaryResultToText(input_file=config['binary_results_file'],
                                                     output_file=config['text_results_file'],
                                                     barcode_len=config['barcode_len'],
-                                                    oligo_len_binary=config['oligo_len_binary'])
+                                                    payload_len=config['payload_len'],
+                                                    bits_per_z=config['algorithm_config']['bits_per_z'])
         binary_results_to_text.run()
 
 

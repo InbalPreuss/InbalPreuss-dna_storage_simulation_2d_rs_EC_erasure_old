@@ -17,6 +17,7 @@ def build_config(subset_size: int = 5,
                  output_dir: PathLike = pathlib.Path(r'data/testing/output')):
 
     pathlib.Path('data/testing').mkdir(parents=True, exist_ok=True)
+    pathlib.Path('data/testing/temp').mkdir(parents=True, exist_ok=True)
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     shrink_dict_3_mer = {'AAT': 'X1',
@@ -58,25 +59,32 @@ def build_config(subset_size: int = 5,
         'mode': 'prod',
         # 'mode': 'test',
         'k_mer': 3,
-        'oligo_len_binary': None,
         'shrink_dict': shrink_dict_3_mer,
         'oligo_file_name': 'Oligo_Input',
         'fastq_file_name': 'Bible4_sample',
         'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
         'input_text_file': input_text_file,
-        'binary_file_name': pathlib.Path(r'data/testing/small_data.binary.dna'),
+        'binary_file_name': pathlib.Path(r'data/testing/simulation_data.binary.dna'),
         'encoder_results_file': pathlib.Path(
-            r'data/testing/small_data_binary.encoder_results_file.dna'),
+            r'data/testing/simulation_data.encoder_results_file.dna'),
         'synthesis_results_file': pathlib.Path(
-            r'data/testing/small_data_binary.synthesis_results_file.dna'),
+            r'data/testing/simulation_data.synthesis_results_file.dna'),
+        'shuffle_db_file': pathlib.Path(r'data/testing/temp_shuffle_db'),
+        'shuffle_results_file': pathlib.Path(
+            r'data/testing/simulation_data.shuffle_results_file.dna'),
+        'sort_oligo_db_file': pathlib.Path(r'data/testing/temp_sort_oligo_db'),
+        'sort_oligo_results_file': pathlib.Path(
+            r'data/testing/simulation_data.sort_oligo_results_file.dna'),
         'decoder_results_file': pathlib.Path(
-            r'data/testing/small_data_binary.decoder_results_file.dna'),
-        'binary_results_file': pathlib.Path(r'data/testing/small_data.binary_results_file.dna'),
-        'text_results_file': pathlib.Path(r'data/testing/small_data.text_results_file.dna'),
+            r'data/testing/simulation_data.decoder_results_file.dna'),
+        'binary_results_file': pathlib.Path(r'data/testing/simulation_data.binary_results_file.dna'),
+        'text_results_file': pathlib.Path(r'data/testing/simulation_data.text_results_file.dna'),
         'do_oligo_handling': False,
         'write_text_to_binary': True,
         'do_encode': True,
         'do_synthesize': True,
+        'do_shuffle': True,
+        'do_sort_oligo_file': True,
         'do_fastq_handling': False,
         'do_decode': True,
         'decoder_results_to_binary': True,
@@ -112,9 +120,6 @@ def build_config(subset_size: int = 5,
     
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z
-
-    config['oligo_len_binary'] = int(
-        config['payload_len'] / config['k_mer'] * config['algorithm_config']['bits_per_z'])
 
     return config
 
