@@ -32,7 +32,8 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode):
                                       bits_per_z=bits_per_z,
                                       letter_replace_error_ratio=prod[0],
                                       letter_remove_error_ratio=prod[1],
-                                      letter_add_error_ratio=prod[2])
+                                      letter_add_error_ratio=prod[2],
+                                      number_of_oligos_per_barcode=number_of_oligos_per_barcode)
                 dist, input_data, output_data = run_pipe_with_config(config)
                 pos = size, *prod
                 print(pos)
