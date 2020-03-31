@@ -60,10 +60,13 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20):
             x, y = zip(*sorted(zip(x, y), reverse=True))
 
             fig, ax = plt.subplots()
-            ax.scatter(x, y)
+            ax.plot(x, y, marker='o', linestyle='-')
             ax.set_xlabel('error rate')
             ax.set_ylabel('Levenshtein distance')
-            # ax.set_xscale('log')
+            ax.set_xscale('symlog', linthreshx=errors[-2])
+            ax.set_xticks(errors)
+            ax.set_xlim([0, errors[0]])
+
             name = f'[ subset size {size} ]' \
                    f'[ number of oligos created {number_of_oligos_per_barcode} ]\n' \
                    f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
