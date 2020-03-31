@@ -149,6 +149,6 @@ def text_to_bits(text: str, encoding: str = 'utf-8', errors: str = 'surrogatepas
     return bits.zfill(8 * ((len(bits) + 7) // 8))
 
 
-def text_from_bits(bits: str, encoding: str = 'utf-8', errors: str ='surrogatepass') -> str:
+def text_from_bits(bits: str, encoding: str = 'utf-8', errors: str = 'surrogatepass') -> str:
     n = int(bits, 2)
     return n.to_bytes((n.bit_length() + 7) // 8, 'big').decode(encoding, errors) or '\0'

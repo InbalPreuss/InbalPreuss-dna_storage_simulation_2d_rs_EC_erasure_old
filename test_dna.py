@@ -18,11 +18,12 @@ def test_number_of_oligos_per_barcode():
         subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode)
 
 
-def subset_size_and_error_plot(number_of_oligos_per_barcode):
+def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20):
     plt.ion()
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
+    sizes_and_bit_sizes = [(5, 12)]
     res_file = pathlib.Path(r'data/testing/output/error_results.pk')
     if not res_file.is_file():
         for size, bits_per_z in sizes_and_bit_sizes:
@@ -59,19 +60,17 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode):
             x, y = zip(*sorted(zip(x, y), reverse=True))
 
             fig, ax = plt.subplots()
-            ax.plot(x, y)
+            ax.scatter(x, y)
             ax.set_xlabel('error rate')
             ax.set_ylabel('Levenshtein distance')
-            ax.set_xscale('log')
+            # ax.set_xscale('log')
             name = f'[ subset size {size} ]' \
                    f'[ number of oligos created {number_of_oligos_per_barcode} ]\n' \
                    f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
                    f'[ remove {1 if len(triple[1]) > 1 else 0} ]' \
                    f'[ add {1 if len(triple[2]) > 1 else 0} ]'
             ax.set_title(name)
-            plt.savefig(f'data/testing/output/{name}.png')
-            fig = plt.gcf()
-            plt.close(fig)
+            fig.savefig(f'data/testing/output/{name}.png')
 
 
 def timing():

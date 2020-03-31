@@ -49,7 +49,7 @@ class Decoder:
                 payload = barcode_and_payload[self.barcode_total_len:]
 
                 barcode = self.error_correction_barcode(barcode=barcode)
-                if self.wrong_len_barcode_and_oligos(barcode=barcode, payload=payload):
+                if self.wrong_barcode_len(barcode=barcode) or self.wrong_payload_len(payload=payload):
                     continue
                 if barcode != barcode_prev:
                     if len(payload_accumulation) != 0:
@@ -80,8 +80,11 @@ class Decoder:
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
-    def wrong_len_barcode_and_oligos(self, barcode: str, payload: str) -> bool:
-        return len(barcode) + int(len(payload) / self.k_mer) != self.barcode_len + self.payload_total_len
+    def wrong_barcode_len(self, barcode: str) -> bool:
+        return len(barcode) != self.barcode_len
+
+    def wrong_payload_len(self, payload: str) -> bool:
+        return len(payload) / self.k_mer != self.payload_total_len
 
     def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
         """ Note that missing k-mers will be removed from the oligo_accumulation """
