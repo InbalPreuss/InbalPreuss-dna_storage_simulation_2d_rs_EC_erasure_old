@@ -60,6 +60,7 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
             results = pickle.load(f)
 
     triples = [(errors, [0], [0]), ([0], errors, [0]), ([0], [0], errors)]
+    triples = [([0], errors, [0])]
     for size, _ in sizes_and_bit_sizes:
         for idx, triple in enumerate(triples, 1):
             prod0 = [{key: val} for key, val in results.items() if

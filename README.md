@@ -1,27 +1,21 @@
 # DnaStorage
 
-## Install
-
-```console
-pip install git+https://github.com/InbalPreuss/DnaStorage.git
-```
-
 ## Usage
-
-1. set values in config.
-2. run:
-```python
-from dna_storage import main, config
-main(config)
-```
-
-## Development
 
 Create a venv (recommended)
 
 ```console
 git clone https://github.com/InbalPreuss/DnaStorage.git
 pip install -r requirements.txt
+```
+
+inside DnaStorage directory, next to dna_storage directory create data/testing/input_text.dna with some text inside.
+
+All the outputs will be written next to it.
+
+then just run:
+```console
+python main.py
 ```
 
 ## Test
