@@ -6,7 +6,11 @@ from dna_storage.config import PathLike
 
 def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLike):
 
-    os.remove(shuffle_db_file)
+    try:
+        os.remove(shuffle_db_file)
+    except OSError:
+        pass
+    
     conn = sqlite3.connect(shuffle_db_file)
     c = conn.cursor()
 
@@ -37,7 +41,11 @@ def sample_oligos_from_file(input_file: PathLike, output_file: PathLike, number_
 
 def sort_oligo_file(barcode_len: int, barcode_rs_len: int,
                     sort_db_file: PathLike, input_file: PathLike, output_file: PathLike):
-    os.remove(sort_db_file)
+    try:
+        os.remove(sort_db_file)
+    except OSError:
+        pass
+
     conn = sqlite3.connect(sort_db_file)
     c = conn.cursor()
 
