@@ -30,7 +30,6 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
             products = itertools.product(errors, repeat=3)
             prods = list(itertools.product(errors, repeat=3))
             products = [i for i in prods if (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
-            products = [(0, 0, 0), (0, 0.01, 0), (0, 0.001, 0), (0, 0.0001, 0)]
             for prod in products:
                 config = build_config(subset_size=size,
                                       bits_per_z=bits_per_z,
@@ -60,7 +59,6 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
             results = pickle.load(f)
 
     triples = [(errors, [0], [0]), ([0], errors, [0]), ([0], [0], errors)]
-    triples = [([0], errors, [0])]
     for size, _ in sizes_and_bit_sizes:
         for idx, triple in enumerate(triples, 1):
             prod0 = [{key: val} for key, val in results.items() if
