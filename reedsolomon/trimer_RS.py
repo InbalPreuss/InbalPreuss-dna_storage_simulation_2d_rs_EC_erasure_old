@@ -1,6 +1,7 @@
-from reedsolomon import ff16, ff4096, rs
+from reedsolomon import ff16, ff4096, rs, ff512, ff8192
 import itertools
 import string
+
 
 # max error correction (d-1)/2 errors where d = n-k+1
 # So for d = n-k+1 = 134-120+1 = 15
@@ -12,7 +13,7 @@ import string
 # takes a 12 letter (STD DNA) barcode and returns a 16 letter barcode
 # We use GF(16) since RS is limited to n<|GF|. We want n>4 so we use GF(4^2) - every pair of bases are a field element.
 # Translate pairs of letters ('AA','AC',...'TG','TT') to integers (0,1,...,14,15)
-ff16_trantab = {''.join(vv): i for i, vv in enumerate(itertools.product('ACGT', 'ACGT'))}
+ff16_trantab = {''.join(vv): i for i, vv in enumerate(itertools.product('ACGT','ACGT'))}
 ff16_rev_trantab = {i: vv for vv, i in ff16_trantab.items()}
 
 # RS coder using GF(16) with input message u is a 6 letters (12 DNA letters, every 2 letters = 1 letter for the encoding) and output codeword c is an 8 letters (16 DNA letters)
@@ -90,5 +91,78 @@ def rs4096_decode(received, verify_only = True):
     if not verify_only:
         decoded_int = rs4096_coder.decode(received_int)
         decoded_message = [ff4096_rev_trantab[v] for v in decoded_int]
+        return decoded_message
+    return None
+
+
+# payload error correction (512)
+rs512_coder = rs.RSCoder(GFint=ff512.GF512int,k=120,n=134)
+# TODO: change all to parameters. 
+# TODO: decide on n,k.
+
+################ Verify with Inbal ####################
+alphabet512 = ['Z{}'.format(i) for i in range(1, 513)]
+################ Verify with Inbal ####################
+
+ff512_trantab = {l:i for i,l in enumerate(alphabet512)}# {Z1,Z2,..Z39...} -> {0,1,..,38..}
+ff512_rev_trantab = {i:l for l,i in ff512_trantab.items()}
+
+# encode
+# input = a list of 120 letters from Sigma
+# output = a list of 134 letters from Sigma
+def rs512_encode(payload):
+    message = payload
+    message_int = [ff512_trantab[l] for l in message]
+    codeword = rs512_coder.encode(message_int)
+    coded_message = [ff512_rev_trantab[v] for v in codeword]
+    return coded_message
+
+# decode
+# input = a list of 134 letters from Sigma
+# output = a list of 120 letters from Sigma
+# We want verify_only = False
+def rs512_decode(received, verify_only = True):
+    received_int = [ff512_trantab[l] for l in received]
+    if rs512_coder.verify(received_int):
+        return received[0:120]
+    if not verify_only:
+        decoded_int = rs512_coder.decode(received_int)
+        decoded_message = [ff512_rev_trantab[v] for v in decoded_int]
+        return decoded_message
+    return None
+
+# payload error correction (8192)
+rs8192_coder = rs.RSCoder(GFint=ff8192.GF8192int,k=120,n=134)
+# TODO: change all to parameters. 
+# TODO: decide on n,k.
+
+################ Verify with Inbal ####################
+alphabet8192 = ['Z{}'.format(i) for i in range(1, 8193)]
+################ Verify with Inbal ####################
+
+ff8192_trantab = {l:i for i,l in enumerate(alphabet8192)}# {Z1,Z2,..Z39...} -> {0,1,..,38..}
+ff8192_rev_trantab = {i:l for l,i in ff8192_trantab.items()}
+
+# encode
+# input = a list of 120 letters from Sigma
+# output = a list of 134 letters from Sigma
+def rs8192_encode(payload):
+    message = payload
+    message_int = [ff8192_trantab[l] for l in message]
+    codeword = rs8192_coder.encode(message_int)
+    coded_message = [ff8192_rev_trantab[v] for v in codeword]
+    return coded_message
+
+# decode
+# input = a list of 134 letters from Sigma
+# output = a list of 120 letters from Sigma
+# We want verify_only = False
+def rs8192_decode(received, verify_only = True):
+    received_int = [ff8192_trantab[l] for l in received]
+    if rs8192_coder.verify(received_int):
+        return received[0:120]
+    if not verify_only:
+        decoded_int = rs8192_coder.decode(received_int)
+        decoded_message = [ff8192_rev_trantab[v] for v in decoded_int]
         return decoded_message
     return None
