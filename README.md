@@ -1,12 +1,27 @@
 # DnaStorage
 
+## Install
+
+```console
+pip install git+https://github.com/InbalPreuss/DnaStorage.git
+```
+
 ## Usage
 
 1. set values in config.
 2. run:
 ```console
 python main.py
-``` 
+```
+
+## Development
+
+Create a venv (recommended)
+
+```console
+git clone https://github.com/InbalPreuss/DnaStorage.git
+pip install -r requirements.txt
+```
 
 ## Test
 ```console
@@ -37,26 +52,15 @@ python -m cProfile -s time test_dna.py > profiling_data_no_synthsis_1_KB.txt
 
 
 ## TODO:
-2. After synthesising the DNA we should 
-    1) Done! Shuffle the data and then use the sort algorithm to sort the oligo according the barcode
-    2) Take M(= density of the sequencing) samples each time for the reading   
-4. Make graphs for different M: 20, 50, 100. Each graph should use 10000 copies for one oligo.    
-6. Explain in config that the barcode len is for ACGT, and the payload len is for Z1,Z2,... 3-Mers, 3 nucleotides 
-
+4. Explain in config that the barcode len is for ACGT, and the payload len is for Z1,Z2,... 3-Mers, 3 nucleotides
+1. Add Multi threading
+2. Make RS for all oligos
+6. Check the time in the text handling - If it takes too long, we should remove this stage and generate random binary
 
 ## Inbal:
 
 1. Run KB Data and measure the time
 2. Run MB Data and measure the time
-
-## Future:
-
-1. Add Multi threading
-2. Make RS for all oligos
-3. Make RS for 16c3 
-4. Make RS for 16c7
-5. Put everything in folders -> test folder, algorithm folder...
-6. Check the time in the text handling - If it takes too long, we should remove this stage and generate random binary
 
 ## Done:
 
@@ -70,4 +74,10 @@ python -m cProfile -s time test_dna.py > profiling_data_no_synthsis_1_KB.txt
 7. Code that generates different data sizes
 8. Make tests for RS
 7. Remove x00 from text result.
-
+2. After synthesising the DNA we should 
+    1) Done! Shuffle the data and then use the sort algorithm to sort the oligo according the barcode
+    2) Take M(= density of the sequencing) samples each time for the reading   
+3. Make graphs for different M: 20, 50, 100. Each graph should use 10000 copies for one oligo.
+3. Make RS for 16c3 
+4. Make RS for 16c7
+5. Put everything in packages -> test package, algorithm package...

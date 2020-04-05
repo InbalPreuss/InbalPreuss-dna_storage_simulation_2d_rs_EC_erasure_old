@@ -1,11 +1,9 @@
 import itertools
 from textwrap import wrap
-from collections import Counter
 from typing import Union, Dict, List, Tuple
 from pathlib import Path
 
-from reedsolomon.trimer_RS import rs512_encode, rs4096_encode, rs8192_encode, barcode_rs_encode
-from k_mer_algorithm import KMerAlgorithm
+from dna_storage.reedsolomon import barcode_rs_encode
 
 
 #################################################################
@@ -14,15 +12,12 @@ from k_mer_algorithm import KMerAlgorithm
 #                in originally
 #################################################################
 
-
-
 class Encoder:
     def __init__(self, barcode_len: int,
                  barcode_rs_len: int,
                  payload_len: int,
                  payload_rs_len: int,
                  binary_file_name: str,
-                 algorithm: KMerAlgorithm,
                  shrink_dict: Dict,
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
@@ -37,7 +32,6 @@ class Encoder:
         self.barcode_rs_len = barcode_rs_len
         self.payload_len = payload_len
         self.payload_rs_len = payload_rs_len
-        self.algorithm = algorithm
         self.shrink_dict = shrink_dict
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z

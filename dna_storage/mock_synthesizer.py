@@ -4,8 +4,6 @@ from typing import Union, Dict, List
 
 import numpy as np
 
-from k_mer_algorithm import KMerAlgorithm
-
 
 class Synthesizer:
     def __init__(self, input_file: Union[Path, str],
@@ -13,7 +11,6 @@ class Synthesizer:
                  synthesis_config: Dict,
                  barcode_total_len: int,
                  subset_size: int,
-                 algorithm: KMerAlgorithm,
                  k_mer_representative_to_z: Dict,
                  k_mer_to_dna: Dict,
                  mode: str):
@@ -23,7 +20,6 @@ class Synthesizer:
         self.synthesis_config = synthesis_config
         self.barcode_total_len = barcode_total_len
         self.subset_size = subset_size
-        self.algorithm = algorithm
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.k_mer_to_dna = k_mer_to_dna
         self.mode = mode

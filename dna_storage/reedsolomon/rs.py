@@ -2,7 +2,7 @@
 # Copyright (c) 2010 Andrew Brown <brownan@cs.duke.edu, brownan@gmail.com>
 # See LICENSE.txt for license terms
 
-from reedsolomon.polynomial import Polynomial
+from dna_storage.reedsolomon.polynomial import Polynomial
 
 """This module implements Reed-Solomon Encoding.
 It supports arbitrary configurations for n and k, the codeword length and
@@ -366,7 +366,7 @@ class RSCoder(object):
         return Y
 
 if __name__ == "__main__":
-    import sys
+    pass
     # coder = RSCoder(255,223)
     # if "-d" in sys.argv:
     #     method = coder.decode

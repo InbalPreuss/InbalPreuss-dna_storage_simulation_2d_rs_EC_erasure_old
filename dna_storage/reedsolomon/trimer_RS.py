@@ -1,7 +1,5 @@
-from reedsolomon import ff16, ff4096, rs, ff512, ff8192
+from dna_storage.reedsolomon import ff512, ff8192, rs, ff4096, ff16
 import itertools
-import string
-
 
 # max error correction (d-1)/2 errors where d = n-k+1
 # So for d = n-k+1 = 134-120+1 = 15
@@ -59,7 +57,7 @@ def barcode_rs_decode(received_barcode, verify_only = True):
 # This is a systematic RS encoding so c[0:120] == u (The redundancy letters are appended as a suffix to u.
 # parameters: k = oligo length before RS
 # n = oligo length after RS
-rs4096_coder = rs.RSCoder(GFint=ff4096.GF4096int,k=120,n=134)
+rs4096_coder = rs.RSCoder(GFint=ff4096.GF4096int, k=120, n=134)
 # TODO: change all to parameters. 
 # TODO: decide on n,k.
 
@@ -96,7 +94,7 @@ def rs4096_decode(received, verify_only = True):
 
 
 # payload error correction (512)
-rs512_coder = rs.RSCoder(GFint=ff512.GF512int,k=120,n=134)
+rs512_coder = rs.RSCoder(GFint=ff512.GF512int, k=120, n=134)
 # TODO: change all to parameters. 
 # TODO: decide on n,k.
 
@@ -132,7 +130,7 @@ def rs512_decode(received, verify_only = True):
     return None
 
 # payload error correction (8192)
-rs8192_coder = rs.RSCoder(GFint=ff8192.GF8192int,k=120,n=134)
+rs8192_coder = rs.RSCoder(GFint=ff8192.GF8192int, k=120, n=134)
 # TODO: change all to parameters. 
 # TODO: decide on n,k.
 

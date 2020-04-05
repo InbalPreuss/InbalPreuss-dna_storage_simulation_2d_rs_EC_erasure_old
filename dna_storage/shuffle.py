@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-from config import PathLike
+from dna_storage.config import PathLike
 
 
 def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLike):

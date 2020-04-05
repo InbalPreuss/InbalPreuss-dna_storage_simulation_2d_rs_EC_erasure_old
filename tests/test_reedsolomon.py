@@ -1,6 +1,6 @@
 
-from reedsolomon.trimer_RS import barcode_rs_encode, barcode_rs_decode
-from reedsolomon.trimer_RS import rs4096_encode, rs4096_decode
+from dna_storage.reedsolomon import barcode_rs_encode, barcode_rs_decode
+from dna_storage.reedsolomon import rs4096_encode, rs4096_decode
 
 
 def test_reed_solomon_z_encode_decode():

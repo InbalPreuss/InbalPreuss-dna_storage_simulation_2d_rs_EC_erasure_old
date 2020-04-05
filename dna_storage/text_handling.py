@@ -1,11 +1,10 @@
 import os
-from textwrap import wrap
 from random import choice
 from string import ascii_letters
 
 import numpy as np
 
-from config import PathLike
+from dna_storage.config import PathLike
 
 
 class TextFileToBinaryFile:
@@ -23,7 +22,6 @@ class TextFileToBinaryFile:
             for line in input_file:
                 text_data = line
                 binary_data = text_to_bits(text_data)
-                # binary_data_padded, oligo_len_binary = self.transform_text_to_binary_string(text_data=text_data)
                 accumulation += binary_data
                 while len(accumulation) >= oligo_len_binary:
                     to_write = accumulation[:oligo_len_binary]
@@ -36,7 +34,6 @@ class TextFileToBinaryFile:
                 output_file.write(binary_data_padded + '\n')
 
             z_fill_text = "{0:b}".format(z_fill).rjust(oligo_len_binary, '0')
-            # output_file.seek(0)
             output_file.write(z_fill_text + '\n')
 
     def transform_text_to_binary_string(self, binary_data: str):

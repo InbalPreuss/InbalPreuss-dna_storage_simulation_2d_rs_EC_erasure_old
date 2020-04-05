@@ -3,8 +3,7 @@ import re
 from typing import Union, Dict, List
 from pathlib import Path
 
-from reedsolomon.trimer_RS import rs512_decode, rs4096_decode, rs8192_decode, barcode_rs_decode
-from k_mer_algorithm import KMerAlgorithm
+from dna_storage.reedsolomon import barcode_rs_decode
 
 
 #################################################################
@@ -18,7 +17,6 @@ class Decoder:
                  payload_len: int,
                  payload_total_len: int,
                  input_file: str,
-                 algorithm: KMerAlgorithm,
                  shrink_dict: Dict,
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
@@ -32,7 +30,6 @@ class Decoder:
         self.barcode_total_len = barcode_total_len
         self.payload_len = payload_len
         self.payload_total_len = payload_total_len
-        self.algorithm = algorithm
         self.shrink_dict = shrink_dict
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
@@ -146,8 +143,8 @@ class Decoder:
     def payload_histogram_to_payload(self, payload_histogram: List[Counter]) -> List[str]:
         result_payload = []
         for counter in payload_histogram:
-            reps = counter.most_common(self.algorithm.subset_size)
-            if len(reps) != self.algorithm.subset_size:
+            reps = counter.most_common(self.subset_size)
+            if len(reps) != self.subset_size:
                 return []
             k_mer_rep = tuple(self.sorted_human([rep[0] for rep in reps]))
             result_payload.append(self.k_mer_representative_to_z[k_mer_rep])

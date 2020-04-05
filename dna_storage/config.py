@@ -1,9 +1,8 @@
 import itertools
 import pathlib
 from typing import Union
-from k_mer_algorithm import KMerAlgorithm
-from reedsolomon.trimer_RS import rs512_decode, rs4096_decode, rs8192_decode
-from reedsolomon.trimer_RS import rs512_encode, rs4096_encode, rs8192_encode
+from dna_storage.reedsolomon import rs512_decode, rs4096_decode, rs8192_decode
+from dna_storage.reedsolomon import rs512_encode, rs4096_encode, rs8192_encode
 
 PathLike = Union[str, pathlib.Path]
 
@@ -58,12 +57,11 @@ def build_config(subset_size: int = 5,
     k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
     config = {
-        'mode': 'prod',
-        # 'mode': 'test',
+        # 'mode': 'prod',
+        'mode': 'test',
         'k_mer': 3,
         'number_of_sampled_oligos_from_file': number_of_sampled_oligos_from_file,
         'shrink_dict': shrink_dict_3_mer,
-        'oligo_file_name': 'Oligo_Input',
         'fastq_file_name': 'Bible4_sample',
         'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
         'input_text_file': input_text_file,
@@ -84,7 +82,6 @@ def build_config(subset_size: int = 5,
             r'data/testing/simulation_data.decoder_results_file.dna'),
         'binary_results_file': pathlib.Path(r'data/testing/simulation_data.binary_results_file.dna'),
         'text_results_file': pathlib.Path(r'data/testing/simulation_data.text_results_file.dna'),
-        'do_oligo_handling': False,
         'write_text_to_binary': True,
         'do_encode': True,
         'do_synthesize': True,
@@ -95,7 +92,6 @@ def build_config(subset_size: int = 5,
         'do_decode': True,
         'decoder_results_to_binary': True,
         'binary_results_to_text': True,
-        'algorithm': KMerAlgorithm,
         'algorithm_config': {'subset_size': subset_size,
                              'bits_per_z': bits_per_z,
                              'shrink_dict_size': shrink_dict_size,
