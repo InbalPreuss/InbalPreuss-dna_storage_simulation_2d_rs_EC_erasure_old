@@ -10,8 +10,9 @@ pip install git+https://github.com/InbalPreuss/DnaStorage.git
 
 1. set values in config.
 2. run:
-```console
-python main.py
+```python
+from dna_storage import main, config
+main(config)
 ```
 
 ## Development
