@@ -5,7 +5,6 @@ from typing import Union, Dict, List, Tuple
 from pathlib import Path
 
 from reedsolomon.trimer_RS import rs512_encode, rs4096_encode, rs8192_encode, barcode_rs_encode
-from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
 
@@ -23,7 +22,7 @@ class Encoder:
                  payload_len: int,
                  payload_rs_len: int,
                  binary_file_name: str,
-                 algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
+                 algorithm: KMerAlgorithm,
                  shrink_dict: Dict,
                  k_mer: int,
                  k_mer_representative_to_z: Dict,

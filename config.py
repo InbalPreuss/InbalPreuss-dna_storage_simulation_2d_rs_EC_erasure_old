@@ -1,7 +1,6 @@
 import itertools
 import pathlib
 from typing import Union
-from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 from reedsolomon.trimer_RS import rs512_decode, rs4096_decode, rs8192_decode
 from reedsolomon.trimer_RS import rs512_encode, rs4096_encode, rs8192_encode

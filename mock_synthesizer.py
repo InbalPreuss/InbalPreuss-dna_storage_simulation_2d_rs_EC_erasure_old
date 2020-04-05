@@ -4,7 +4,6 @@ from typing import Union, Dict, List
 
 import numpy as np
 
-from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
 
@@ -14,7 +13,7 @@ class Synthesizer:
                  synthesis_config: Dict,
                  barcode_total_len: int,
                  subset_size: int,
-                 algorithm: Union[CompositeAlgorithm, KMerAlgorithm],
+                 algorithm: KMerAlgorithm,
                  k_mer_representative_to_z: Dict,
                  k_mer_to_dna: Dict,
                  mode: str):
