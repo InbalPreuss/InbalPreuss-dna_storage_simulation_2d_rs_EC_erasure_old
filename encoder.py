@@ -4,7 +4,7 @@ from collections import Counter
 from typing import Union, Dict, List, Tuple
 from pathlib import Path
 
-from reedsolomon.trimer_RS import rs4096_encode, barcode_rs_encode
+from reedsolomon.trimer_RS import rs512_encode, rs4096_encode, rs8192_encode, barcode_rs_encode
 from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
@@ -28,7 +28,9 @@ class Encoder:
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
                  binary_to_z: Dict,
+                 subset_size: int,
                  bits_per_z: int,
+                 rs_encoders: Dict,
                  results_file: Union[Path, str],
                  ):
         self.file_name = binary_file_name
@@ -41,7 +43,9 @@ class Encoder:
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.binary_to_z_dict = binary_to_z
+        self.subset_size = subset_size
         self.bits_per_z = bits_per_z
+        self.rs_encoders = rs_encoders
         self.results_file = results_file
         open(self.results_file, 'w').close()
         self.barcode_generator = self.get_barcode_generator()
@@ -88,7 +92,8 @@ class Encoder:
         if isinstance(payload, str):
             payload = [c for c in payload]
         try:
-            payload_encoded = rs4096_encode(payload)
+            encoder = self.select_encoder()
+            payload_encoded = encoder(payload)
         except:
             payload_encoded = payload + ['Z1'] * self.payload_rs_len
             # TODO: check possible failure reasons
@@ -102,6 +107,12 @@ class Encoder:
             barcode_encoded = barcode + ['A'] * self.barcode_rs_len
 
         return barcode_encoded
+
+    def select_encoder(self):
+        try:
+            return self.rs_encoders[self.subset_size]
+        except KeyError:
+            raise NotImplementedError('No Reed-Solomon is implemented for this subset size')
 
     def save_oligo(self, oligo: str) -> None:
         with open(self.results_file, 'a+', encoding='utf-8') as f:

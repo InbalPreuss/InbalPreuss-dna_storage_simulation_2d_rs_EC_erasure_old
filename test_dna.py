@@ -1,11 +1,10 @@
 import copy
-import os
-import pytest
+from typing import Union
+
 import pathlib
 import itertools
 import pickle
 
-import numpy as np
 import matplotlib.pyplot as plt
 import Levenshtein as levenshtein
 
@@ -14,30 +13,46 @@ from main import main
 
 
 def test_number_of_oligos_per_barcode():
-    for number_of_oligos_per_barcode in [20, 100, 1000, 10000]:
-        subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode)
+    for number_of_oligos_per_barcode in [20, 100]: #, 1000, 10000]:
+        for number_of_sampled_oligos_from_file in [20, 50, 100, None]:
+            subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode,
+                                       number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
 
 
-def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20):
+def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
+                               number_of_sampled_oligos_from_file: Union[int, None] = 10000):
     plt.ion()
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
     sizes_and_bit_sizes = [(5, 12)]
-    res_file = pathlib.Path(r'data/testing/output/error_results.pk')
+    res_file = pathlib.Path(f'data/testing/output/error_results_n_oligos_{number_of_oligos_per_barcode}_n_sampled_{number_of_sampled_oligos_from_file}.pk')
     if not res_file.is_file():
         for size, bits_per_z in sizes_and_bit_sizes:
             products = itertools.product(errors, repeat=3)
+            prods = list(itertools.product(errors, repeat=3))
+            products = [i for i in prods if (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
+            products = [(0, 0, 0), (0, 0.01, 0), (0, 0.001, 0), (0, 0.0001, 0)]
             for prod in products:
+                # prod = products[3]
                 config = build_config(subset_size=size,
                                       bits_per_z=bits_per_z,
                                       letter_replace_error_ratio=prod[0],
                                       letter_remove_error_ratio=prod[1],
                                       letter_add_error_ratio=prod[2],
-                                      number_of_oligos_per_barcode=number_of_oligos_per_barcode)
+                                      number_of_oligos_per_barcode=number_of_oligos_per_barcode,
+                                      number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
                 dist, input_data, output_data = run_pipe_with_config(config)
                 pos = size, *prod
-                print(pos)
+                if number_of_sampled_oligos_from_file is None:
+                    n_samples = 'all'
+                else:
+                    n_samples = number_of_sampled_oligos_from_file
+                print(f"[ size: {size:>1} ]",
+                      f"[ errors: {' '.join(f'{x:<6}' for x in prod)} ]",
+                      f"[ dist: {dist:>5}]",
+                      f"[ n_oligos: {number_of_oligos_per_barcode:>6} ]",
+                      f"[ n_samples: {n_samples:>6} ]")
                 results[pos] = {'dist': dist, 'input_data': input_data, 'output_data': output_data}
 
         with open(res_file, 'wb') as f:
@@ -69,11 +84,14 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20):
 
             name = f'[ subset size {size} ]' \
                    f'[ number of oligos created {number_of_oligos_per_barcode} ]\n' \
+                   f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file} ]\n' \
                    f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
                    f'[ remove {1 if len(triple[1]) > 1 else 0} ]' \
                    f'[ add {1 if len(triple[2]) > 1 else 0} ]'
             ax.set_title(name)
+            fig.tight_layout(rect=[0, 0, 1, 1])
             fig.savefig(f'data/testing/output/{name}.png')
+            plt.close(fig)
 
 
 def timing():
@@ -113,13 +131,11 @@ def code_profiling(size_kb: int = 1):
 def run_pipe_with_config(config):
     with open('data/testing/input_text.dna', 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
-    input_data = input_data.rsplit()
+
     main(config)
-    with open('data/testing/small_data.text_results_file.dna', 'r', encoding='utf-8') as file:
+    with open('data/testing/simulation_data.text_results_file.dna', 'r', encoding='utf-8') as file:
         output_data = file.read()
-    output_data = output_data.rsplit()
-    input_data = ''.join(input_data)
-    output_data = ''.join(output_data)
+
     dist = levenshtein.distance(input_data, output_data)
     return dist, input_data, output_data
 
@@ -134,7 +150,7 @@ def test_full_flow():
         input_data = input_file.read()
     input_data = input_data.rsplit()
     main(config)
-    with open('data/testing/small_data.text_results_file.dna', 'r', encoding='utf-8') as file:
+    with open('data/testing/simulation_data.text_results_file.dna', 'r', encoding='utf-8') as file:
         data = file.read()
     data = data.rsplit()
     assert input_data == data

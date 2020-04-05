@@ -44,7 +44,7 @@ class Synthesizer:
                 x_mat[:] = np.array(tuple(barcode))
                 for idx, x_tuple in enumerate(x_list, 1):
                     vec = np.random.choice(x_tuple, size=(number_of_nuc,))
-                    if self.mode == 'test' or self.mode == 'prod':  # TODO: Remove prod
+                    if self.mode == 'test':
                         while True:
                             if len(np.unique(vec)) == self.subset_size:
                                 break

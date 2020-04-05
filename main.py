@@ -7,7 +7,7 @@ from text_handling import TextFileToBinaryFile, DecoderResultToBinary, BinaryRes
 from decoder import Decoder
 from encoder import Encoder
 from mock_synthesizer import Synthesizer
-from shuffle import shuffle, sort_oligo_file
+from shuffle import shuffle, sort_oligo_file, sample_oligos_from_file
 
 
 # User parameters: barcode, Oligo file name, Fastq file name
@@ -42,6 +42,8 @@ def main(config):
                           k_mer=config['k_mer'],
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                           binary_to_z=config['algorithm_config']['binary_to_z'],
+                          subset_size=config['algorithm_config']['subset_size'],
+                          rs_encoders=config['rs_encoders'],
                           bits_per_z=config['algorithm_config']['bits_per_z'],
                           results_file=config['encoder_results_file'])
         encoder.run()
@@ -62,19 +64,24 @@ def main(config):
                                   mode=config['mode'])
         synthesizer.synthesize()
 
-    # Shuffling the sorted sythesis results
+    # Shuffling the sorted synthesis results
     if config['do_shuffle']:
-
         shuffle(shuffle_db_file=config['shuffle_db_file'],
                 input_file=config['synthesis_results_file'],
                 output_file=config['shuffle_results_file'])
 
-    # Sorting the shuffled sythesis results
+    # Sample from the shuffled synthesis results
+    if config['do_sample_oligos_from_file']:
+        sample_oligos_from_file(input_file=config['synthesis_results_file'],
+                                output_file=config['sample_oligos_results_file'],
+                                number_of_oligos=config['number_of_sampled_oligos_from_file'])
+
+    # Sorting the shuffled synthesis results
     if config['do_sort_oligo_file']:
         sort_oligo_file(barcode_len=config['barcode_len'],
                         barcode_rs_len=config['barcode_rs_len'],
                         sort_db_file=config['sort_oligo_db_file'],
-                        input_file=config['shuffle_results_file'],
+                        input_file=config['sample_oligos_results_file'],
                         output_file=config['sort_oligo_results_file'])
 
     # Parsing Fastq data
@@ -98,6 +105,8 @@ def main(config):
                           k_mer=config['k_mer'],
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                           z_to_binary=config['algorithm_config']['z_to_binary'],
+                          subset_size=config['algorithm_config']['subset_size'],
+                          rs_decoders=config['rs_decoders'],
                           results_file=config['decoder_results_file'])
         decoder.run()
 
@@ -118,4 +127,5 @@ def main(config):
 
 if __name__ == "__main__":
     from config import config
+
     main(config)

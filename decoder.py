@@ -3,7 +3,7 @@ import re
 from typing import Union, Dict, List
 from pathlib import Path
 
-from reedsolomon.trimer_RS import rs4096_decode, barcode_rs_decode
+from reedsolomon.trimer_RS import rs512_decode, rs4096_decode, rs8192_decode, barcode_rs_decode
 from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
 
@@ -24,6 +24,8 @@ class Decoder:
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
                  z_to_binary: Dict,
+                 subset_size: int,
+                 rs_decoders: Dict,
                  results_file: Union[Path, str],
                  ):
         self.input_file = input_file
@@ -36,6 +38,8 @@ class Decoder:
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.z_to_binary = z_to_binary
+        self.subset_size = subset_size
+        self.rs_decoders = rs_decoders
         self.results_file = results_file
         open(self.results_file, 'w').close()
 
@@ -43,7 +47,7 @@ class Decoder:
         barcode_prev = ''
         payload_accumulation = []
         with open(self.input_file, 'r', encoding='utf-8') as file:
-            for line in file:
+            for idx, line in enumerate(file):
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
                 barcode = barcode_and_payload[:self.barcode_total_len]
                 payload = barcode_and_payload[self.barcode_total_len:]
@@ -116,7 +120,8 @@ class Decoder:
         if isinstance(payload, str):
             payload = [c for c in payload]
         try:
-            payload_decoded = rs4096_decode(payload, verify_only=False)
+            decoder = self.select_decoder()
+            payload_decoded = decoder(payload, verify_only=False)
         except:
             payload_decoded = payload[:self.payload_len]
         return payload_decoded
@@ -132,6 +137,12 @@ class Decoder:
         if isinstance(barcode_decoded, list):
             barcode_decoded = ''.join(barcode_decoded)
         return barcode_decoded
+
+    def select_decoder(self):
+        try:
+            return self.rs_decoders[self.subset_size]
+        except KeyError:
+            raise NotImplementedError('No Reed-Solomon is implemented for this subset size')
 
     def payload_histogram_to_payload(self, payload_histogram: List[Counter]) -> List[str]:
         result_payload = []

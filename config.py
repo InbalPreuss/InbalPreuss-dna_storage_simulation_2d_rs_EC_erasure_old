@@ -3,6 +3,8 @@ import pathlib
 from typing import Union
 from compoiste_algorithm import CompositeAlgorithm
 from k_mer_algorithm import KMerAlgorithm
+from reedsolomon.trimer_RS import rs512_decode, rs4096_decode, rs8192_decode
+from reedsolomon.trimer_RS import rs512_encode, rs4096_encode, rs8192_encode
 
 PathLike = Union[str, pathlib.Path]
 
@@ -13,6 +15,7 @@ def build_config(subset_size: int = 5,
                  letter_remove_error_ratio: int = 0,
                  letter_add_error_ratio: int = 0,
                  number_of_oligos_per_barcode: int = 20,
+                 number_of_sampled_oligos_from_file: int = 10000,
                  input_text_file: PathLike = pathlib.Path(r'data/testing/input_text.dna'),
                  output_dir: PathLike = pathlib.Path(r'data/testing/output')):
 
@@ -59,6 +62,7 @@ def build_config(subset_size: int = 5,
         'mode': 'prod',
         # 'mode': 'test',
         'k_mer': 3,
+        'number_of_sampled_oligos_from_file': number_of_sampled_oligos_from_file,
         'shrink_dict': shrink_dict_3_mer,
         'oligo_file_name': 'Oligo_Input',
         'fastq_file_name': 'Bible4_sample',
@@ -72,6 +76,8 @@ def build_config(subset_size: int = 5,
         'shuffle_db_file': pathlib.Path(r'data/testing/temp_shuffle_db'),
         'shuffle_results_file': pathlib.Path(
             r'data/testing/simulation_data.shuffle_results_file.dna'),
+        'sample_oligos_results_file': pathlib.Path(
+            r'data/testing/simulation_data.sample_oligos_results_file.dna'),
         'sort_oligo_db_file': pathlib.Path(r'data/testing/temp_sort_oligo_db'),
         'sort_oligo_results_file': pathlib.Path(
             r'data/testing/simulation_data.sort_oligo_results_file.dna'),
@@ -84,6 +90,7 @@ def build_config(subset_size: int = 5,
         'do_encode': True,
         'do_synthesize': True,
         'do_shuffle': True,
+        'do_sample_oligos_from_file': True,
         'do_sort_oligo_file': True,
         'do_fastq_handling': False,
         'do_decode': True,
@@ -98,6 +105,8 @@ def build_config(subset_size: int = 5,
                              'z_to_binary': z_to_binary,
                              'binary_to_z': binary_to_z,
                              'k_mer_to_dna': k_mer_to_dna},
+        'rs_decoders': {3: rs512_decode, 5: rs4096_decode, 7: rs8192_decode},
+        'rs_encoders': {3: rs512_encode, 5: rs4096_encode, 7: rs8192_encode},
         'synthesis': {'number_of_oligos_per_barcode': number_of_oligos_per_barcode,
                       'letter_replace_error_ratio': letter_replace_error_ratio,
                       'letter_remove_error_ratio': letter_remove_error_ratio,
@@ -115,8 +124,8 @@ def build_config(subset_size: int = 5,
     elif config['mode'] == 'test':
         config['barcode_len'] = 12  # in ACGT
         config['barcode_rs_len'] = 4  # in ACGT
-        config['payload_len'] = 9  # in Z
-        config['payload_rs_len'] = 3*3  # in Z
+        config['payload_len'] = 120  # in Z
+        config['payload_rs_len'] = 14  # in Z
     
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z

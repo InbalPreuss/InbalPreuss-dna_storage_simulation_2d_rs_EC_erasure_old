@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 from config import PathLike
@@ -5,7 +6,7 @@ from config import PathLike
 
 def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLike):
 
-    shuffle_db_file.unlink(missing_ok=True)
+    os.remove(shuffle_db_file)
     conn = sqlite3.connect(shuffle_db_file)
     c = conn.cursor()
 
@@ -25,9 +26,18 @@ def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLi
             f.write(line + '\n')
 
 
+def sample_oligos_from_file(input_file: PathLike, output_file: PathLike, number_of_oligos: int = None):
+    with open(input_file, 'r') as input_file, open(output_file, 'w+') as output_file:
+        for idx, line in enumerate(input_file):
+            if number_of_oligos is None or idx < number_of_oligos:
+                output_file.write(line)
+            else:
+                return
+
+
 def sort_oligo_file(barcode_len: int, barcode_rs_len: int,
                     sort_db_file: PathLike, input_file: PathLike, output_file: PathLike):
-    sort_db_file.unlink(missing_ok=True)
+    os.remove(sort_db_file)
     conn = sqlite3.connect(sort_db_file)
     c = conn.cursor()
 
