@@ -10,7 +10,7 @@ def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLi
         os.remove(shuffle_db_file)
     except OSError:
         pass
-    
+
     conn = sqlite3.connect(shuffle_db_file)
     c = conn.cursor()
 

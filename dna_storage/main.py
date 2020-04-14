@@ -13,6 +13,7 @@ def main(config):
                                                    output_file=config['binary_file_name'],
                                                    payload_len=config['payload_len'],
                                                    bits_per_z=config['algorithm_config']['bits_per_z'],
+                                                   oligos_per_block_len=config['oligos_per_block_len'],
                                                    k_mer=config['k_mer'])
         text_file_to_binary.run()
 
@@ -30,6 +31,8 @@ def main(config):
                           binary_to_z=config['algorithm_config']['binary_to_z'],
                           subset_size=config['algorithm_config']['subset_size'],
                           rs_encoders=config['rs_encoders'],
+                          oligos_per_block_len=config['oligos_per_block_len'],
+                          oligos_per_block_rs_len=config['oligos_per_block_rs_len'],
                           bits_per_z=config['algorithm_config']['bits_per_z'],
                           results_file=config['encoder_results_file'])
         encoder.run()
@@ -85,6 +88,8 @@ def main(config):
                           z_to_binary=config['algorithm_config']['z_to_binary'],
                           subset_size=config['algorithm_config']['subset_size'],
                           rs_decoders=config['rs_decoders'],
+                          oligos_per_block_len=config['oligos_per_block_len'],
+                          oligos_per_block_rs_len=config['oligos_per_block_rs_len'],
                           results_file=config['decoder_results_file'])
         decoder.run()
 

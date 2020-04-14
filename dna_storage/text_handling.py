@@ -8,17 +8,24 @@ from dna_storage.config import PathLike
 
 
 class TextFileToBinaryFile:
-    def __init__(self, input_file: str, output_file: str, payload_len: int, bits_per_z: int, k_mer: int):
+    def __init__(self, input_file: str,
+                 output_file: str,
+                 payload_len: int,
+                 bits_per_z: int,
+                 oligos_per_block_len: int,
+                 k_mer: int):
         self.input_file = input_file
         self.output_file = output_file
         self.payload_len = payload_len
         self.bits_per_z = bits_per_z
+        self.oligos_per_block_len = oligos_per_block_len
         self.k_mer = k_mer
 
     def run(self):
         with open(self.input_file, 'r', encoding='utf-8') as input_file, open(self.output_file, 'w', encoding='utf-8') as output_file:
             oligo_len_binary = int(self.payload_len * self.bits_per_z)
             accumulation = ''
+            number_of_binary_oligos_written = 0
             for line in input_file:
                 text_data = line
                 binary_data = text_to_bits(text_data)
@@ -27,13 +34,22 @@ class TextFileToBinaryFile:
                     to_write = accumulation[:oligo_len_binary]
                     accumulation = accumulation[oligo_len_binary:]
                     output_file.write(to_write + '\n')
+                    number_of_binary_oligos_written += 1
             z_fill = 0
 
+            # pad the last oligo to have length "oligo_len_binary"
             if len(accumulation) > 0:
                 binary_data_padded, z_fill = self.transform_text_to_binary_string(binary_data=accumulation)
                 output_file.write(binary_data_padded + '\n')
+                number_of_binary_oligos_written += 1
 
-            z_fill_text = "{0:b}".format(z_fill).rjust(oligo_len_binary, '0')
+            # pad to a multiplication of "oligos_per_block_for_rs"
+            zeros_block, number_of_missing_rows_to_block = self.zero_pad_to_blocks_of_size(number_of_binary_oligos_written=number_of_binary_oligos_written, oligo_len_binary=oligo_len_binary)
+            if zeros_block != '':
+                output_file.write(zeros_block + '\n')
+
+            n_zeros = (number_of_missing_rows_to_block * oligo_len_binary) + z_fill
+            z_fill_text = "{0:b}".format(n_zeros).rjust(oligo_len_binary, '0')
             output_file.write(z_fill_text + '\n')
 
     def transform_text_to_binary_string(self, binary_data: str):
@@ -47,6 +63,14 @@ class TextFileToBinaryFile:
         z_fill = total_binary_len - binary_data_len
 
         return binary_data_padded, z_fill
+
+    def zero_pad_to_blocks_of_size(self, number_of_binary_oligos_written: int, oligo_len_binary: int):
+        excess_lines = number_of_binary_oligos_written % self.oligos_per_block_len
+        number_of_missing_rows_to_block = self.oligos_per_block_len - excess_lines - 1
+        # -1 because we write an extra lines. the number of zeros we appended to the last line of real data
+        zeros_array = ['0'*oligo_len_binary for _ in range(number_of_missing_rows_to_block)]
+        zeros_block = '\n'.join(zeros_array)
+        return zeros_block, number_of_missing_rows_to_block
 
 
 class DecoderResultToBinary:
@@ -101,8 +125,12 @@ class BinaryResultToText:
                         payload = line.strip()
                         try:
                             z_fill = int(payload, 2)
+                            padded_rows_with_zeros, padded_zeros_in_first_line = divmod(z_fill, oligo_len_binary)
+                            last_line_backslash_n = 1
+                            truncate_length = (padded_zeros_in_first_line + (last_line_backslash_n * newline_size) +
+                                               (padded_rows_with_zeros + 1) * (oligo_len_binary + newline_size))
                             input_file.seek(0, os.SEEK_END)
-                            input_file.seek(input_file.tell() - z_fill - oligo_len_binary - 2*newline_size, os.SEEK_SET)
+                            input_file.seek(input_file.tell() - truncate_length, os.SEEK_SET)
                             input_file.truncate()
                         except ValueError:
                             pass

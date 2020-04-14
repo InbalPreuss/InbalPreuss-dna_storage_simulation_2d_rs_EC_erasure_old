@@ -3,6 +3,7 @@ import re
 from typing import Union, Dict, List
 from pathlib import Path
 
+from dna_storage import utils
 from dna_storage.reedsolomon import barcode_rs_decode
 
 
@@ -23,6 +24,8 @@ class Decoder:
                  z_to_binary: Dict,
                  subset_size: int,
                  rs_decoders: Dict,
+                 oligos_per_block_len: int,
+                 oligos_per_block_rs_len: int,
                  results_file: Union[Path, str],
                  ):
         self.input_file = input_file
@@ -36,13 +39,20 @@ class Decoder:
         self.z_to_binary = z_to_binary
         self.subset_size = subset_size
         self.rs_decoders = rs_decoders
+        self.oligos_per_block_len = oligos_per_block_len
+        self.oligos_per_block_rs_len = oligos_per_block_rs_len
         self.results_file = results_file
         open(self.results_file, 'w').close()
+        self.barcode_generator = utils.dna_sequence_generator(sequence_len=self.barcode_len)
 
     def run(self):
         barcode_prev = ''
         payload_accumulation = []
+        dummy_payload = ['Z1' for _ in range(self.payload_len)]
+        total_oligos_per_block_with_rs_oligos = self.oligos_per_block_len + self.oligos_per_block_rs_len
         with open(self.input_file, 'r', encoding='utf-8') as file:
+            unique_payload_block_with_rs = []
+            unique_barcode_block_with_rs = []
             for idx, line in enumerate(file):
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
                 barcode = barcode_and_payload[:self.barcode_total_len]
@@ -52,23 +62,53 @@ class Decoder:
                 if self.wrong_barcode_len(barcode=barcode) or self.wrong_payload_len(payload=payload):
                     continue
                 if barcode != barcode_prev:
+                    next_barcode_should_be = "".join(next(self.barcode_generator))
+                    while next_barcode_should_be != barcode:
+                        unique_payload_block_with_rs.append(dummy_payload)
+                        unique_barcode_block_with_rs.append(next_barcode_should_be)
+                        next_barcode_should_be = "".join(next(self.barcode_generator))
+
                     if len(payload_accumulation) != 0:
-                        binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
-                        self.save_binary(binary=binary, barcode_prev=barcode_prev)
+                        unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
+                        unique_payload_block_with_rs.append(unique_payload)
+                        unique_barcode_block_with_rs.append(barcode_prev)
+                        if len(unique_payload_block_with_rs) >= total_oligos_per_block_with_rs_oligos:
+                            self.save_block_to_binary(unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
+                                                      unique_payload_block_with_rs[:total_oligos_per_block_with_rs_oligos])
+                            unique_payload_block_with_rs = unique_payload_block_with_rs[total_oligos_per_block_with_rs_oligos:]
+                            unique_barcode_block_with_rs = unique_barcode_block_with_rs[total_oligos_per_block_with_rs_oligos:]
                     payload_accumulation = [payload]
                     barcode_prev = barcode
                 else:
                     payload_accumulation.append(payload)
-            binary = self.dna_to_binary(payload_accumulation=payload_accumulation)
-            self.save_binary(binary=binary, barcode_prev=barcode_prev)
 
-    def dna_to_binary(self, payload_accumulation: List[str]) -> str:
+            unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
+            unique_payload_block_with_rs.append(unique_payload)
+            unique_barcode_block_with_rs.append(barcode_prev)
+            self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
+
+    def dna_to_unique_payload(self, payload_accumulation: List[str]) -> List[str]:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
         unique_payload = self.error_correction_payload(payload=unique_payload)
-        binary = self.unique_payload_to_binary(payload=unique_payload)
-        return binary
+        return unique_payload
+
+    def save_block_to_binary(self, unique_barcode_block_with_rs: List[str],
+                             unique_payload_block_with_rs: List[List[str]]) -> None:
+        unique_payload_block = self.wide_rs(unique_payload_block_with_rs)
+        for unique_barcode, unique_payload in zip(unique_barcode_block_with_rs, unique_payload_block):
+            binary = self.unique_payload_to_binary(payload=unique_payload)
+            self.save_binary(binary=binary, barcode_prev=unique_barcode)
+
+    def wide_rs(self, unique_payload_block_with_rs):
+        rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
+        for col in range(len(unique_payload_block_with_rs[0])):
+            payload = [elem[col] for elem in unique_payload_block_with_rs]
+            col_with_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
+            for idx, z in enumerate(col_with_rs):
+                rs_removed[idx].append(z)
+        return rs_removed
 
     def unique_payload_to_binary(self, payload: List[str]) -> str:
         binary = []
@@ -112,12 +152,12 @@ class Decoder:
             hist.append(letter_counts)
         return hist
 
-    def error_correction_payload(self, payload: Union[str, List[str]]) -> List[str]:
+    def error_correction_payload(self, payload: Union[str, List[str]], payload_or_wide: str='payload') -> List[str]:
         if isinstance(payload, str):
             payload = [c for c in payload]
         try:
             decoder = self.select_decoder()
-            payload_decoded = decoder(payload, verify_only=False)
+            payload_decoded = decoder(payload, verify_only=False, payload_or_wide=payload_or_wide)
         except:
             payload_decoded = payload[:self.payload_len]
         return payload_decoded

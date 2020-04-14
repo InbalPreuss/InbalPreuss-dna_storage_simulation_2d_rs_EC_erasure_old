@@ -3,7 +3,11 @@ from textwrap import wrap
 from typing import Union, Dict, List, Tuple
 from pathlib import Path
 
+import numpy as np
+from tqdm import tqdm
+
 from dna_storage.reedsolomon import barcode_rs_encode
+from dna_storage import utils
 
 
 #################################################################
@@ -25,6 +29,8 @@ class Encoder:
                  subset_size: int,
                  bits_per_z: int,
                  rs_encoders: Dict,
+                 oligos_per_block_len: int,
+                 oligos_per_block_rs_len: int,
                  results_file: Union[Path, str],
                  ):
         self.file_name = binary_file_name
@@ -39,27 +45,28 @@ class Encoder:
         self.subset_size = subset_size
         self.bits_per_z = bits_per_z
         self.rs_encoders = rs_encoders
+        self.oligos_per_block_len = oligos_per_block_len
+        self.oligos_per_block_rs_len = oligos_per_block_rs_len
         self.results_file = results_file
         open(self.results_file, 'w').close()
-        self.barcode_generator = self.get_barcode_generator()
+        self.barcode_generator = utils.dna_sequence_generator(sequence_len=self.barcode_len)
 
     def run(self):
         with open(self.file_name, 'r', encoding='utf-8') as file:
-            z_list = []
-            z_list_len = int(self.payload_len)
+            z_list_accumulation_per_block = []
             for line in file:
                 line = line.strip('\n')
+                z_list = []
                 for binary_to_transform in wrap(line, self.bits_per_z):
                     z = self.binary_to_z(binary=binary_to_transform)
                     z_list.append(z)
-                    if len(z_list) == z_list_len:
+                z_list_accumulation_per_block.append(z_list)
+                if len(z_list_accumulation_per_block) == self.oligos_per_block_len:
+                    z_list_accumulation_with_rs = self.wide_block_rs(z_list_accumulation_per_block)
+                    for z_list in tqdm(z_list_accumulation_with_rs, total=len(z_list_accumulation_with_rs), desc='[ encoder, per oligo rs ]'):
                         oligo = self.z_to_oligo(z_list)
                         self.save_oligo(oligo=oligo)
-                        z_list = []
-
-            if len(z_list) > 0:
-                oligo = self.z_to_oligo(z_list)
-                self.save_oligo(oligo=oligo)
+                    z_list_accumulation_per_block = []
 
     def binary_to_z(self, binary: str) -> str:
         binary_tuple = tuple([int(b) for b in binary])
@@ -73,20 +80,21 @@ class Encoder:
         oligo.insert(0, barcode)
         return ",".join(oligo)
 
-    def get_barcode_generator(self):
-        barcodes = itertools.product(['A', 'C', 'G', 'T'], repeat=self.barcode_len)
-        while True:
-            try:
-                yield next(barcodes)
-            except StopIteration:
-                return
+    def wide_block_rs(self, z_list_accumulation_per_block: List[List[str]]) -> List[List[str]]:
+        rs_append = [[] for _ in range(int(self.oligos_per_block_len + self.oligos_per_block_rs_len))]
+        for col in tqdm(range(len(z_list_accumulation_per_block[0])), desc='[ encoder, wide block rs ]'):
+            z_list = [elem[col] for elem in z_list_accumulation_per_block]
+            col_with_rs = self.add_payload_rs_symbols_for_error_correction(payload=z_list, payload_or_wide='wide')
+            for idx, z in enumerate(col_with_rs):
+                rs_append[idx].append(z)
+        return rs_append
 
-    def add_payload_rs_symbols_for_error_correction(self, payload: Union[str, List[str]]) -> List[str]:
+    def add_payload_rs_symbols_for_error_correction(self, payload: Union[str, List[str]], payload_or_wide: str='payload') -> List[str]:
         if isinstance(payload, str):
             payload = [c for c in payload]
         try:
             encoder = self.select_encoder()
-            payload_encoded = encoder(payload)
+            payload_encoded = encoder(payload, payload_or_wide=payload_or_wide)
         except:
             payload_encoded = payload + ['Z1'] * self.payload_rs_len
             # TODO: check possible failure reasons

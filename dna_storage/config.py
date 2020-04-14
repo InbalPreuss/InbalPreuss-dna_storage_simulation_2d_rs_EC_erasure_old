@@ -65,23 +65,23 @@ def build_config(subset_size: int = 5,
         'fastq_file_name': 'Bible4_sample',
         'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
         'input_text_file': input_text_file,
-        'binary_file_name': pathlib.Path(r'data/testing/simulation_data.binary.dna'),
+        'binary_file_name': pathlib.Path(r'data/testing/simulation_data.1.binary.dna'),
         'encoder_results_file': pathlib.Path(
-            r'data/testing/simulation_data.encoder_results_file.dna'),
+            r'data/testing/simulation_data.2.encoder_results_file.dna'),
         'synthesis_results_file': pathlib.Path(
-            r'data/testing/simulation_data.synthesis_results_file.dna'),
+            r'data/testing/simulation_data.3.synthesis_results_file.dna'),
         'shuffle_db_file': pathlib.Path(r'data/testing/temp_shuffle_db'),
         'shuffle_results_file': pathlib.Path(
-            r'data/testing/simulation_data.shuffle_results_file.dna'),
+            r'data/testing/simulation_data.4.shuffle_results_file.dna'),
         'sample_oligos_results_file': pathlib.Path(
-            r'data/testing/simulation_data.sample_oligos_results_file.dna'),
+            r'data/testing/simulation_data.5.sample_oligos_results_file.dna'),
         'sort_oligo_db_file': pathlib.Path(r'data/testing/temp_sort_oligo_db'),
         'sort_oligo_results_file': pathlib.Path(
-            r'data/testing/simulation_data.sort_oligo_results_file.dna'),
+            r'data/testing/simulation_data.6.sort_oligo_results_file.dna'),
         'decoder_results_file': pathlib.Path(
-            r'data/testing/simulation_data.decoder_results_file.dna'),
-        'binary_results_file': pathlib.Path(r'data/testing/simulation_data.binary_results_file.dna'),
-        'text_results_file': pathlib.Path(r'data/testing/simulation_data.text_results_file.dna'),
+            r'data/testing/simulation_data.7.decoder_results_file.dna'),
+        'binary_results_file': pathlib.Path(r'data/testing/simulation_data.8.binary_results_file.dna'),
+        'text_results_file': pathlib.Path(r'data/testing/simulation_data.9.text_results_file.dna'),
         'write_text_to_binary': True,
         'do_encode': True,
         'do_synthesize': True,
@@ -116,11 +116,15 @@ def build_config(subset_size: int = 5,
         config['barcode_rs_len'] = 4  # in ACGT
         config['payload_len'] = 120  # in Z
         config['payload_rs_len'] = 14  # in Z
+        config['oligos_per_block_len'] = 3500
+        config['oligos_per_block_rs_len'] = 596
     elif config['mode'] == 'test':
         config['barcode_len'] = 12  # in ACGT
         config['barcode_rs_len'] = 4  # in ACGT
         config['payload_len'] = 120  # in Z
         config['payload_rs_len'] = 14  # in Z
+        config['oligos_per_block_len'] = 12
+        config['oligos_per_block_rs_len'] = 4
     
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z

@@ -49,7 +49,6 @@ python -m cProfile -s time test_dna.py > profiling_data_no_synthsis_1_KB.txt
 ## TODO:
 4. Explain in config that the barcode len is for ACGT, and the payload len is for Z1,Z2,... 3-Mers, 3 nucleotides
 1. Add Multi threading
-2. Make RS for all oligos
 6. Check the time in the text handling - If it takes too long, we should remove this stage and generate random binary
 
 ## Inbal:
@@ -59,6 +58,7 @@ python -m cProfile -s time test_dna.py > profiling_data_no_synthsis_1_KB.txt
 
 ## Done:
 
+2. Make RS for all oligos
 1. Make sure when adding and removing a letter, of reading a 3 letter sequence that does not exist, we would remove that specific oligo
 2. The error graph should be logarithmic graph
 3. Remove the exactly 5 bins to distribute the oligos in the synthesis phase - in real life it could be that not all oligos are chosen to In big numbers it probably wouldn't happen). We can cahnge the number of generated oligos to be 100 and not 20.

@@ -57,7 +57,10 @@ def barcode_rs_decode(received_barcode, verify_only = True):
 # This is a systematic RS encoding so c[0:120] == u (The redundancy letters are appended as a suffix to u.
 # parameters: k = oligo length before RS
 # n = oligo length after RS
-rs4096_coder = rs.RSCoder(GFint=ff4096.GF4096int, k=120, n=134)
+rs4096_coder_payload = rs.RSCoder(GFint=ff4096.GF4096int, k=120, n=134)
+rs4096_coder_wide = rs.RSCoder(GFint=ff4096.GF4096int, k=12, n=16)
+# TODO: remove 12, 16 hardcoded
+
 # TODO: change all to parameters. 
 # TODO: decide on n,k.
 
@@ -71,10 +74,14 @@ ff4096_rev_trantab = {i:l for l,i in ff4096_trantab.items()}
 # encode!
 # input = a list of 120 letters from Sigma
 # output = a list of 134 letters from Sigma
-def rs4096_encode(payload):
+def rs4096_encode(payload, payload_or_wide='payload'):
+    if payload_or_wide == 'payload':
+        coder = rs4096_coder_payload
+    else:
+        coder = rs4096_coder_wide
     message = payload
     message_int = [ff4096_trantab[l] for l in message]
-    codeword = rs4096_coder.encode(message_int)
+    codeword = coder.encode(message_int)
     coded_message = [ff4096_rev_trantab[v] for v in codeword]
     return coded_message
 
@@ -82,12 +89,16 @@ def rs4096_encode(payload):
 # input = a list of 134 letters from Sigma
 # output = a list of 120 letters from Sigma
 # We want verify_only = False
-def rs4096_decode(received, verify_only = True):
+def rs4096_decode(received, verify_only = True, payload_or_wide='payload'):
     received_int = [ff4096_trantab[l] for l in received]
-    if rs4096_coder.verify(received_int):
-        return received[0:120]
+    if payload_or_wide == 'payload':
+        coder = rs4096_coder_payload
+    else:
+        coder = rs4096_coder_wide
+    if coder.verify(received_int):
+        return received[0:coder.k]
     if not verify_only:
-        decoded_int = rs4096_coder.decode(received_int)
+        decoded_int = coder.decode(received_int)
         decoded_message = [ff4096_rev_trantab[v] for v in decoded_int]
         return decoded_message
     return None
