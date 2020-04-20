@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sqlite3
 
 from dna_storage.config import PathLike
@@ -11,6 +12,8 @@ def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLi
     except OSError:
         pass
 
+    if isinstance(shuffle_db_file, Path):
+        shuffle_db_file = str(shuffle_db_file)
     conn = sqlite3.connect(shuffle_db_file)
     c = conn.cursor()
 
@@ -46,6 +49,8 @@ def sort_oligo_file(barcode_len: int, barcode_rs_len: int,
     except OSError:
         pass
 
+    if isinstance(sort_db_file, Path):
+        sort_db_file = str(sort_db_file)
     conn = sqlite3.connect(sort_db_file)
     c = conn.cursor()
 
