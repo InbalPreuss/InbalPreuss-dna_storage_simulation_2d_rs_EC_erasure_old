@@ -138,11 +138,8 @@ def run_pipe_with_config(config):
 
 
 def test_full_flow():
-    from dna_storage.config import config
-    config = copy.deepcopy(config)
-    config['synthesis']['letter_replace_error_ratio'] = 0
-    config['synthesis']['letter_remove_error_ratio'] = 0
-    config['synthesis']['letter_add_error_ratio'] = 0
+    from dna_storage.config import build_config
+    config = build_config(bits_per_z=13, subset_size=7)
     with open('./data/testing/input_text.dna', 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
     main(config)

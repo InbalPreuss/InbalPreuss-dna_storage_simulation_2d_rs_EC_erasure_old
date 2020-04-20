@@ -152,7 +152,7 @@ class Decoder:
             hist.append(letter_counts)
         return hist
 
-    def error_correction_payload(self, payload: Union[str, List[str]], payload_or_wide: str='payload') -> List[str]:
+    def error_correction_payload(self, payload: Union[str, List[str]], payload_or_wide: str = 'payload') -> List[str]:
         if isinstance(payload, str):
             payload = [c for c in payload]
         try:

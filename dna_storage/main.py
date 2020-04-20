@@ -109,6 +109,6 @@ def main(config):
 
 
 if __name__ == "__main__":
-    from dna_storage.config import config
-
+    from dna_storage.config import build_config
+    config = build_config(bits_per_z=9, subset_size=3)
     main(config=config)

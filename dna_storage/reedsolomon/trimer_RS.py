@@ -58,7 +58,8 @@ def barcode_rs_decode(received_barcode, verify_only = True):
 # parameters: k = oligo length before RS
 # n = oligo length after RS
 rs4096_coder_payload = rs.RSCoder(GFint=ff4096.GF4096int, k=120, n=134)
-rs4096_coder_wide = rs.RSCoder(GFint=ff4096.GF4096int, k=12, n=16)
+# rs4096_coder_wide = rs.RSCoder(GFint=ff4096.GF4096int, k=3500, n=4095)
+rs4096_coder_wide = rs.RSCoder(GFint=ff4096.GF4096int, k=12, n=16)  # TODO: remove this
 # TODO: remove 12, 16 hardcoded
 
 # TODO: change all to parameters. 
@@ -105,7 +106,9 @@ def rs4096_decode(received, verify_only = True, payload_or_wide='payload'):
 
 
 # payload error correction (512)
-rs512_coder = rs.RSCoder(GFint=ff512.GF512int, k=120, n=134)
+rs512_coder_payload = rs.RSCoder(GFint=ff512.GF512int, k=120, n=134)
+# rs512_coder_wide = rs.RSCoder(GFint=ff512.GF512int, k=430, n=511)
+rs512_coder_wide = rs.RSCoder(GFint=ff512.GF512int, k=12, n=16)  # TODO: remove this
 # TODO: change all to parameters. 
 # TODO: decide on n,k.
 
@@ -119,10 +122,14 @@ ff512_rev_trantab = {i:l for l,i in ff512_trantab.items()}
 # encode
 # input = a list of 120 letters from Sigma
 # output = a list of 134 letters from Sigma
-def rs512_encode(payload):
+def rs512_encode(payload, payload_or_wide='payload'):
+    if payload_or_wide == 'payload':
+        coder = rs512_coder_payload
+    else:
+        coder = rs512_coder_wide
     message = payload
     message_int = [ff512_trantab[l] for l in message]
-    codeword = rs512_coder.encode(message_int)
+    codeword = coder.encode(message_int)
     coded_message = [ff512_rev_trantab[v] for v in codeword]
     return coded_message
 
@@ -130,18 +137,24 @@ def rs512_encode(payload):
 # input = a list of 134 letters from Sigma
 # output = a list of 120 letters from Sigma
 # We want verify_only = False
-def rs512_decode(received, verify_only = True):
+def rs512_decode(received, verify_only = True, payload_or_wide='payload'):
     received_int = [ff512_trantab[l] for l in received]
-    if rs512_coder.verify(received_int):
-        return received[0:120]
+    if payload_or_wide == 'payload':
+        coder = rs512_coder_payload
+    else:
+        coder = rs512_coder_wide
+    if coder.verify(received_int):
+        return received[0:coder.k]
     if not verify_only:
-        decoded_int = rs512_coder.decode(received_int)
+        decoded_int = coder.decode(received_int)
         decoded_message = [ff512_rev_trantab[v] for v in decoded_int]
         return decoded_message
     return None
 
 # payload error correction (8192)
-rs8192_coder = rs.RSCoder(GFint=ff8192.GF8192int, k=120, n=134)
+rs8192_coder_payload = rs.RSCoder(GFint=ff8192.GF8192int, k=120, n=134)
+# rs8192_coder_wide = rs.RSCoder(GFint=ff8192.GF8192int, k=6900, n=8191)
+rs8192_coder_wide = rs.RSCoder(GFint=ff8192.GF8192int, k=12, n=16)  # TODO: remove this
 # TODO: change all to parameters. 
 # TODO: decide on n,k.
 
@@ -155,10 +168,14 @@ ff8192_rev_trantab = {i:l for l,i in ff8192_trantab.items()}
 # encode
 # input = a list of 120 letters from Sigma
 # output = a list of 134 letters from Sigma
-def rs8192_encode(payload):
+def rs8192_encode(payload, payload_or_wide='payload'):
+    if payload_or_wide == 'payload':
+        coder = rs8192_coder_payload
+    else:
+        coder = rs8192_coder_wide
     message = payload
     message_int = [ff8192_trantab[l] for l in message]
-    codeword = rs8192_coder.encode(message_int)
+    codeword = coder.encode(message_int)
     coded_message = [ff8192_rev_trantab[v] for v in codeword]
     return coded_message
 
@@ -166,12 +183,16 @@ def rs8192_encode(payload):
 # input = a list of 134 letters from Sigma
 # output = a list of 120 letters from Sigma
 # We want verify_only = False
-def rs8192_decode(received, verify_only = True):
+def rs8192_decode(received, verify_only = True, payload_or_wide='payload'):
     received_int = [ff8192_trantab[l] for l in received]
-    if rs8192_coder.verify(received_int):
-        return received[0:120]
+    if payload_or_wide == 'payload':
+        coder = rs8192_coder_payload
+    else:
+        coder = rs8192_coder_wide
+    if coder.verify(received_int):
+        return received[0:coder.k]
     if not verify_only:
-        decoded_int = rs8192_coder.decode(received_int)
+        decoded_int = coder.decode(received_int)
         decoded_message = [ff8192_rev_trantab[v] for v in decoded_int]
         return decoded_message
     return None
