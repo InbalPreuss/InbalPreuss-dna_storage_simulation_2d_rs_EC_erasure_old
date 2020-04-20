@@ -24,6 +24,7 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
+    sizes_and_bit_sizes = [(7, 13)]
     res_file = pathlib.Path(f'data/testing/output/error_results_n_oligos_{number_of_oligos_per_barcode}_n_sampled_{number_of_sampled_oligos_from_file}.pk')
     if not res_file.is_file():
         for size, bits_per_z in sizes_and_bit_sizes:
@@ -149,8 +150,8 @@ def test_full_flow():
 
 
 if __name__ == '__main__':
-    test_number_of_oligos_per_barcode()
-    # code_profiling(size_kb=1)
+    # test_number_of_oligos_per_barcode()
+    code_profiling(size_kb=1024)
     # timing()
     # subset_size_and_error_plot()
     # test_full_flow()
