@@ -1,7 +1,6 @@
 attrs==19.3.0
 biopython==1.76
 cycler==0.10.0
-dna-storage==0.0.0
 kiwisolver==1.1.0
 matplotlib==3.2.1
 more-itertools==8.2.0
