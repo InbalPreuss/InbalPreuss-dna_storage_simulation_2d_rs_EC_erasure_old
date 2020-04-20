@@ -130,7 +130,7 @@ def run_pipe_with_config(config):
         input_data = input_file.read()
 
     main(config)
-    with open('./data/testing/simulation_data.text_results_file.dna', 'r', encoding='utf-8') as file:
+    with open('./data/testing/simulation_data.9.text_results_file.dna', 'r', encoding='utf-8') as file:
         output_data = file.read()
 
     dist = levenshtein.distance(input_data, output_data)
@@ -149,8 +149,8 @@ def test_full_flow():
 
 
 if __name__ == '__main__':
-    test_number_of_oligos_per_barcode()
+    # test_number_of_oligos_per_barcode()
     # code_profiling(size_kb=1)
     # timing()
-    # subset_size_and_error_plot()
+    subset_size_and_error_plot()
     # test_full_flow()
