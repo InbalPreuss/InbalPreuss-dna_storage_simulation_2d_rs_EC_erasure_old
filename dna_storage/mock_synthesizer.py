@@ -33,7 +33,7 @@ class Synthesizer:
                 line_list = line.strip('\n').split(',')
                 barcode, payload = line_list[0], line_list[1:]
                 x_list = self.get_x_list(payload=payload)
-                number_of_nuc = int(round(np.random.normal(self.synthesis_config['number_of_oligos_per_barcode'], 30)))
+                number_of_nuc = max(1, int(round(np.random.normal(self.synthesis_config['number_of_oligos_per_barcode'], 30))))
                 x_mat = np.empty([number_of_nuc, self.barcode_total_len], dtype=np.dtype(('U', 5)))
                 x_mat[:] = np.array(tuple(barcode))
                 for idx, x_tuple in enumerate(x_list, 1):
