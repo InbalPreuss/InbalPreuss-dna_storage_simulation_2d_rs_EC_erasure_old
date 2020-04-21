@@ -70,8 +70,9 @@ class Decoder:
 
                     if len(payload_accumulation) != 0:
                         unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
-                        unique_payload_block_with_rs.append(unique_payload)
-                        unique_barcode_block_with_rs.append(barcode_prev)
+                        if len(unique_payload) > 0:
+                            unique_payload_block_with_rs.append(unique_payload)
+                            unique_barcode_block_with_rs.append(barcode_prev)
                         if len(unique_payload_block_with_rs) >= total_oligos_per_block_with_rs_oligos:
                             self.save_block_to_binary(unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
                                                       unique_payload_block_with_rs[:total_oligos_per_block_with_rs_oligos])
@@ -83,8 +84,9 @@ class Decoder:
                     payload_accumulation.append(payload)
 
             unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
-            unique_payload_block_with_rs.append(unique_payload)
-            unique_barcode_block_with_rs.append(barcode_prev)
+            if len(unique_payload) > 0:
+                unique_payload_block_with_rs.append(unique_payload)
+                unique_barcode_block_with_rs.append(barcode_prev)
             self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
 
     def dna_to_unique_payload(self, payload_accumulation: List[str]) -> List[str]:
