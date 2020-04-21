@@ -2,6 +2,7 @@ from collections import Counter
 import re
 from typing import Union, Dict, List
 from pathlib import Path
+import pdb
 
 from dna_storage import utils
 from dna_storage.reedsolomon import barcode_rs_decode
@@ -105,7 +106,8 @@ class Decoder:
             self.save_binary(binary=binary, barcode_prev=unique_barcode)
 
     def wide_rs(self, unique_payload_block_with_rs):
-        rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
+        rs_ removed = [[] for _ in range(int(self.oligos_per_block_len))]
+        pdb.set_trace()
         for col in range(len(unique_payload_block_with_rs[0])):
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
@@ -114,7 +116,7 @@ class Decoder:
                 print('len(rs_removed)[:]', [len(i) for i in rs_removed])
                 print('idx', idx)
                 print('payload', payload)
-                print('col_without_rs')
+                print('col_without_rs', col_without_rs)
                 rs_removed[idx].append(z)
         return rs_removed
 
