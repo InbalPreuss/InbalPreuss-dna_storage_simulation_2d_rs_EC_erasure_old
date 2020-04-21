@@ -28,7 +28,7 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
     res_file = pathlib.Path(f'data/testing/output/error_results_n_oligos_{number_of_oligos_per_barcode}_n_sampled_{number_of_sampled_oligos_from_file}.pk')
     if not res_file.is_file():
         for size, bits_per_z in sizes_and_bit_sizes:
-            products = itertools.product(errors, repeat=3)
+            # products = itertools.product(errors, repeat=3)
             prods = list(itertools.product(errors, repeat=3))
             products = [i for i in prods if (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
             for prod in products:
@@ -50,6 +50,8 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
                       f"[ dist: {dist:>5}]",
                       f"[ n_oligos_per_barcode: {number_of_oligos_per_barcode:>6} ]",
                       f"[ m_samples_from_synthesis_file: {n_samples:>6}]")
+                print(f"[ input data: {input_data} ]",
+                      f"[ output data: {output_data}]")
                 results[pos] = {'dist': dist, 'input_data': input_data, 'output_data': output_data}
 
         with open(res_file, 'wb') as f:

@@ -63,7 +63,7 @@ class Encoder:
                 z_list_accumulation_per_block.append(z_list)
                 if len(z_list_accumulation_per_block) == self.oligos_per_block_len:
                     z_list_accumulation_with_rs = self.wide_block_rs(z_list_accumulation_per_block)
-                    for z_list in tqdm(z_list_accumulation_with_rs, total=len(z_list_accumulation_with_rs), desc='[ encoder, per oligo rs ]'):
+                    for z_list in z_list_accumulation_with_rs:
                         oligo = self.z_to_oligo(z_list)
                         self.save_oligo(oligo=oligo)
                     z_list_accumulation_per_block = []
@@ -82,7 +82,7 @@ class Encoder:
 
     def wide_block_rs(self, z_list_accumulation_per_block: List[List[str]]) -> List[List[str]]:
         rs_append = [[] for _ in range(int(self.oligos_per_block_len + self.oligos_per_block_rs_len))]
-        for col in tqdm(range(len(z_list_accumulation_per_block[0])), desc='[ encoder, wide block rs ]'):
+        for col in range(len(z_list_accumulation_per_block[0])):
             z_list = [elem[col] for elem in z_list_accumulation_per_block]
             col_with_rs = self.add_payload_rs_symbols_for_error_correction(payload=z_list, payload_or_wide='wide')
             for idx, z in enumerate(col_with_rs):
