@@ -151,8 +151,8 @@ def test_full_flow():
 
 
 if __name__ == '__main__':
-    test_number_of_oligos_per_barcode()
+    # test_number_of_oligos_per_barcode()
     # code_profiling(size_kb=1024)
     # timing()
     # subset_size_and_error_plot()
-    # test_full_flow()
+    test_full_flow()
