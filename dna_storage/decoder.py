@@ -106,7 +106,7 @@ class Decoder:
             self.save_binary(binary=binary, barcode_prev=unique_barcode)
 
     def wide_rs(self, unique_payload_block_with_rs):
-        rs_ removed = [[] for _ in range(int(self.oligos_per_block_len))]
+        rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
         pdb.set_trace()
         for col in range(len(unique_payload_block_with_rs[0])):
             payload = [elem[col] for elem in unique_payload_block_with_rs]
