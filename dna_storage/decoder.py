@@ -101,8 +101,8 @@ class Decoder:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
-        unique_payload = self.error_correction_payload(payload=unique_payload)
-        return unique_payload
+        unique_payload_corrected = self.error_correction_payload(payload=unique_payload)
+        return unique_payload_corrected
 
     def save_block_to_binary(self, unique_barcode_block_with_rs: List[str],
                              unique_payload_block_with_rs: List[List[str]]) -> None:
@@ -198,7 +198,16 @@ class Decoder:
         for counter in payload_histogram:
             reps = counter.most_common(self.subset_size)
             if len(reps) != self.subset_size:
-                return []
+                # BAD
+                # return [0]
+                # OK
+                reps = [('X' + str(i), i) for i in range(1, self.subset_size + 1)]
+                # BEST
+                s = set(['X' + str(i) for i in range(1, self.subset_size + 1)])
+                t = set([r[0] for r in reps])
+                diff = sorted(list(s-t))
+                for missing_rep_idx in range(self.subset_size - len(reps)):
+                    reps.append((diff[missing_rep_idx], 1))
             k_mer_rep = tuple(self.sorted_human([rep[0] for rep in reps]))
             result_payload.append(self.k_mer_representative_to_z[k_mer_rep])
         return result_payload
