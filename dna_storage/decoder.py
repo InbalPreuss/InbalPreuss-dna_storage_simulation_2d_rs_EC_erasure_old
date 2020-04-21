@@ -87,7 +87,8 @@ class Decoder:
             if len(unique_payload) > 0:
                 unique_payload_block_with_rs.append(unique_payload)
                 unique_barcode_block_with_rs.append(barcode_prev)
-            self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
+            if len(unique_payload_block_with_rs) > 0:
+                self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
 
     def dna_to_unique_payload(self, payload_accumulation: List[str]) -> List[str]:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
