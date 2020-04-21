@@ -108,8 +108,8 @@ class Decoder:
         rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
         for col in range(len(unique_payload_block_with_rs[0])):
             payload = [elem[col] for elem in unique_payload_block_with_rs]
-            col_with_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
-            for idx, z in enumerate(col_with_rs):
+            col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
+            for idx, z in enumerate(col_without_rs):
                 rs_removed[idx].append(z)
         return rs_removed
 
@@ -162,7 +162,10 @@ class Decoder:
             decoder = self.select_decoder()
             payload_decoded = decoder(payload, verify_only=False, payload_or_wide=payload_or_wide)
         except:
-            payload_decoded = payload[:self.payload_len]
+            if payload_or_wide == 'payload':
+                payload_decoded = payload[:self.payload_len]
+            else:
+                payload_decoded = payload[:self.oligos_per_block_len]
         return payload_decoded
 
     def error_correction_barcode(self, barcode: Union[str, List[str]]) -> str:
