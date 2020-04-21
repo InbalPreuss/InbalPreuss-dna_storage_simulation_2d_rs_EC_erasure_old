@@ -2,7 +2,7 @@ from collections import Counter
 import re
 from typing import Union, Dict, List
 from pathlib import Path
-import pdb
+# import pdb
 
 from dna_storage import utils
 from dna_storage.reedsolomon import barcode_rs_decode
@@ -73,7 +73,9 @@ class Decoder:
                         unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
                         if len(unique_payload) > 0:
                             unique_payload_block_with_rs.append(unique_payload)
-                            unique_barcode_block_with_rs.append(barcode_prev)
+                        else:
+                            unique_payload_block_with_rs.append(dummy_payload)
+                        unique_barcode_block_with_rs.append(barcode_prev)
                         if len(unique_payload_block_with_rs) >= total_oligos_per_block_with_rs_oligos:
                             self.save_block_to_binary(unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
                                                       unique_payload_block_with_rs[:total_oligos_per_block_with_rs_oligos])
@@ -84,12 +86,18 @@ class Decoder:
                 else:
                     payload_accumulation.append(payload)
 
+            # pdb.set_trace()
             unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
             if len(unique_payload) > 0:
                 unique_payload_block_with_rs.append(unique_payload)
-                unique_barcode_block_with_rs.append(barcode_prev)
-            if len(unique_payload_block_with_rs) > 0:
-                self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
+            else:
+                unique_payload_block_with_rs.append(dummy_payload)
+            unique_barcode_block_with_rs.append(barcode_prev)
+            while len(unique_payload_block_with_rs) < total_oligos_per_block_with_rs_oligos:
+                unique_payload_block_with_rs.append(dummy_payload)
+                next_barcode_should_be = "".join(next(self.barcode_generator))
+                unique_barcode_block_with_rs.append(next_barcode_should_be)
+            self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
 
     def dna_to_unique_payload(self, payload_accumulation: List[str]) -> List[str]:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
@@ -107,16 +115,16 @@ class Decoder:
 
     def wide_rs(self, unique_payload_block_with_rs):
         rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
-        pdb.set_trace()
+        # pdb.set_trace()
         for col in range(len(unique_payload_block_with_rs[0])):
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
             for idx, z in enumerate(col_without_rs):
-                print('len(rs_removed)', len(rs_removed))
-                print('len(rs_removed)[:]', [len(i) for i in rs_removed])
-                print('idx', idx)
-                print('payload', payload)
-                print('col_without_rs', col_without_rs)
+                # print('len(rs_removed)', len(rs_removed))
+                # print('len(rs_removed)[:]', [len(i) for i in rs_removed])
+                # print('idx', idx)
+                # print('payload', payload)
+                # print('col_without_rs', col_without_rs)
                 rs_removed[idx].append(z)
         return rs_removed
 
