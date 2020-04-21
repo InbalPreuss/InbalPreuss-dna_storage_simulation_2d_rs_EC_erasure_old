@@ -110,6 +110,11 @@ class Decoder:
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
             for idx, z in enumerate(col_without_rs):
+                print('len(rs_removed)', len(rs_removed))
+                print('len(rs_removed)[:]', [len(i) for i in rs_removed])
+                print('idx', idx)
+                print('payload', payload)
+                print('col_without_rs')
                 rs_removed[idx].append(z)
         return rs_removed
 
