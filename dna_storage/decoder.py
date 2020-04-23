@@ -75,7 +75,7 @@ class Decoder:
                             unique_payload_block_with_rs.append(unique_payload)
                         else:
                             unique_payload_block_with_rs.append(dummy_payload)
-                            
+
                         unique_barcode_block_with_rs.append(barcode_prev)
                         if len(unique_payload_block_with_rs) >= total_oligos_per_block_with_rs_oligos:
                             self.save_block_to_binary(unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
@@ -121,11 +121,7 @@ class Decoder:
         print('unique_payload_block_with_rs', len(unique_payload_block_with_rs[0]))
         rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
         for col in range(len(unique_payload_block_with_rs[0])):
-            try:
-                payload = [elem[col] for elem in unique_payload_block_with_rs]
-            except:
-                print('col', col)
-                pdb.set_trace()
+            payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
             print('payload', len(payload), 'col_without_rs', len(col_without_rs))
             if len(col_without_rs) > 12:
