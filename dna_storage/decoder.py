@@ -73,8 +73,15 @@ class Decoder:
                         unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
                         if len(unique_payload) > 0:
                             unique_payload_block_with_rs.append(unique_payload)
+                            if len(unique_payload) > 120:
+                                print(unique_payload)
+                                pdb.set_trace()
                         else:
                             unique_payload_block_with_rs.append(dummy_payload)
+                            if len(dummy_payload) > 120:
+                                print(dummy_payload)
+                                pdb.set_trace()
+
                         unique_barcode_block_with_rs.append(barcode_prev)
                         if len(unique_payload_block_with_rs) >= total_oligos_per_block_with_rs_oligos:
                             self.save_block_to_binary(unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
@@ -89,8 +96,14 @@ class Decoder:
             unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
             if len(unique_payload) > 0:
                 unique_payload_block_with_rs.append(unique_payload)
+                if len(unique_payload) > 120:
+                    print(unique_payload)
+                    pdb.set_trace()
             else:
                 unique_payload_block_with_rs.append(dummy_payload)
+                if len(dummy_payload) > 120:
+                    print(dummy_payload)
+                    pdb.set_trace()
             unique_barcode_block_with_rs.append(barcode_prev)
             while len(unique_payload_block_with_rs) < total_oligos_per_block_with_rs_oligos:
                 unique_payload_block_with_rs.append(dummy_payload)
