@@ -1,3 +1,4 @@
+import pdb
 from collections import Counter
 import re
 from typing import Union, Dict, List
@@ -119,6 +120,11 @@ class Decoder:
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
             print('col_without_rs', len(col_without_rs))
+            if len(col_without_rs):
+                print("\n\n")
+                print(col_without_rs)
+                pdb.set_trace()
+
             for idx, z in enumerate(col_without_rs):
                 rs_removed[idx].append(z)
         return rs_removed
