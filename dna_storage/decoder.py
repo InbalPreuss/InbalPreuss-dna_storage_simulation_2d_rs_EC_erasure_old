@@ -117,6 +117,10 @@ class Decoder:
         print('unique_payload_block_with_rs', len(unique_payload_block_with_rs[0]))
         rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
         for col in range(len(unique_payload_block_with_rs[0])):
+            if col > 120:
+                print("\n\n")
+                print(unique_payload_block_with_rs[0])
+                pdb.set_trace()
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
             print('payload', len(payload), 'col_without_rs', len(col_without_rs))
