@@ -30,10 +30,12 @@ def main(config):
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                           binary_to_z=config['algorithm_config']['binary_to_z'],
                           subset_size=config['algorithm_config']['subset_size'],
-                          rs_encoders=config['rs_encoders'],
                           oligos_per_block_len=config['oligos_per_block_len'],
                           oligos_per_block_rs_len=config['oligos_per_block_rs_len'],
                           bits_per_z=config['algorithm_config']['bits_per_z'],
+                          barcode_coder=config['barcode_coder'],
+                          payload_coder=config['payload_coder'],
+                          wide_coder=config['wide_coder'],
                           results_file=config['encoder_results_file'])
         encoder.run()
 
@@ -87,9 +89,11 @@ def main(config):
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                           z_to_binary=config['algorithm_config']['z_to_binary'],
                           subset_size=config['algorithm_config']['subset_size'],
-                          rs_decoders=config['rs_decoders'],
                           oligos_per_block_len=config['oligos_per_block_len'],
                           oligos_per_block_rs_len=config['oligos_per_block_rs_len'],
+                          barcode_coder=config['barcode_coder'],
+                          payload_coder=config['payload_coder'],
+                          wide_coder=config['wide_coder'],
                           results_file=config['decoder_results_file'])
         decoder.run()
 

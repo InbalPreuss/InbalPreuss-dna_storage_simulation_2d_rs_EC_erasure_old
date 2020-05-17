@@ -4,8 +4,8 @@ import re
 from typing import Union, Dict, List
 from pathlib import Path
 
+from dna_storage.rs_adapter import RSBarcodeAdapter, RSPayloadAdapter, RSWideAdapter
 from dna_storage import utils
-from dna_storage.reedsolomon import barcode_rs_decode
 
 
 #################################################################
@@ -24,9 +24,11 @@ class Decoder:
                  k_mer_representative_to_z: Dict,
                  z_to_binary: Dict,
                  subset_size: int,
-                 rs_decoders: Dict,
                  oligos_per_block_len: int,
                  oligos_per_block_rs_len: int,
+                 barcode_coder: RSBarcodeAdapter,
+                 payload_coder: RSPayloadAdapter,
+                 wide_coder: RSWideAdapter,
                  results_file: Union[Path, str],
                  ):
         self.input_file = input_file
@@ -39,12 +41,14 @@ class Decoder:
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.z_to_binary = z_to_binary
         self.subset_size = subset_size
-        self.rs_decoders = rs_decoders
         self.oligos_per_block_len = oligos_per_block_len
         self.oligos_per_block_rs_len = oligos_per_block_rs_len
         self.results_file = results_file
         open(self.results_file, 'w').close()
         self.barcode_generator = utils.dna_sequence_generator(sequence_len=self.barcode_len)
+        self.barcode_coder = barcode_coder
+        self.payload_coder = payload_coder
+        self.wide_coder = wide_coder
 
     def run(self):
         barcode_prev = ''
@@ -180,33 +184,22 @@ class Decoder:
     def error_correction_payload(self, payload: Union[str, List[str]], payload_or_wide: str = 'payload') -> List[str]:
         if isinstance(payload, str):
             payload = [c for c in payload]
-        try:
-            decoder = self.select_decoder()
-            payload_decoded = decoder(payload, verify_only=False, payload_or_wide=payload_or_wide)
-        except:
-            if payload_or_wide == 'payload':
-                payload_decoded = payload[:self.payload_len]
-            else:
-                payload_decoded = payload[:self.oligos_per_block_len]
+
+        if payload_or_wide == 'payload':
+            payload_decoded = self.payload_coder.decode(payload_encoded=payload)
+        else:
+            payload_decoded = self.wide_coder.decode(payload_encoded=payload)
         return payload_decoded
 
     def error_correction_barcode(self, barcode: Union[str, List[str]]) -> str:
         if isinstance(barcode, str):
             barcode = [c for c in barcode]
-        try:
-            barcode_decoded = barcode_rs_decode(barcode, verify_only=False)
-        except:
-            barcode_decoded = barcode[:self.barcode_len]
+
+        barcode_decoded = self.barcode_coder.decode(barcode_encoded=barcode)
 
         if isinstance(barcode_decoded, list):
             barcode_decoded = ''.join(barcode_decoded)
         return barcode_decoded
-
-    def select_decoder(self):
-        try:
-            return self.rs_decoders[self.subset_size]
-        except KeyError:
-            raise NotImplementedError('No Reed-Solomon is implemented for this subset size')
 
     def payload_histogram_to_payload(self, payload_histogram: List[Counter]) -> List[str]:
         result_payload = []

@@ -1,8 +1,8 @@
 import itertools
 import pathlib
 from typing import Union
-from dna_storage.reedsolomon import rs512_decode, rs4096_decode, rs8192_decode
-from dna_storage.reedsolomon import rs512_encode, rs4096_encode, rs8192_encode
+
+from dna_storage.rs_adapter import RSBarcodeAdapter, RSPayloadAdapter, RSWideAdapter
 
 PathLike = Union[str, pathlib.Path]
 
@@ -100,8 +100,6 @@ def build_config(subset_size: int = 5,
                              'z_to_binary': z_to_binary,
                              'binary_to_z': binary_to_z,
                              'k_mer_to_dna': k_mer_to_dna},
-        'rs_decoders': {3: rs512_decode, 5: rs4096_decode, 7: rs8192_decode},
-        'rs_encoders': {3: rs512_encode, 5: rs4096_encode, 7: rs8192_encode},
         'synthesis': {'number_of_oligos_per_barcode': number_of_oligos_per_barcode,
                       'letter_replace_error_ratio': letter_replace_error_ratio,
                       'letter_remove_error_ratio': letter_remove_error_ratio,
@@ -111,13 +109,17 @@ def build_config(subset_size: int = 5,
 
     }
 
+    wide_n_k = {3: {'block_len': 430, 'block_rs_len': 82},
+                5: {'block_len': 3500, 'block_rs_len': 596},
+                7: {'block_len': 6900, 'block_rs_len': 1292}}
+
     if config['mode'] == 'prod':
         config['barcode_len'] = 12  # in ACGT
         config['barcode_rs_len'] = 4  # in ACGT
         config['payload_len'] = 120  # in Z
         config['payload_rs_len'] = 14  # in Z
-        config['oligos_per_block_len'] = 3500
-        config['oligos_per_block_rs_len'] = 596
+        config['oligos_per_block_len'] = wide_n_k[subset_size]['block_len']
+        config['oligos_per_block_rs_len'] = wide_n_k[subset_size]['block_rs_len'] - 1
     elif config['mode'] == 'test':
         config['barcode_len'] = 12  # in ACGT
         config['barcode_rs_len'] = 4  # in ACGT
@@ -128,6 +130,10 @@ def build_config(subset_size: int = 5,
     
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z
+
+    config['barcode_coder'] = RSBarcodeAdapter(bits_per_z=bits_per_z, barcode_len=config['barcode_len'], barcode_rs_len=config['barcode_rs_len'])
+    config['payload_coder'] = RSPayloadAdapter(bits_per_z=bits_per_z, payload_len=config['payload_len'], payload_rs_len=config['payload_rs_len'])
+    config['wide_coder'] = RSWideAdapter(bits_per_z=bits_per_z, payload_len=config['oligos_per_block_len'], payload_rs_len=config['oligos_per_block_rs_len'])
 
     return config
 

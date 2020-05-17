@@ -1,12 +1,8 @@
-import itertools
 from textwrap import wrap
 from typing import Union, Dict, List, Tuple
 from pathlib import Path
 
-import numpy as np
-from tqdm import tqdm
-
-from dna_storage.reedsolomon import barcode_rs_encode
+from dna_storage.rs_adapter import RSBarcodeAdapter, RSPayloadAdapter, RSWideAdapter
 from dna_storage import utils
 
 
@@ -28,9 +24,11 @@ class Encoder:
                  binary_to_z: Dict,
                  subset_size: int,
                  bits_per_z: int,
-                 rs_encoders: Dict,
                  oligos_per_block_len: int,
                  oligos_per_block_rs_len: int,
+                 barcode_coder: RSBarcodeAdapter,
+                 payload_coder: RSPayloadAdapter,
+                 wide_coder: RSWideAdapter,
                  results_file: Union[Path, str],
                  ):
         self.file_name = binary_file_name
@@ -44,12 +42,14 @@ class Encoder:
         self.binary_to_z_dict = binary_to_z
         self.subset_size = subset_size
         self.bits_per_z = bits_per_z
-        self.rs_encoders = rs_encoders
         self.oligos_per_block_len = oligos_per_block_len
         self.oligos_per_block_rs_len = oligos_per_block_rs_len
         self.results_file = results_file
         open(self.results_file, 'w').close()
         self.barcode_generator = utils.dna_sequence_generator(sequence_len=self.barcode_len)
+        self.barcode_coder = barcode_coder
+        self.payload_coder = payload_coder
+        self.wide_coder = wide_coder
 
     def run(self):
         with open(self.file_name, 'r', encoding='utf-8') as file:
@@ -89,34 +89,22 @@ class Encoder:
                 rs_append[idx].append(z)
         return rs_append
 
-    def add_payload_rs_symbols_for_error_correction(self, payload: Union[str, List[str]], payload_or_wide: str='payload') -> List[str]:
+    def add_payload_rs_symbols_for_error_correction(self, payload: Union[str, List[str]],
+                                                    payload_or_wide: str = 'payload') -> List[str]:
         if isinstance(payload, str):
             payload = [c for c in payload]
-        try:
-            encoder = self.select_encoder()
-            payload_encoded = encoder(payload, payload_or_wide=payload_or_wide)
-        except:
-            payload_encoded = payload + ['Z1'] * self.payload_rs_len
-            # TODO: check possible failure reasons
+        if payload_or_wide == 'payload':
+            payload_encoded = self.payload_coder.encode(payload)
+        else:
+            payload_encoded = self.wide_coder.encode(payload)
+
         return payload_encoded
 
     def add_barcode_rs_symbols_for_error_correction(self, barcode: Tuple[str]) -> List[str]:
         barcode = list(barcode)
-        try:
-            barcode_encoded = barcode_rs_encode(barcode)
-        except:
-            barcode_encoded = barcode + ['A'] * self.barcode_rs_len
-
+        barcode_encoded = self.barcode_coder.encode(barcode=barcode)
         return barcode_encoded
-
-    def select_encoder(self):
-        try:
-            return self.rs_encoders[self.subset_size]
-        except KeyError:
-            raise NotImplementedError('No Reed-Solomon is implemented for this subset size')
 
     def save_oligo(self, oligo: str) -> None:
         with open(self.results_file, 'a+', encoding='utf-8') as f:
             f.write(oligo + '\n')
-
-
