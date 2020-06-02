@@ -62,7 +62,7 @@ rs4096_coder_payload = rs.RSCoder(GFint=ff4096.GF4096int, k=120, n=134)
 rs4096_coder_wide = rs.RSCoder(GFint=ff4096.GF4096int, k=12, n=16)  # TODO: remove this
 # TODO: remove 12, 16 hardcoded
 
-# TODO: change all to parameters. 
+# TODO: change all to parameters.
 # TODO: decide on n,k.
 
 ################ Verify with Inbal ####################

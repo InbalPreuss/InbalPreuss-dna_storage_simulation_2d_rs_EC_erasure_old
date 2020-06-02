@@ -121,19 +121,10 @@ class Decoder:
             self.save_binary(binary=binary, barcode_prev=unique_barcode)
 
     def wide_rs(self, unique_payload_block_with_rs):
-        print('unique_payload_block_with_rs', len(unique_payload_block_with_rs))
-        print('unique_payload_block_with_rs', len(unique_payload_block_with_rs[0]))
         rs_removed = [[] for _ in range(int(self.oligos_per_block_len))]
         for col in range(len(unique_payload_block_with_rs[0])):
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
-            print('payload', len(payload), 'col_without_rs', len(col_without_rs))
-            if len(col_without_rs) > 12:
-                print("\n\n")
-                print(col_without_rs)
-                print("\n\n")
-                print(payload)
-                pdb.set_trace()
 
             for idx, z in enumerate(col_without_rs):
                 rs_removed[idx].append(z)

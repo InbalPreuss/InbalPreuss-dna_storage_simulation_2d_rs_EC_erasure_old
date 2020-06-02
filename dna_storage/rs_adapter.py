@@ -1,7 +1,11 @@
 import itertools
+import sys
 
 import numpy as np
 from unireedsolomon import rs
+from unireedsolomon import ff
+
+# del sys.modules["rs"]
 
 
 class RSBarcodeAdapter:
@@ -13,23 +17,54 @@ class RSBarcodeAdapter:
         k = int(barcode_len / 2)
         c_exp = int(np.log2(len(alphabet)))
         prim = 2 ** c_exp
-        self._barcode_coder = rs.RSCoder(n=n, k=k, prim=prim, c_exp=c_exp)
+        generator = 3
+        prim = ff.find_prime_polynomials(generator=generator, c_exp=c_exp, fast_primes=False, single=True)
+        # from unireedsolomon import rs as uni1
+        # import importlib
+
+        # SPEC_OS = importlib.util.find_spec('unireedsolomon.rs')
+        # uni1 = importlib.util.module_from_spec(SPEC_OS)
+        # SPEC_OS.loader.exec_module(uni1)
+        # sys.modules['uni1'] = uni1
+
+        # SPEC_OS = importlib.util.find_spec('unireedsolomon.rs')
+        # uni2 = importlib.util.module_from_spec(SPEC_OS)
+        # SPEC_OS.loader.exec_module(uni2)
+        # sys.modules['uni2'] = uni2
+        # del SPEC_OS
+        # import unireedsolomon as uni1
+        # del sys.modules['unireedsolomon']
+        # print(id(os1), id(os2))
+        # print(id(sys.modules["unireedsolomon.rs"]))
+        # print(id(sys.modules["unireedsolomon"]))
+        # del sys.modules["unireedsolomon"]
+        self._barcode_coder = rs.RSCoder(n=n, k=k, generator=generator, prim=prim, c_exp=c_exp)
+        self.ff_globals = ff.get_globals()
+        # import unireedsolomon.ff
+        # self.ff = unireedsolomon.ff
+        barcode_encoded_as_polynomial = self._barcode_coder.encode([0,0,0,0,0,1], return_string=False)
         self._barcode_pair_to_int = {''.join(vv): i for i, vv in enumerate(alphabet)}
         self._int_to_barcode_pairs = {i: vv for vv, i in self._barcode_pair_to_int.items()}
 
     def encode(self, barcode):
+        ff.set_globals(*self.ff_globals)
         barcode_as_int = [self._barcode_pair_to_int[''.join(barcode[i:i + 2])] for i in range(0, len(barcode), 2)]
         barcode_encoded_as_polynomial = self._barcode_coder.encode(barcode_as_int, return_string=False)
         barcode_encoded = ''.join([self._int_to_barcode_pairs[z] for z in barcode_encoded_as_polynomial])
         return barcode_encoded
 
     def decode(self, barcode_encoded):
-        barcode_encoded_as_int = [self._int_to_barcode_pairs[''.join(barcode_encoded[i:i + 2])] for i in range(0, len(barcode_encoded), 2)]
-        if self._barcode_coder.check_fast(barcode_encoded_as_int):
+        ff.set_globals(*self.ff_globals)
+        barcode_encoded_as_int = [self._barcode_pair_to_int[''.join(barcode_encoded[i:i + 2])] for i in range(0, len(barcode_encoded), 2)]
+        if self._barcode_coder.check(barcode_encoded_as_int):
             return barcode_encoded[0:self._barcode_len]
         else:
-            barcode = self._barcode_coder.decode_fast(barcode_encoded_as_int)
+            barcode = self._barcode_coder.decode(barcode_encoded_as_int)
             return barcode
+        # for i in range(16):
+        #     for j in range(16):
+        #         if self._barcode_coder.check_fast([0,0,0,0,1,i,j]):
+        #             print(i, j)
 
 
 class RSPayloadAdapter:
@@ -41,17 +76,34 @@ class RSPayloadAdapter:
         k = payload_len
         c_exp = bits_per_z
         prim = 2 ** c_exp
-        self._payload_coder = rs.RSCoder(n=n, k=k, prim=prim, c_exp=c_exp)
+        generator = 3
+        prim = ff.find_prime_polynomials(generator=generator, c_exp=c_exp, fast_primes=False, single=True)
+
+        # id(sys.modules["unireedsolomon"])
+        # del sys.modules["unireedsolomon"]
+        # import unireedsolomon as uni2
+        # del sys.modules['unireedsolomon']
+        # print(id(uni2))
+        # import importlib
+        # SPEC_OS = importlib.util.find_spec('unireedsolomon.rs')
+        # uni2 = importlib.util.module_from_spec(SPEC_OS)
+        # SPEC_OS.loader.exec_module(uni2)
+        # sys.modules['uni2'] = uni2
+        self._payload_coder = rs.RSCoder(n=n, k=k, generator=generator, prim=prim, c_exp=c_exp)
+        self.ff_globals = ff.get_globals()
         self._payload_to_int = {''.join(vv): i for i, vv in enumerate(alphabet)}
         self._int_to_payload = {i: vv for vv, i in self._payload_to_int.items()}
 
     def encode(self, payload):
+        ff.set_globals(*self.ff_globals)
         payload_as_int = [self._payload_to_int[z] for z in payload]
+        ff.set_globals(*self.ff_globals)
         payload_encoded_as_polynomial = self._payload_coder.encode_fast(payload_as_int, return_string=False)
         payload_encoded = [self._int_to_payload[z] for z in payload_encoded_as_polynomial]
         return payload_encoded
 
     def decode(self, payload_encoded):
+        ff.set_globals(*self.ff_globals)
         payload_as_int = [self._payload_to_int[z] for z in payload_encoded]
         if self._payload_coder.check_fast(payload_as_int):
             return payload_encoded[0:self.payload_len]
