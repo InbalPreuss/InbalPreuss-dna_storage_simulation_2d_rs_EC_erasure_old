@@ -52,22 +52,20 @@ class Synthesizer:
 
     def add_remove_replace(self, dna_list: List[str]):
         for row_idx, oligo in enumerate(dna_list):
-            # remove = [np.random.binomial(1, self.synthesis_config['letter_remove_error_ratio']) for i in range(len(oligo))]
             remove = np.random.binomial(1, self.synthesis_config['letter_remove_error_ratio'], len(oligo))
-
             oligo = ''.join([char if remove[idx] == 0 else '' for idx, char in enumerate(oligo)])
-            # add_idx = [np.random.binomial(1, self.synthesis_config['letter_add_error_ratio']) for i in range(len(oligo))]
             add_idx = np.random.binomial(1, self.synthesis_config['letter_add_error_ratio'], len(oligo))
             add = [random.choice('ACGT') if i == 1 else '' for i in add_idx]
             oligo = ''.join(''.join(x) for x in zip(oligo, add))
-            # replace_idx = [np.random.binomial(1, self.synthesis_config['letter_replace_error_ratio']) for i in
-            #                range(len(oligo))]
             replace_idx = np.random.binomial(1, self.synthesis_config['letter_replace_error_ratio'], len(oligo))
+            oligo_with_replaced_letters = [''] * len(oligo)
             for letter_idx, letter in enumerate(oligo):
                 if replace_idx[letter_idx] == 1:
                     diff = {'A', 'C', 'G', 'T'} - set(letter)
-                    oligo[letter_idx] = random.choice(''.join(diff))
-            dna_list[row_idx] = oligo
+                    oligo_with_replaced_letters[letter_idx] = random.choice(''.join(diff))
+                else:
+                    oligo_with_replaced_letters[letter_idx] = letter
+            dna_list[row_idx] = ''.join(oligo_with_replaced_letters)
         return dna_list
 
     def get_x_list(self, payload: List[str]):
