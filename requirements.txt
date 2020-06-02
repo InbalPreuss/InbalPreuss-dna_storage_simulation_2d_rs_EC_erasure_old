@@ -21,4 +21,4 @@ six==1.14.0
 tqdm==4.45.0
 wcwidth==0.1.8
 setuptools~=40.8.0
-unireedsolomon~=1.0.2
+git+git://github.com/InbalPreuss/unireedsolomon

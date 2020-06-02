@@ -131,9 +131,12 @@ def build_config(subset_size: int = 5,
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z
 
-    config['barcode_coder'] = RSBarcodeAdapter(bits_per_z=bits_per_z, barcode_len=config['barcode_len'], barcode_rs_len=config['barcode_rs_len'])
-    config['payload_coder'] = RSPayloadAdapter(bits_per_z=bits_per_z, payload_len=config['payload_len'], payload_rs_len=config['payload_rs_len'])
-    config['wide_coder'] = RSWideAdapter(bits_per_z=bits_per_z, payload_len=config['oligos_per_block_len'], payload_rs_len=config['oligos_per_block_rs_len'])
+    config['barcode_coder'] = RSBarcodeAdapter(bits_per_z=bits_per_z, barcode_len=config['barcode_len'],
+                                               barcode_rs_len=config['barcode_rs_len'])
+    config['payload_coder'] = RSPayloadAdapter(bits_per_z=bits_per_z, payload_len=config['payload_len'],
+                                               payload_rs_len=config['payload_rs_len'])
+    config['wide_coder'] = RSWideAdapter(bits_per_z=bits_per_z, payload_len=config['oligos_per_block_len'],
+                                         payload_rs_len=config['oligos_per_block_rs_len'])
 
     return config
 
