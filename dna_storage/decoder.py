@@ -108,9 +108,6 @@ class Decoder:
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
         unique_payload_corrected = self.error_correction_payload(payload=unique_payload)
-        if len(unique_payload_corrected) > 120:
-            print(unique_payload)
-            pdb.set_trace()
         return unique_payload_corrected
 
     def save_block_to_binary(self, unique_barcode_block_with_rs: List[str],
