@@ -63,7 +63,7 @@ def main(config):
     # Sample from the shuffled synthesis results
     if config['do_sample_oligos_from_file']:
         print(f"5. sample oligos from file")
-        sample_oligos_from_file(input_file=config['synthesis_results_file'],
+        sample_oligos_from_file(input_file=config['shuffle_results_file'],
                                 output_file=config['sample_oligos_results_file'],
                                 number_of_oligos=config['number_of_sampled_oligos_from_file'])
 

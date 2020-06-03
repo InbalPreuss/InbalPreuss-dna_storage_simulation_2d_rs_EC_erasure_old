@@ -103,6 +103,7 @@ class BinaryResultToText:
         self.barcode_len = barcode_len
         self.payload_len = payload_len
         self.bits_per_z = bits_per_z
+        open(self.output_file, 'w').close()
 
     def run(self) -> None:
         oligo_len_binary = int(self.payload_len * self.bits_per_z)
@@ -151,7 +152,8 @@ class BinaryResultToText:
                             bits = accumulation[:size]
                             text = text_from_bits(bits)
                             accumulation = accumulation[size:]
-                            output_file.write(text)
+                            if text != '\x00':
+                                output_file.write(text)
                             break
                         except UnicodeDecodeError:
                             if size == utf_chars_sizes[-1]:

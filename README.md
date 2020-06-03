@@ -50,6 +50,10 @@ python -m cProfile -s time test_dna.py > profiling_data_no_synthsis_1_KB.txt
 4. Explain in config that the barcode len is for ACGT, and the payload len is for Z1,Z2,... 3-Mers, 3 nucleotides
 1. Add Multi threading
 6. Check the time in the text handling - If it takes too long, we should remove this stage and generate random binary
+4. rename results_file to output_file
+5. add typings
+6. add docstring
+
 
 ## Inbal:
 

@@ -35,7 +35,10 @@ class RSBarcodeAdapter:
         if self._barcode_coder.check(barcode_encoded_as_int):
             return barcode_encoded[0:self._barcode_len]
         else:
-            barcode = self._barcode_coder.decode(barcode_encoded_as_int)
+            barcode_as_int, rs_as_int = self._barcode_coder.decode(barcode_encoded_as_int, nostrip=True, return_string=False)
+            barcode = []
+            for i in barcode_as_int:
+                barcode += list(self._int_to_barcode_pairs[i])
             return barcode
 
 
@@ -69,7 +72,8 @@ class RSPayloadAdapter:
         if self._payload_coder.check_fast(payload_as_int):
             return payload_encoded[0:self.payload_len]
         else:
-            payload = self._payload_coder.decode_fast(payload_as_int)
+            payload_as_gf, rs_as_gf = self._payload_coder.decode(payload_as_int, nostrip=True, return_string=False)
+            payload = [self._int_to_payload[i] for i in payload_as_gf]
             return payload
 
 
