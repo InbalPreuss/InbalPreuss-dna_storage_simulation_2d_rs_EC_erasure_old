@@ -57,8 +57,8 @@ def build_config(subset_size: int = 5,
     k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
 
     config = {
-        # 'mode': 'prod',
-        'mode': 'test',
+        'mode': 'prod',
+        # 'mode': 'test',
         'k_mer': 3,
         'number_of_sampled_oligos_from_file': number_of_sampled_oligos_from_file,
         'shrink_dict': shrink_dict_3_mer,
