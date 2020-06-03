@@ -2,7 +2,10 @@ import os
 from pathlib import Path
 import sqlite3
 
+from unireedsolomon import RSCodecError
+
 from dna_storage.config import PathLike
+from dna_storage.rs_adapter import RSBarcodeAdapter
 
 
 def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLike):
@@ -43,7 +46,8 @@ def sample_oligos_from_file(input_file: PathLike, output_file: PathLike, number_
 
 
 def sort_oligo_file(barcode_len: int, barcode_rs_len: int,
-                    sort_db_file: PathLike, input_file: PathLike, output_file: PathLike):
+                    sort_db_file: PathLike, input_file: PathLike, output_file: PathLike,
+                    barcode_coder: RSBarcodeAdapter):
     try:
         os.remove(sort_db_file)
     except OSError:
@@ -62,7 +66,15 @@ def sort_oligo_file(barcode_len: int, barcode_rs_len: int,
             line = line.rstrip()
             barcode = line[:barcode_len+barcode_rs_len]
             payload = line[barcode_len+barcode_rs_len:]
-            c.execute("INSERT INTO sort_table VALUES ('" + barcode + "', '" + payload + "')")
+
+            barcode_list = [c for c in barcode]
+            try:
+                barcode_decoded = barcode_coder.decode(barcode_encoded=barcode_list)
+            except RSCodecError:
+                continue
+
+            barcode_decoded = ''.join(barcode_decoded)
+            c.execute("INSERT INTO sort_table VALUES ('" + barcode_decoded + "', '" + payload + "')")
 
     c.execute("SELECT * FROM sort_table ORDER BY barcode")
     with open(output_file, 'w+') as f:

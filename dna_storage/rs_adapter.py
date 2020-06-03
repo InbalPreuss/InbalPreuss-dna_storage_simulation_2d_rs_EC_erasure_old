@@ -1,7 +1,7 @@
 import itertools
 
 import numpy as np
-from unireedsolomon import rs
+from unireedsolomon import rs, RSCodecError
 from unireedsolomon import ff
 
 
@@ -35,7 +35,12 @@ class RSBarcodeAdapter:
         if self._barcode_coder.check(barcode_encoded_as_int):
             return barcode_encoded[0:self._barcode_len]
         else:
-            barcode_as_int, rs_as_int = self._barcode_coder.decode(barcode_encoded_as_int, nostrip=True, return_string=False)
+            try:
+                barcode_as_int, rs_as_int = self._barcode_coder.decode(barcode_encoded_as_int, nostrip=True, return_string=False)
+                if not self._barcode_coder.check(barcode_as_int + rs_as_int):
+                    raise RSCodecError
+            except RSCodecError:
+                raise RSCodecError
             barcode = []
             for i in barcode_as_int:
                 barcode += list(self._int_to_barcode_pairs[i])
@@ -72,7 +77,10 @@ class RSPayloadAdapter:
         if self._payload_coder.check_fast(payload_as_int):
             return payload_encoded[0:self.payload_len]
         else:
-            payload_as_gf, rs_as_gf = self._payload_coder.decode(payload_as_int, nostrip=True, return_string=False)
+            try:
+                payload_as_gf, rs_as_gf = self._payload_coder.decode(payload_as_int, nostrip=True, return_string=False)
+            except RSCodecError:
+                return payload_encoded[0:self.payload_len]
             payload = [self._int_to_payload[i] for i in payload_as_gf]
             return payload
 

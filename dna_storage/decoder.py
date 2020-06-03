@@ -1,8 +1,9 @@
-import pdb
 from collections import Counter
 import re
 from typing import Union, Dict, List
 from pathlib import Path
+
+from unireedsolomon import RSCodecError
 
 from dna_storage.rs_adapter import RSBarcodeAdapter, RSPayloadAdapter, RSWideAdapter
 from dna_storage import utils
@@ -60,12 +61,11 @@ class Decoder:
             unique_barcode_block_with_rs = []
             for idx, line in enumerate(file):
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
-                barcode = barcode_and_payload[:self.barcode_total_len]
-                payload = barcode_and_payload[self.barcode_total_len:]
-
-                barcode = self.error_correction_barcode(barcode=barcode)
-                if self.wrong_barcode_len(barcode=barcode) or self.wrong_payload_len(payload=payload):
+                if self.wrong_barcode_and_payload_len(barcode_and_payload):
                     continue
+                barcode = barcode_and_payload[:self.barcode_len]
+                payload = barcode_and_payload[self.barcode_len:]
+
                 if barcode != barcode_prev:
                     next_barcode_should_be = "".join(next(self.barcode_generator))
                     while next_barcode_should_be != barcode:
@@ -137,11 +137,8 @@ class Decoder:
         binary = ["".join(map(str, tup)) for tup in binary]
         return "".join(binary)
 
-    def wrong_barcode_len(self, barcode: str) -> bool:
-        return len(barcode) != self.barcode_len
-
-    def wrong_payload_len(self, payload: str) -> bool:
-        return len(payload) / self.k_mer != self.payload_total_len
+    def wrong_barcode_and_payload_len(self, barcode_and_payload: str) -> bool:
+        return len(barcode_and_payload) != self.barcode_len + (self.payload_total_len * self.k_mer)
 
     def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
         """ Note that missing k-mers will be removed from the oligo_accumulation """
@@ -177,13 +174,17 @@ class Decoder:
             payload_decoded = self.payload_coder.decode(payload_encoded=payload)
         else:
             payload_decoded = self.wide_coder.decode(payload_encoded=payload)
+
         return payload_decoded
 
     def error_correction_barcode(self, barcode: Union[str, List[str]]) -> str:
         if isinstance(barcode, str):
             barcode = [c for c in barcode]
 
-        barcode_decoded = self.barcode_coder.decode(barcode_encoded=barcode)
+        try:
+            barcode_decoded = self.barcode_coder.decode(barcode_encoded=barcode)
+        except RSCodecError:
+            return ''
 
         if isinstance(barcode_decoded, list):
             barcode_decoded = ''.join(barcode_decoded)

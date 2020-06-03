@@ -3,7 +3,7 @@ from dna_storage.text_handling import TextFileToBinaryFile, DecoderResultToBinar
 from dna_storage.decoder import Decoder
 from dna_storage.encoder import Encoder
 from dna_storage.mock_synthesizer import Synthesizer
-from dna_storage.shuffle import shuffle, sort_oligo_file, sample_oligos_from_file
+from dna_storage.shuffle_and_sort import shuffle, sort_oligo_file, sample_oligos_from_file
 
 
 def main(config):
@@ -74,7 +74,8 @@ def main(config):
                         barcode_rs_len=config['barcode_rs_len'],
                         sort_db_file=config['sort_oligo_db_file'],
                         input_file=config['sample_oligos_results_file'],
-                        output_file=config['sort_oligo_results_file'])
+                        output_file=config['sort_oligo_results_file'],
+                        barcode_coder=config['barcode_coder'])
 
     # Parsing Fastq data
     if config['do_fastq_handling']:

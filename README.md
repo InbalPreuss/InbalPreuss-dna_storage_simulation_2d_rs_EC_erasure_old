@@ -53,6 +53,7 @@ python -m cProfile -s time test_dna.py > profiling_data_no_synthsis_1_KB.txt
 4. rename results_file to output_file
 5. add typings
 6. add docstring
+7. think of adding check after payload reed solomon
 
 
 ## Inbal:
