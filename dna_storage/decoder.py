@@ -68,10 +68,9 @@ class Decoder:
 
                 if barcode != barcode_prev:
                     next_barcode_should_be = "".join(next(self.barcode_generator))
-                    while next_barcode_should_be != barcode:
+                    if next_barcode_should_be != barcode:
                         unique_payload_block_with_rs.append(dummy_payload)
                         unique_barcode_block_with_rs.append(next_barcode_should_be)
-                        next_barcode_should_be = "".join(next(self.barcode_generator))
 
                     if len(payload_accumulation) != 0:
                         unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
