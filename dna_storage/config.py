@@ -120,6 +120,7 @@ def build_config(subset_size: int = 5,
         config['payload_rs_len'] = 14  # in Z
         config['oligos_per_block_len'] = wide_n_k[subset_size]['block_len']
         config['oligos_per_block_rs_len'] = wide_n_k[subset_size]['block_rs_len'] - 1
+        config['number_of_sampled_oligos_from_file'] = number_of_sampled_oligos_from_file * (wide_n_k[subset_size]['block_len'] + (wide_n_k[subset_size]['block_rs_len'] - 1))
     elif config['mode'] == 'test':
         config['barcode_len'] = 12  # in ACGT
         config['barcode_rs_len'] = 4  # in ACGT
@@ -127,6 +128,7 @@ def build_config(subset_size: int = 5,
         config['payload_rs_len'] = 14  # in Z
         config['oligos_per_block_len'] = 12
         config['oligos_per_block_rs_len'] = 4
+        config['number_of_sampled_oligos_from_file'] = config['oligos_per_block_len'] + config['oligos_per_block_rs_len']
     
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z
