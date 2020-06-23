@@ -25,73 +25,73 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
     res_file = pathlib.Path(f'data/testing/output/error_results_n_oligos_{number_of_oligos_per_barcode}_n_sampled_{number_of_sampled_oligos_from_file}.pk')
-    #if not res_file.is_file():
-    for size, bits_per_z in sizes_and_bit_sizes:
-        # products = itertools.product(errors, repeat=3)
-        prods = list(itertools.product(errors, repeat=3))
-        products = [i for i in prods if (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
-        for prod in products:
-            config = build_config(subset_size=size,
-                                  bits_per_z=bits_per_z,
-                                  letter_replace_error_ratio=prod[0],
-                                  letter_remove_error_ratio=prod[1],
-                                  letter_add_error_ratio=prod[2],
-                                  number_of_oligos_per_barcode=number_of_oligos_per_barcode,
-                                  number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
-            if number_of_sampled_oligos_from_file is None:
-                n_samples = 'all'
-            else:
-                n_samples = number_of_sampled_oligos_from_file
-            print(f"[ size: {size:>1} ]",
-                  f"[ errors: (replace: {prod[0]:<6}), (remove: {prod[1]:<6}), (add: {prod[2]:<6}) ]",
-                  f"[ n_oligos_per_barcode: {number_of_oligos_per_barcode:>6} ]",
-                  f"[ m_samples_from_synthesis_file: {n_samples:>6}]")
-            dist, input_data, output_data = run_pipe_with_config(config)
-            pos = size, *prod
-            print(f"[ input data: {input_data} ]\n",
-                  f"[ output data: {output_data}]\n",
-                  f"[ dist: {dist:>5}]\n"
-                  f"======================================================================")
-            results[pos] = {'dist': dist, 'input_data': input_data, 'output_data': output_data}
+    if not res_file.is_file():
+        for size, bits_per_z in sizes_and_bit_sizes:
+            # products = itertools.product(errors, repeat=3)
+            prods = list(itertools.product(errors, repeat=3))
+            products = [i for i in prods if (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
+            for prod in products:
+                config = build_config(subset_size=size,
+                                      bits_per_z=bits_per_z,
+                                      letter_replace_error_ratio=prod[0],
+                                      letter_remove_error_ratio=prod[1],
+                                      letter_add_error_ratio=prod[2],
+                                      number_of_oligos_per_barcode=number_of_oligos_per_barcode,
+                                      number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
+                if number_of_sampled_oligos_from_file is None:
+                    n_samples = 'all'
+                else:
+                    n_samples = number_of_sampled_oligos_from_file
+                print(f"[ size: {size:>1} ]",
+                      f"[ errors: (replace: {prod[0]:<6}), (remove: {prod[1]:<6}), (add: {prod[2]:<6}) ]",
+                      f"[ n_oligos_per_barcode: {number_of_oligos_per_barcode:>6} ]",
+                      f"[ m_samples_from_synthesis_file: {n_samples:>6}]")
+                dist, input_data, output_data = run_pipe_with_config(config)
+                pos = size, *prod
+                print(f"[ input data: {input_data} ]\n",
+                      f"[ output data: {output_data}]\n",
+                      f"[ dist: {dist:>5}]\n"
+                      f"======================================================================")
+                results[pos] = {'dist': dist, 'input_data': input_data, 'output_data': output_data}
 
-        with open(res_file, 'wb') as f:
-            pickle.dump(results, f)
+            with open(res_file, 'wb') as f:
+                pickle.dump(results, f)
 
-    # else:
-    #     with open(res_file, 'rb') as f:
-    #         results = pickle.load(f)
-    #
-    # triples = [(errors, [0], [0]), ([0], errors, [0]), ([0], [0], errors)]
-    # for size, _ in sizes_and_bit_sizes:
-    #     for idx, triple in enumerate(triples, 1):
-    #         prod0 = [{key: val} for key, val in results.items() if
-    #                  key[0] == size and
-    #                  any(key[1] == v for v in triple[0]) and
-    #                  any(key[2] == v for v in triple[1]) and
-    #                  any(key[3] == v for v in triple[2])]
-    #         x = [list(r.keys())[0][idx] for r in prod0]
-    #         y = [list(r.values())[0]['dist'] for r in prod0]
-    #         x, y = zip(*sorted(zip(x, y), reverse=True))
-    #
-    #         fig, ax = plt.subplots()
-    #         ax.plot(x, y, marker='o', linestyle='-')
-    #         ax.set_xlabel('error rate')
-    #         ax.set_ylabel('Levenshtein distance')
-    #         ax.set_xscale('symlog', linthreshx=errors[-2])
-    #         ax.set_xticks(errors)
-    #         ax.set_xlim([0, errors[0]])
-    #
-    #         name = f'[ subset size {size} ]' \
-    #                f'[ number of oligos per barcode {number_of_oligos_per_barcode} ]\n' \
-    #                f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file} ]\n' \
-    #                f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
-    #                f'[ remove {1 if len(triple[1]) > 1 else 0} ]' \
-    #                f'[ add {1 if len(triple[2]) > 1 else 0} ]'
-    #         ax.set_title(name)
-    #         fig.tight_layout(rect=[0, 0, 1, 1])
-    #         name = name.replace("\n", "")
-    #         fig.savefig(f'data/testing/output/{name}.png')
-    #         plt.close(fig)
+    else:
+        with open(res_file, 'rb') as f:
+            results = pickle.load(f)
+
+    triples = [(errors, [0], [0]), ([0], errors, [0]), ([0], [0], errors)]
+    for size, _ in sizes_and_bit_sizes:
+        for idx, triple in enumerate(triples, 1):
+            prod0 = [{key: val} for key, val in results.items() if
+                     key[0] == size and
+                     any(key[1] == v for v in triple[0]) and
+                     any(key[2] == v for v in triple[1]) and
+                     any(key[3] == v for v in triple[2])]
+            x = [list(r.keys())[0][idx] for r in prod0]
+            y = [list(r.values())[0]['dist'] for r in prod0]
+            x, y = zip(*sorted(zip(x, y), reverse=True))
+
+            fig, ax = plt.subplots()
+            ax.plot(x, y, marker='o', linestyle='-')
+            ax.set_xlabel('error rate')
+            ax.set_ylabel('Levenshtein distance')
+            ax.set_xscale('symlog', linthreshx=errors[-2])
+            ax.set_xticks(errors)
+            ax.set_xlim([0, errors[0]])
+
+            name = f'[ subset size {size} ]' \
+                   f'[ number of oligos per barcode {number_of_oligos_per_barcode} ]\n' \
+                   f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file} ]\n' \
+                   f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
+                   f'[ remove {1 if len(triple[1]) > 1 else 0} ]' \
+                   f'[ add {1 if len(triple[2]) > 1 else 0} ]'
+            ax.set_title(name)
+            fig.tight_layout(rect=[0, 0, 1, 1])
+            name = name.replace("\n", "")
+            fig.savefig(f'data/testing/output/{name}.png')
+            plt.close(fig)
 
 
 def timing():
