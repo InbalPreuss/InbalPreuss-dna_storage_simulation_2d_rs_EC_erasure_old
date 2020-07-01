@@ -38,7 +38,7 @@ def main(config):
                           payload_coder=config['payload_coder'],
                           wide_coder=config['wide_coder'],
                           results_file=config['encoder_results_file'])
-        encoder.run()
+        number_of_blocks = encoder.run()
 
     # Synthesize
     if config['do_synthesize']:
@@ -65,7 +65,8 @@ def main(config):
         print(f"5. sample oligos from file")
         sample_oligos_from_file(input_file=config['shuffle_results_file'],
                                 output_file=config['sample_oligos_results_file'],
-                                number_of_oligos=config['number_of_sampled_oligos_from_file'])
+                                number_of_oligos=config['number_of_sampled_oligos_from_file'],
+                                number_of_blocks=number_of_blocks)
 
     # Sorting the shuffled synthesis results
     if config['do_sort_oligo_file']:

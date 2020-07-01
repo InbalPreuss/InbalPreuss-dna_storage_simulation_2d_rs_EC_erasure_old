@@ -78,7 +78,15 @@
     ```console
     nohup python3 -m dna_storage.test_dna &
     ```
-
+   
+   Save PID: 
+   After writing the commend above, the PID of the process will appear, copy the PID so you can control the process later (to stop the process for example)
+   
+   Kill PID:
+   ```console
+   kill 14404
+   ```
+   
  8. To verify that the program is still running after you disconnect from putty
     ```console
     htop

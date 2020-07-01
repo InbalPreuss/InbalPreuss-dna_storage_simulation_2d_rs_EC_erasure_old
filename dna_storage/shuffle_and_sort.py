@@ -36,10 +36,11 @@ def shuffle(shuffle_db_file: PathLike, input_file: PathLike, output_file: PathLi
             f.write(line + '\n')
 
 
-def sample_oligos_from_file(input_file: PathLike, output_file: PathLike, number_of_oligos: int = None):
+def sample_oligos_from_file(input_file: PathLike, output_file: PathLike, number_of_oligos: int = None, number_of_blocks: int = 1):
+    number_of_sampled_oligo = number_of_oligos * number_of_blocks
     with open(input_file, 'r') as input_file, open(output_file, 'w+') as output_file:
         for idx, line in enumerate(input_file):
-            if number_of_oligos is None or idx < number_of_oligos:
+            if number_of_oligos is None or idx < number_of_sampled_oligo:
                 output_file.write(line)
             else:
                 return

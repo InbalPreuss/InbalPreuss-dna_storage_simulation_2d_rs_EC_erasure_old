@@ -52,6 +52,7 @@ class Encoder:
         self.wide_coder = wide_coder
 
     def run(self):
+        number_of_blocks = 0
         with open(self.file_name, 'r', encoding='utf-8') as file:
             z_list_accumulation_per_block = []
             for line in file:
@@ -62,11 +63,13 @@ class Encoder:
                     z_list.append(z)
                 z_list_accumulation_per_block.append(z_list)
                 if len(z_list_accumulation_per_block) == self.oligos_per_block_len:
+                    number_of_blocks += 1
                     z_list_accumulation_with_rs = self.wide_block_rs(z_list_accumulation_per_block)
                     for z_list in z_list_accumulation_with_rs:
                         oligo = self.z_to_oligo(z_list)
                         self.save_oligo(oligo=oligo)
                     z_list_accumulation_per_block = []
+        return number_of_blocks
 
     def binary_to_z(self, binary: str) -> str:
         binary_tuple = tuple([int(b) for b in binary])
