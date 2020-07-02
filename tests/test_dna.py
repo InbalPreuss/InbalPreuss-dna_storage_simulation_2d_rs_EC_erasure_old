@@ -14,7 +14,10 @@ from dna_storage.main import main
 def test_number_of_oligos_per_barcode():
     for number_of_oligos_per_barcode in [20, 100, 1000, 10000]:
         for number_of_sampled_oligos_from_file in [20, 50, 100, 1000, None]:
-            if(number_of_oligos_per_barcode < number_of_sampled_oligos_from_file):
+            if number_of_sampled_oligos_from_file is None:
+                subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode,
+                                           number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
+            elif number_of_oligos_per_barcode < number_of_sampled_oligos_from_file:
                 break
             subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode,
                                        number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
@@ -26,12 +29,14 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
-    res_file = pathlib.Path(f'data/testing/output/error_results_n_oligos_{number_of_oligos_per_barcode}_n_sampled_{number_of_sampled_oligos_from_file}.pk')
+    res_file = pathlib.Path(
+        f'data/testing/output/error_results_n_oligos_{number_of_oligos_per_barcode}_n_sampled_{number_of_sampled_oligos_from_file}.pk')
     if not res_file.is_file():
         for size, bits_per_z in sizes_and_bit_sizes:
             # products = itertools.product(errors, repeat=3)
             prods = list(itertools.product(errors, repeat=3))
-            products = [i for i in prods if (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
+            products = [i for i in prods if
+                        (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
             for prod in products:
                 config = build_config(subset_size=size,
                                       bits_per_z=bits_per_z,
