@@ -205,7 +205,12 @@ class Decoder:
                 for missing_rep_idx in range(self.subset_size - len(reps)):
                     reps.append((diff[missing_rep_idx], 1))
             k_mer_rep = tuple(self.sorted_human([rep[0] for rep in reps]))
-            result_payload.append(self.k_mer_representative_to_z[k_mer_rep])
+            try:
+                z = self.k_mer_representative_to_z[k_mer_rep]
+            except KeyError:
+                z = 'Z1'  # The X tuple is out of range
+            result_payload.append(z)
+
         return result_payload
 
     def save_binary(self, binary: str, barcode_prev: str) -> None:

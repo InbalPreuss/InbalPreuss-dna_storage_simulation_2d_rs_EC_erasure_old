@@ -41,17 +41,18 @@ def build_config(subset_size: int = 5,
     shrink_dict_size = len(shrink_dict_3_mer)
 
     k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
-    r = [set(k) for k in k_mer_representative]
+    x_combinations = [set(k) for k in k_mer_representative]
     all_binary_combinations = itertools.product([0, 1], repeat=bits_per_z)
-    z = itertools.combinations(['Z' + str(i) for i in range(1, len(r) + 1)], 1)
+    z = itertools.combinations(['Z' + str(i) for i in range(1, len(x_combinations) + 1)], 1)
     z = [i[0] for i in z]
     z_to_binary = dict(zip(z, all_binary_combinations))
     all_binary_combinations = itertools.product([0, 1], repeat=bits_per_z)
     binary_to_z = dict(zip(all_binary_combinations, z))
 
+    z = z[:2**bits_per_z]
     k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
+    k_mer_representative = list(k_mer_representative)[:2**bits_per_z]
     k_mer_representative_to_z = dict(zip(k_mer_representative, z))
-    k_mer_representative = itertools.combinations(['X' + str(i) for i in range(1, shrink_dict_size + 1)], subset_size)
     z_to_k_mer_representative = dict(zip(z, k_mer_representative))
 
     k_mer_to_dna = {v: k for k, v in shrink_dict_3_mer.items()}
