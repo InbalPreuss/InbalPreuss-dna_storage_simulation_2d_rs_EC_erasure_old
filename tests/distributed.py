@@ -79,7 +79,6 @@ def run_config(config_for_run: Dict):
 def main_fn():
     from multiprocessing import Pool, cpu_count
     configs_for_run = build_runs()
-    configs_for_run = configs_for_run[:4]
     with Pool(cpu_count()) as p:
         p.map(run_config, configs_for_run)
 
