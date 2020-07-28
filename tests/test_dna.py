@@ -13,18 +13,15 @@ from dna_storage.main import main
 
 def test_number_of_oligos_per_barcode():
     for number_of_oligos_per_barcode in [20, 100, 1000, 10000]:
-        for number_of_sampled_oligos_from_file in [20, 50, 100, 1000, None]:
-            if number_of_sampled_oligos_from_file is None:
-                subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode,
-                                           number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
-            elif number_of_oligos_per_barcode < number_of_sampled_oligos_from_file:
+        for number_of_sampled_oligos_from_file in [20, 50, 100, 1000, float('inf')]:
+            if number_of_oligos_per_barcode < number_of_sampled_oligos_from_file:
                 break
             subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode,
                                        number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
 
 
 def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
-                               number_of_sampled_oligos_from_file: Union[int, None] = 10000):
+                               number_of_sampled_oligos_from_file: Union[int, float] = 10000):
     plt.ion()
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
@@ -45,14 +42,11 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
                                       letter_add_error_ratio=prod[2],
                                       number_of_oligos_per_barcode=number_of_oligos_per_barcode,
                                       number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
-                if number_of_sampled_oligos_from_file is None:
-                    n_samples = 'all'
-                else:
-                    n_samples = number_of_sampled_oligos_from_file
+
                 print(f"[ size: {size:>1} ]",
                       f"[ errors: (replace: {prod[0]:<6}), (remove: {prod[1]:<6}), (add: {prod[2]:<6}) ]",
                       f"[ n_oligos_per_barcode: {number_of_oligos_per_barcode:>6} ]",
-                      f"[ m_samples_from_synthesis_file: {n_samples:>6}]")
+                      f"[ m_samples_from_synthesis_file: {number_of_sampled_oligos_from_file:>6}]")
                 dist, input_data, output_data = run_pipe_with_config(config)
                 pos = size, *prod
                 print(f"[ input data: {input_data} ]\n",

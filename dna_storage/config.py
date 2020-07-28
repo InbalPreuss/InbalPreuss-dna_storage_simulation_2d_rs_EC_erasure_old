@@ -15,11 +15,10 @@ def build_config(subset_size: int = 5,
                  number_of_oligos_per_barcode: int = 20,
                  number_of_sampled_oligos_from_file: int = 10000,
                  input_text_file: PathLike = pathlib.Path(r'data/testing/input_text.dna'),
-                 output_dir: PathLike = pathlib.Path(r'data/testing/output')):
+                 output_dir: PathLike = pathlib.Path(r'data/testing')):
 
-    pathlib.Path('data/testing').mkdir(parents=True, exist_ok=True)
-    pathlib.Path('data/testing/temp').mkdir(parents=True, exist_ok=True)
-    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+    output_dir = pathlib.Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     shrink_dict_3_mer = {'AAT': 'X1',
                          'ACA': 'X2',
@@ -64,25 +63,19 @@ def build_config(subset_size: int = 5,
         'number_of_sampled_oligos_from_file': number_of_sampled_oligos_from_file,
         'shrink_dict': shrink_dict_3_mer,
         'fastq_file_name': 'Bible4_sample',
-        'file_name_sorted': pathlib.Path(r'data/testing/small_data_3_barcode_9_oligo.dna'),
+        'file_name_sorted': output_dir / 'small_data_3_barcode_9_oligo.dna',
         'input_text_file': input_text_file,
-        'binary_file_name': pathlib.Path(r'data/testing/simulation_data.1.binary.dna'),
-        'encoder_results_file': pathlib.Path(
-            r'data/testing/simulation_data.2.encoder_results_file.dna'),
-        'synthesis_results_file': pathlib.Path(
-            r'data/testing/simulation_data.3.synthesis_results_file.dna'),
-        'shuffle_db_file': pathlib.Path(r'data/testing/temp_shuffle_db'),
-        'shuffle_results_file': pathlib.Path(
-            r'data/testing/simulation_data.4.shuffle_results_file.dna'),
-        'sample_oligos_results_file': pathlib.Path(
-            r'data/testing/simulation_data.5.sample_oligos_results_file.dna'),
-        'sort_oligo_db_file': pathlib.Path(r'data/testing/temp_sort_oligo_db'),
-        'sort_oligo_results_file': pathlib.Path(
-            r'data/testing/simulation_data.6.sort_oligo_results_file.dna'),
-        'decoder_results_file': pathlib.Path(
-            r'data/testing/simulation_data.7.decoder_results_file.dna'),
-        'binary_results_file': pathlib.Path(r'data/testing/simulation_data.8.binary_results_file.dna'),
-        'text_results_file': pathlib.Path(r'data/testing/simulation_data.9.text_results_file.dna'),
+        'binary_file_name': output_dir / 'simulation_data.1.binary.dna',
+        'encoder_results_file': output_dir / 'simulation_data.2.encoder_results_file.dna',
+        'synthesis_results_file': output_dir / 'simulation_data.3.synthesis_results_file.dna',
+        'shuffle_db_file': output_dir / 'temp_shuffle_db',
+        'shuffle_results_file': output_dir / 'simulation_data.4.shuffle_results_file.dna',
+        'sample_oligos_results_file': output_dir / 'simulation_data.5.sample_oligos_results_file.dna',
+        'sort_oligo_db_file': output_dir / 'temp_sort_oligo_db',
+        'sort_oligo_results_file': output_dir / 'simulation_data.6.sort_oligo_results_file.dna',
+        'decoder_results_file': output_dir / 'simulation_data.7.decoder_results_file.dna',
+        'binary_results_file': output_dir / 'simulation_data.8.binary_results_file.dna',
+        'text_results_file': output_dir / 'simulation_data.9.text_results_file.dna',
         'write_text_to_binary': True,
         'do_encode': True,
         'do_synthesize': True,
@@ -129,7 +122,7 @@ def build_config(subset_size: int = 5,
         config['payload_rs_len'] = 14  # in Z
         config['oligos_per_block_len'] = 12
         config['oligos_per_block_rs_len'] = 4
-        config['number_of_sampled_oligos_from_file'] = config['oligos_per_block_len'] + config['oligos_per_block_rs_len']
+        config['number_of_sampled_oligos_from_file'] = number_of_sampled_oligos_from_file * config['oligos_per_block_len'] + config['oligos_per_block_rs_len']
     
     config['barcode_total_len'] = config['barcode_len'] + config['barcode_rs_len']  # in ACGT
     config['payload_total_len'] = config['payload_len'] + config['payload_rs_len']  # in Z
@@ -142,6 +135,3 @@ def build_config(subset_size: int = 5,
                                          payload_rs_len=config['oligos_per_block_rs_len'])
 
     return config
-
-
-config = build_config()

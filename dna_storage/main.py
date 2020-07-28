@@ -124,6 +124,6 @@ def main(config):
 
 
 if __name__ == "__main__":
-    from dna_storage.config import config
-    # config = build_config()
+    from dna_storage.config import build_config
+    config = build_config()
     main(config=config)
