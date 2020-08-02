@@ -103,9 +103,9 @@ def build_config(subset_size: int = 5,
 
     }
 
-    wide_n_k = {3: {'block_len': 430, 'block_rs_len': 82},
-                5: {'block_len': 3500, 'block_rs_len': 596},
-                7: {'block_len': 6900, 'block_rs_len': 1292}}
+    wide_n_k = {3: {'block_len': 42, 'block_rs_len': 6},
+                5: {'block_len': 42, 'block_rs_len': 6},
+                7: {'block_len': 42, 'block_rs_len': 6}}
 
     if config['mode'] == 'prod':
         config['barcode_len'] = 12  # in ACGT
