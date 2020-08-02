@@ -11,8 +11,10 @@ from dna_storage.main import main
 
 
 def build_runs():
-    number_of_oligos_per_barcode = [20, 100, 1000, 10000]
-    number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
+    number_of_oligos_per_barcode = [1000]
+    #number_of_oligos_per_barcode = [20, 100, 1000, 10000]
+    number_of_sampled_oligos_from_file = [20, 50, 100, 1000]
+    #number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
     oligos_and_samples = [s for s in oligos_and_samples if s[0] <= s[1]]
 

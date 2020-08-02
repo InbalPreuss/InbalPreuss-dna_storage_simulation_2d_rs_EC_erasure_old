@@ -15,7 +15,7 @@ def test_number_of_oligos_per_barcode():
     #for number_of_oligos_per_barcode in [20, 100, 1000, 10000]:
     for number_of_oligos_per_barcode in [1000]:
         #for number_of_sampled_oligos_from_file in [20, 50, 100, 1000, float('inf')]:
-        for number_of_sampled_oligos_from_file in [20, 50, 100]:
+        for number_of_sampled_oligos_from_file in [20, 50, 100, 1000]:
             if number_of_oligos_per_barcode < number_of_sampled_oligos_from_file:
                 break
             subset_size_and_error_plot(number_of_oligos_per_barcode=number_of_oligos_per_barcode,
