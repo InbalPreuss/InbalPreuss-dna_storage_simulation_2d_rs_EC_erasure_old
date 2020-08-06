@@ -24,6 +24,7 @@ def test_number_of_oligos_per_barcode():
 
 def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
                                number_of_sampled_oligos_from_file: Union[int, float] = 10000):
+    from dna_storage.text_handling import generate_random_text_file
     plt.ion()
     errors = [0.01, 0.001, 0.0001, 0]
     results = {}
@@ -37,13 +38,15 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
             products = [i for i in prods if
                         (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
             for prod in products:
+                generate_random_text_file(size_kb=10, file='./data/testing/random_file_10_KiB.txt')
                 config = build_config(subset_size=size,
                                       bits_per_z=bits_per_z,
                                       letter_replace_error_ratio=prod[0],
                                       letter_remove_error_ratio=prod[1],
                                       letter_add_error_ratio=prod[2],
                                       number_of_oligos_per_barcode=number_of_oligos_per_barcode,
-                                      number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file)
+                                      number_of_sampled_oligos_from_file=number_of_sampled_oligos_from_file,
+                                      input_text_file=pathlib.Path(r'data/testing/random_file_10_KiB.txt'))
 
                 print(f"[ size: {size:>1} ]",
                       f"[ errors: (replace: {prod[0]:<6}), (remove: {prod[1]:<6}), (add: {prod[2]:<6}) ]",
@@ -132,7 +135,8 @@ def code_profiling(size_kb: int = 1):
 
 
 def run_pipe_with_config(config):
-    with open('./data/testing/input_text.dna', 'r', encoding='utf-8') as input_file:
+    #with open('./data/testing/input_text.dna', 'r', encoding='utf-8') as input_file:
+    with open(config['input_text_file'], 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
 
     main(config)

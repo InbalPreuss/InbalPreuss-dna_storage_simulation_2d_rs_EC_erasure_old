@@ -1,10 +1,13 @@
+import datetime
 import os
 import itertools
+import pathlib
 from typing import Dict
 import json
 from pathlib import Path
 
 import Levenshtein as levenshtein
+import gzip
 
 from dna_storage.config import build_config
 from dna_storage.main import main
@@ -12,9 +15,9 @@ from dna_storage.main import main
 
 def build_runs():
     number_of_oligos_per_barcode = [1000]
-    #number_of_oligos_per_barcode = [20, 100, 1000, 10000]
+    # number_of_oligos_per_barcode = [20, 100, 1000, 10000]
     number_of_sampled_oligos_from_file = [20, 50, 100, 1000]
-    #number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
+    # number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
     oligos_and_samples = [s for s in oligos_and_samples if s[0] <= s[1]]
 
@@ -55,15 +58,35 @@ def run_config(config_for_run: Dict):
         letter_add_error_ratio=config_for_run["add_error"],
         number_of_oligos_per_barcode=config_for_run["number_of_oligos_per_barcode"],
         number_of_sampled_oligos_from_file=config_for_run["number_of_sampled_oligos_from_file"],
-        output_dir=config_for_run["output_dir"]
+        output_dir=config_for_run["output_dir"],
+        input_text_file=config_for_run["output_dir"] + '/random_file_10_KiB.txt'
     )
-
+    from dna_storage.text_handling import generate_random_text_file
+    input_text = config_for_run["output_dir"] + '/random_file_10_KiB.txt'
+    generate_random_text_file(size_kb=10, file=input_text)
+    config['input_text_file'] = input_text
     print(f"$$$$$$$$ Running {config_for_run['output_dir']} $$$$$$$$")
     main(config)
-    with open('./data/testing/input_text.dna', 'r', encoding='utf-8') as input_file:
+    with open(input_text, 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
-    with open(Path(config_for_run["output_dir"]) / 'simulation_data.9.text_results_file.dna', 'r', encoding='utf-8') as file:
+    with open(Path(config_for_run["output_dir"]) / 'simulation_data.9.text_results_file.dna', 'r',
+              encoding='utf-8') as file:
         output_data = file.read()
+
+    zip = gzip(config_for_run["output_dir"] + '/zip', 'wb')
+    zip.write(config['binary_file_name'])
+    zip.write(config['encoder_results_file'])
+    zip.write(config['synthesis_results_file'])
+    zip.write(config['shuffle_results_file'])
+    zip.write(config['sample_oligos_results_file'])
+    zip.write(config['sort_oligo_results_file'])
+    zip.write(config['decoder_results_file'])
+    zip.write(config['binary_results_file'])
+    zip.write(config['text_results_file'])
+    zip.write(config['sort_oligo_db_file'])
+    zip.write(config['shuffle_db_file'])
+    zip.close()
+
 
     dist = levenshtein.distance(input_data, output_data)
     res_file = Path(config_for_run["output_dir"]) / f"config_and_levenshtein_distance_{dist}.json"
