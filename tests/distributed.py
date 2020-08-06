@@ -65,8 +65,8 @@ def run_config_n_times(config_for_run: Dict, n: int = 10):
 
 
 def run_config(config_for_run: Dict, run_number):
-    config_for_run["output_dir"] = f"{config_for_run['output_dir']} trial {run_number:>2}"
-    input_text = config_for_run["output_dir"] + '/random_file_10_KiB.txt'
+    output_dir = f"{config_for_run['output_dir']} trial {run_number:>2}"
+    input_text = output_dir + '/random_file_10_KiB.txt'
     config = build_config(
         subset_size=config_for_run["size"],
         bits_per_z=config_for_run["bits_per_z"],
@@ -75,21 +75,21 @@ def run_config(config_for_run: Dict, run_number):
         letter_add_error_ratio=config_for_run["add_error"],
         number_of_oligos_per_barcode=config_for_run["number_of_oligos_per_barcode"],
         number_of_sampled_oligos_from_file=config_for_run["number_of_sampled_oligos_from_file"],
-        output_dir=config_for_run["output_dir"],
+        output_dir=output_dir,
         input_text_file=input_text
     )
 
-    generate_random_text_file(size_kb=10, file=input_text)
-    print(f"$$$$$$$$ Running {config_for_run['output_dir']} $$$$$$$$")
+    generate_random_text_file(size_kb=0.1, file=input_text)
+    print(f"$$$$$$$$ Running {output_dir} $$$$$$$$")
     main(config)
     with open(input_text, 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
-    with open(Path(config_for_run["output_dir"]) / 'simulation_data.9.text_results_file.dna', 'r',
+    with open(Path(output_dir) / 'simulation_data.9.text_results_file.dna', 'r',
               encoding='utf-8') as file:
         output_data = file.read()
 
     # gzip and delete files
-    files_in_dir = list(Path(config_for_run["output_dir"]).iterdir())
+    files_in_dir = list(Path(output_dir).iterdir())
     exclude = ["temp_shuffle_db", "temp_sort_oligo_db"]
     files = [f for f in files_in_dir if f.name not in exclude]
     files_delete = [f for f in files_in_dir if f.name in exclude]
@@ -101,14 +101,14 @@ def run_config(config_for_run: Dict, run_number):
 
     # write a json results file
     dist = levenshtein.distance(input_data, output_data)
-    res_file = Path(config_for_run["output_dir"]) / f"config_and_levenshtein_distance_{dist}.json"
-    res = {**config_for_run, "levenshtein_distance": dist}
+    res_file = Path(output_dir) / f"config_and_levenshtein_distance_{dist}.json"
+    res = {**config_for_run, "output_dir": output_dir, "levenshtein_distance": dist}
     with open(res_file, 'w') as f:
         json.dump(res, f, indent=4)
-    print(f"@@@@@@@@ Finished {config_for_run['output_dir']} @@@@@@@@")
+    print(f"@@@@@@@@ Finished {output_dir} @@@@@@@@")
     finished_dir = Path('data/finished')
     finished_dir.mkdir(parents=True, exist_ok=True)
-    with open(finished_dir / Path(config_for_run['output_dir']).name, "w") as f:
+    with open(finished_dir / Path(output_dir).name, "w") as f:
         f.write("1")
     return dist, input_data, output_data
 
