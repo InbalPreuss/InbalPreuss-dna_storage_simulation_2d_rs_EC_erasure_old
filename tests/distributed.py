@@ -2,35 +2,42 @@ import datetime
 import os
 import itertools
 import pathlib
+import gzip
+import os
 from typing import Dict
 import json
 from pathlib import Path
 
 import Levenshtein as levenshtein
-import gzip
 
 from dna_storage.config import build_config
 from dna_storage.main import main
+from dna_storage.text_handling import generate_random_text_file
 
 
 def build_runs():
     number_of_oligos_per_barcode = [1000]
-    # number_of_oligos_per_barcode = [20, 100, 1000, 10000]
-    number_of_sampled_oligos_from_file = [20, 50, 100, 1000]
+    # number_of_oligos_per_barcode = [20, 100, 1000, 10000]`
+    number_of_sampled_oligos_from_file = [-1, 20, 50, 100, 1000]
     # number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
-    oligos_and_samples = [s for s in oligos_and_samples if s[0] <= s[1]]
+    oligos_and_samples = [s for s in oligos_and_samples if s[0] >= s[1]]
 
     errors = [0.01, 0.001, 0.0001, 0]
     sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
+    variable_number_of_sampled_oligos_from_file = {3: 5, 5: 10, 7: 15}
 
     runs = []
+    was_variable = False
     for number_of_oligos_per_barcode, number_of_sampled_oligos_from_file in oligos_and_samples:
         for size, bits_per_z in sizes_and_bit_sizes:
             prods = list(itertools.product(errors, repeat=3))
             products = [i for i in prods if
                         (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
             for prod in products:
+                if number_of_sampled_oligos_from_file == -1:
+                    was_variable = True
+                    number_of_sampled_oligos_from_file = variable_number_of_sampled_oligos_from_file[size]
                 name = f'[ subset size {size}, bits per z {bits_per_z:>2} ]' \
                        f'[ number of oligos per barcode {number_of_oligos_per_barcode:>6} ]\n' \
                        f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file:>6} ]\n' \
@@ -46,10 +53,20 @@ def build_runs():
                     "add_error": prod[2],
                     "output_dir": output_dir
                 })
+                if was_variable:
+                    number_of_sampled_oligos_from_file = -1
+                    was_variable = False
     return runs
 
 
-def run_config(config_for_run: Dict):
+def run_config_n_times(config_for_run: Dict, n: int = 10):
+    for run_number in range(n):
+        run_config(config_for_run=config_for_run, run_number=run_number)
+
+
+def run_config(config_for_run: Dict, run_number):
+    config_for_run["output_dir"] = f"{config_for_run['output_dir']} trial {run_number:>2}"
+    input_text = config_for_run["output_dir"] + '/random_file_10_KiB.txt'
     config = build_config(
         subset_size=config_for_run["size"],
         bits_per_z=config_for_run["bits_per_z"],
@@ -59,12 +76,10 @@ def run_config(config_for_run: Dict):
         number_of_oligos_per_barcode=config_for_run["number_of_oligos_per_barcode"],
         number_of_sampled_oligos_from_file=config_for_run["number_of_sampled_oligos_from_file"],
         output_dir=config_for_run["output_dir"],
-        input_text_file=config_for_run["output_dir"] + '/random_file_10_KiB.txt'
+        input_text_file=input_text
     )
-    from dna_storage.text_handling import generate_random_text_file
-    input_text = config_for_run["output_dir"] + '/random_file_10_KiB.txt'
+
     generate_random_text_file(size_kb=10, file=input_text)
-    config['input_text_file'] = input_text
     print(f"$$$$$$$$ Running {config_for_run['output_dir']} $$$$$$$$")
     main(config)
     with open(input_text, 'r', encoding='utf-8') as input_file:
@@ -73,21 +88,18 @@ def run_config(config_for_run: Dict):
               encoding='utf-8') as file:
         output_data = file.read()
 
-    zip = gzip(config_for_run["output_dir"] + '/zip', 'wb')
-    zip.write(config['binary_file_name'])
-    zip.write(config['encoder_results_file'])
-    zip.write(config['synthesis_results_file'])
-    zip.write(config['shuffle_results_file'])
-    zip.write(config['sample_oligos_results_file'])
-    zip.write(config['sort_oligo_results_file'])
-    zip.write(config['decoder_results_file'])
-    zip.write(config['binary_results_file'])
-    zip.write(config['text_results_file'])
-    zip.write(config['sort_oligo_db_file'])
-    zip.write(config['shuffle_db_file'])
-    zip.close()
+    # gzip and delete files
+    files_in_dir = list(Path(config_for_run["output_dir"]).iterdir())
+    exclude = ["temp_shuffle_db", "temp_sort_oligo_db"]
+    files = [f for f in files_in_dir if f.name not in exclude]
+    files_delete = [f for f in files_in_dir if f.name in exclude]
+    for file in files:
+        with open(file, "rb") as f_in, gzip.open(file.with_suffix(file.suffix + ".gz"), "wb") as f_out:
+            f_out.writelines(f_in)
+        os.remove(file)
+    [os.remove(f) for f in files_delete]
 
-
+    # write a json results file
     dist = levenshtein.distance(input_data, output_data)
     res_file = Path(config_for_run["output_dir"]) / f"config_and_levenshtein_distance_{dist}.json"
     res = {**config_for_run, "levenshtein_distance": dist}
@@ -105,7 +117,7 @@ def main_fn():
     from multiprocessing import Pool, cpu_count
     configs_for_run = build_runs()
     with Pool(cpu_count()) as p:
-        p.map(run_config, configs_for_run)
+        p.map(run_config_n_times, configs_for_run)
 
 
 if __name__ == '__main__':
