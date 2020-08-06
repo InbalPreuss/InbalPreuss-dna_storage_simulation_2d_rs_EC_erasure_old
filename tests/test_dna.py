@@ -41,7 +41,7 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
                 generate_random_text_file(size_kb=10, file='./data/testing/random_file_10_KiB.txt')
                 config = build_config(subset_size=size,
                                       bits_per_z=bits_per_z,
-                                      letter_replace_error_ratio=prod[0],
+                                      letter_substitution_error_ratio=prod[0],
                                       letter_remove_error_ratio=prod[1],
                                       letter_add_error_ratio=prod[2],
                                       number_of_oligos_per_barcode=number_of_oligos_per_barcode,
@@ -49,7 +49,7 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
                                       input_text_file=pathlib.Path(r'data/testing/random_file_10_KiB.txt'))
 
                 print(f"[ size: {size:>1} ]",
-                      f"[ errors: (replace: {prod[0]:<6}), (remove: {prod[1]:<6}), (add: {prod[2]:<6}) ]",
+                      f"[ errors: (substitution: {prod[0]:<6}), (remove: {prod[1]:<6}), (add: {prod[2]:<6}) ]",
                       f"[ n_oligos_per_barcode: {number_of_oligos_per_barcode:>6} ]",
                       f"[ m_samples_from_synthesis_file: {number_of_sampled_oligos_from_file:>6}]")
                 dist, input_data, output_data = run_pipe_with_config(config)
@@ -90,7 +90,7 @@ def subset_size_and_error_plot(number_of_oligos_per_barcode: int = 20,
             name = f'[ subset size {size} ]' \
                    f'[ number of oligos per barcode {number_of_oligos_per_barcode} ]\n' \
                    f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file} ]\n' \
-                   f'[ replace {1 if len(triple[0]) > 1 else 0} ]' \
+                   f'[ substitution {1 if len(triple[0]) > 1 else 0} ]' \
                    f'[ remove {1 if len(triple[1]) > 1 else 0} ]' \
                    f'[ add {1 if len(triple[2]) > 1 else 0} ]'
             ax.set_title(name)

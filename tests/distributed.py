@@ -41,14 +41,14 @@ def build_runs():
                 name = f'[ subset size {size}, bits per z {bits_per_z:>2} ]' \
                        f'[ number of oligos per barcode {number_of_oligos_per_barcode:>6} ]\n' \
                        f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file:>6} ]\n' \
-                       f'[ errors, replace {prod[0]:<6}, remove {prod[1]:<6}, add {prod[2]:<6} ]\n'
+                       f'[ errors, substitution {prod[0]:<6}, remove {prod[1]:<6}, add {prod[2]:<6} ]\n'
                 output_dir = os.path.join("data/testing/", name.replace("\n", ""))
                 runs.append({
                     "number_of_oligos_per_barcode": number_of_oligos_per_barcode,
                     "number_of_sampled_oligos_from_file": number_of_sampled_oligos_from_file,
                     "size": size,
                     "bits_per_z": bits_per_z,
-                    "replace_error": prod[0],
+                    "substitution_error": prod[0],
                     "remove_error": prod[1],
                     "add_error": prod[2],
                     "output_dir": output_dir
@@ -70,7 +70,7 @@ def run_config(config_for_run: Dict, run_number):
     config = build_config(
         subset_size=config_for_run["size"],
         bits_per_z=config_for_run["bits_per_z"],
-        letter_replace_error_ratio=config_for_run["replace_error"],
+        letter_substitution_error_ratio=config_for_run["substitution_error"],
         letter_remove_error_ratio=config_for_run["remove_error"],
         letter_add_error_ratio=config_for_run["add_error"],
         number_of_oligos_per_barcode=config_for_run["number_of_oligos_per_barcode"],

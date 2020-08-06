@@ -9,7 +9,7 @@ PathLike = Union[str, pathlib.Path]
 
 def build_config(subset_size: int = 5,
                  bits_per_z: int = 12,
-                 letter_replace_error_ratio: int = 0,
+                 letter_substitution_error_ratio: int = 0,
                  letter_remove_error_ratio: int = 0,
                  letter_add_error_ratio: int = 0,
                  number_of_oligos_per_barcode: int = 20,
@@ -95,7 +95,7 @@ def build_config(subset_size: int = 5,
                              'binary_to_z': binary_to_z,
                              'k_mer_to_dna': k_mer_to_dna},
         'synthesis': {'number_of_oligos_per_barcode': number_of_oligos_per_barcode,
-                      'letter_replace_error_ratio': letter_replace_error_ratio,
+                      'letter_substitution_error_ratio': letter_substitution_error_ratio,
                       'letter_remove_error_ratio': letter_remove_error_ratio,
                       'letter_add_error_ratio': letter_add_error_ratio,
                       'seed': 0
