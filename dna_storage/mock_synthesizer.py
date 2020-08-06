@@ -47,16 +47,16 @@ class Synthesizer:
                     x_mat = np.hstack((x_mat, col))
 
                 dna_list = [''.join(row) for row in x_mat]
-                dna_list = self.add_remove_substitution(dna_list)
+                dna_list = self.insertion_deletion_substitution(dna_list)
                 results_file.write('\n'.join(dna_list) + '\n')
 
-    def add_remove_substitution(self, dna_list: List[str]):
+    def insertion_deletion_substitution(self, dna_list: List[str]):
         for row_idx, oligo in enumerate(dna_list):
-            remove = np.random.binomial(1, self.synthesis_config['letter_remove_error_ratio'], len(oligo))
-            oligo = ''.join([char if remove[idx] == 0 else '' for idx, char in enumerate(oligo)])
-            add_idx = np.random.binomial(1, self.synthesis_config['letter_add_error_ratio'], len(oligo))
-            add = [random.choice('ACGT') if i == 1 else '' for i in add_idx]
-            oligo = ''.join(''.join(x) for x in zip(oligo, add))
+            deletion = np.random.binomial(1, self.synthesis_config['letter_deletion_error_ratio'], len(oligo))
+            oligo = ''.join([char if deletion[idx] == 0 else '' for idx, char in enumerate(oligo)])
+            insertion_idx = np.random.binomial(1, self.synthesis_config['letter_insertion_error_ratio'], len(oligo))
+            insertion = [random.choice('ACGT') if i == 1 else '' for i in insertion_idx]
+            oligo = ''.join(''.join(x) for x in zip(oligo, insertion))
             substitution_idx = np.random.binomial(1, self.synthesis_config['letter_substitution_error_ratio'], len(oligo))
             oligo_with_letters_substitution = [''] * len(oligo)
             for letter_idx, letter in enumerate(oligo):

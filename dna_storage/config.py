@@ -10,8 +10,8 @@ PathLike = Union[str, pathlib.Path]
 def build_config(subset_size: int = 5,
                  bits_per_z: int = 12,
                  letter_substitution_error_ratio: int = 0,
-                 letter_remove_error_ratio: int = 0,
-                 letter_add_error_ratio: int = 0,
+                 letter_deletion_error_ratio: int = 0,
+                 letter_insertion_error_ratio: int = 0,
                  number_of_oligos_per_barcode: int = 20,
                  number_of_sampled_oligos_from_file: int = 10000,
                  input_text_file: PathLike = pathlib.Path(r'data/testing/input_text.dna'),
@@ -96,8 +96,8 @@ def build_config(subset_size: int = 5,
                              'k_mer_to_dna': k_mer_to_dna},
         'synthesis': {'number_of_oligos_per_barcode': number_of_oligos_per_barcode,
                       'letter_substitution_error_ratio': letter_substitution_error_ratio,
-                      'letter_remove_error_ratio': letter_remove_error_ratio,
-                      'letter_add_error_ratio': letter_add_error_ratio,
+                      'letter_deletion_error_ratio': letter_deletion_error_ratio,
+                      'letter_insertion_error_ratio': letter_insertion_error_ratio,
                       'seed': 0
                       }
 
