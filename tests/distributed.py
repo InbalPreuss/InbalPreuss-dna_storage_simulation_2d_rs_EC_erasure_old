@@ -79,7 +79,7 @@ def run_config(config_for_run: Dict, run_number):
         input_text_file=input_text
     )
 
-    generate_random_text_file(size_kb=0.1, file=input_text)
+    generate_random_text_file(size_kb=10, file=input_text)
     print(f"$$$$$$$$ Running {output_dir} $$$$$$$$")
     main(config)
     with open(input_text, 'r', encoding='utf-8') as input_file:
