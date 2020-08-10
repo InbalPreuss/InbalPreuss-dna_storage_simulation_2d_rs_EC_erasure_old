@@ -53,19 +53,28 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
             for col in zero_cols:
                 df_for_err = df_for_err[df_for_err[col] == 0]
             if percentage:
-                sns.barplot(x=error, y="levenshtein_distance", data=df_for_err, estimator=estimate, ax=ax)
-                ax.set(ylabel="D [levenshtein]")
+                #g = sns.PairGrid(data=df_for_err, y_vars=["levenshtein_distance"], x_vars=error)
+                #g.map(sns.barplot(data=df_for_err, estimator=estimate, ax=ax, palette="Blues"))
+                #g.set(ylabel="D% [levenshtein]")
+                sns.barplot(x=error, y="levenshtein_distance", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
+                ax.set(ylabel="D% [levenshtein]")
+                fig.savefig(" ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + "success", 71)))
+                plt.close(fig)
             else:
-                ax = sns.boxplot(x=error, y="levenshtein_distance", data=df_for_err, ax=ax)
+                ax = sns.boxplot(x=error, y="levenshtein_distance", data=df_for_err, ax=ax, palette="Blues")
                 ax = sns.swarmplot(x=error, y="levenshtein_distance", data=df_for_err, color=".25", ax=ax)
                 ax.set(ylabel="D [levenshtein]")
+                fig.savefig("".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " "), 71)))
+                plt.close(fig)
 
 
 def draw_sampled_vs_error(df: pd.DataFrame):
     fig, ax = plt.subplots()
-    ax = sns.boxplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, ax=ax)
+    ax = sns.boxplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, ax=ax, palette="Blues")
     ax = sns.swarmplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, color=".25", ax=ax)
     ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D [levenshtein]")
+    fig.savefig("number of sampled oligos and levenshtein distance" )
+    plt.close(fig)
 
 
 def estimate(x):
@@ -75,8 +84,10 @@ def estimate(x):
 
 def draw_zero_error_percentage(df: pd.DataFrame):
     fig, ax = plt.subplots()
-    sns.barplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, estimator=estimate, ax=ax)
-    ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D [levenshtein]")
+    sns.barplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, estimator=estimate, ax=ax, palette="Blues")
+    ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D% [levenshtein]")
+    fig.savefig("number of sampled oligos and levenshtein distance success")
+    plt.close(fig)
 
 
 def main():
