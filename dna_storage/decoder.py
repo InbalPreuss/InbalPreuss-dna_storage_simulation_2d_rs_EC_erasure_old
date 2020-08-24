@@ -31,6 +31,9 @@ class Decoder:
                  payload_coder: RSPayloadAdapter,
                  wide_coder: RSWideAdapter,
                  results_file: Union[Path, str],
+                 results_file_z_after_rs_wide: Union[Path, str],
+                 results_file_z_before_rs_payload: Union[Path, str],
+                 results_file_z_after_rs_payload: Union[Path, str],
                  ):
         self.input_file = input_file
         self.barcode_len = barcode_len
@@ -45,7 +48,13 @@ class Decoder:
         self.oligos_per_block_len = oligos_per_block_len
         self.oligos_per_block_rs_len = oligos_per_block_rs_len
         self.results_file = results_file
+        self.results_file_z_before_rs_payload = results_file_z_before_rs_payload
+        self.results_file_z_after_rs_payload = results_file_z_after_rs_payload
+        self.results_file_z_after_rs_wide = results_file_z_after_rs_wide
         open(self.results_file, 'w').close()
+        open(self.results_file_z_before_rs_payload, 'w').close()
+        open(self.results_file_z_after_rs_payload, 'w').close()
+        open(self.results_file_z_after_rs_wide, 'w').close()
         self.barcode_generator = utils.dna_sequence_generator(sequence_len=self.barcode_len)
         self.barcode_coder = barcode_coder
         self.payload_coder = payload_coder
@@ -74,8 +83,11 @@ class Decoder:
 
                     if len(payload_accumulation) != 0:
                         unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
-                        if len(unique_payload) > 0:
-                            unique_payload_block_with_rs.append(unique_payload)
+                        self.save_z_before_rs(barcode=barcode_prev, payload=unique_payload)
+                        unique_payload_corrected = self.error_correction_payload(payload=unique_payload)
+                        self.save_z_after_rs(barcode=barcode_prev, payload=unique_payload_corrected)
+                        if len(unique_payload_corrected) > 0:
+                            unique_payload_block_with_rs.append(unique_payload_corrected)
                         else:
                             unique_payload_block_with_rs.append(dummy_payload)
 
@@ -91,8 +103,11 @@ class Decoder:
                     payload_accumulation.append(payload)
 
             unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
-            if len(unique_payload) > 0:
-                unique_payload_block_with_rs.append(unique_payload)
+            self.save_z_before_rs(barcode=barcode_prev, payload=unique_payload)
+            unique_payload_corrected = self.error_correction_payload(payload=unique_payload)
+            self.save_z_after_rs(barcode=barcode_prev, payload=unique_payload_corrected)
+            if len(unique_payload_corrected) > 0:
+                unique_payload_block_with_rs.append(unique_payload_corrected)
             else:
                 unique_payload_block_with_rs.append(dummy_payload)
             unique_barcode_block_with_rs.append(barcode_prev)
@@ -106,14 +121,14 @@ class Decoder:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
         shrunk_payload_histogram = self.payload_histogram(payload=shrunk_payload)
         unique_payload = self.payload_histogram_to_payload(payload_histogram=shrunk_payload_histogram)
-        unique_payload_corrected = self.error_correction_payload(payload=unique_payload)
-        return unique_payload_corrected
+        return unique_payload
 
     def save_block_to_binary(self, unique_barcode_block_with_rs: List[str],
                              unique_payload_block_with_rs: List[List[str]]) -> None:
         unique_payload_block = self.wide_rs(unique_payload_block_with_rs)
         for unique_barcode, unique_payload in zip(unique_barcode_block_with_rs, unique_payload_block):
             binary = self.unique_payload_to_binary(payload=unique_payload)
+            self.save_z_after_rs_wide(barcode=unique_barcode, payload=unique_payload)
             self.save_binary(binary=binary, barcode_prev=unique_barcode)
 
     def wide_rs(self, unique_payload_block_with_rs):
@@ -208,6 +223,18 @@ class Decoder:
             result_payload.append(z)
 
         return result_payload
+
+    def save_z_before_rs(self, payload: List[str], barcode: str) -> None:
+        with open(self.results_file_z_before_rs_payload, 'a+', encoding='utf-8') as f:
+            f.write(barcode + "," + ",".join(payload) + '\n')
+
+    def save_z_after_rs(self, payload: List[str], barcode: str) -> None:
+        with open(self.results_file_z_after_rs_payload, 'a+', encoding='utf-8') as f:
+            f.write(barcode + "," + ",".join(payload) + '\n')
+
+    def save_z_after_rs_wide(self, payload: List[str], barcode: str) -> None:
+        with open(self.results_file_z_after_rs_wide, 'a+', encoding='utf-8') as f:
+            f.write(barcode + "," + ",".join(payload) + '\n')
 
     def save_binary(self, binary: str, barcode_prev: str) -> None:
         with open(self.results_file, 'a+', encoding='utf-8') as f:

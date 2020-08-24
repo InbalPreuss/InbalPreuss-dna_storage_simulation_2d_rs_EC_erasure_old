@@ -103,7 +103,11 @@ def main(config):
                           barcode_coder=config['barcode_coder'],
                           payload_coder=config['payload_coder'],
                           wide_coder=config['wide_coder'],
-                          results_file=config['decoder_results_file'])
+                          results_file=config['decoder_results_file'],
+                          results_file_z_before_rs_payload=config['decoder_results_file_z_before_rs_payload'],
+                          results_file_z_after_rs_payload=config['decoder_results_file_z_after_rs_payload'],
+                          results_file_z_after_rs_wide=config['decoder_results_file_z_after_rs_wide'],
+                          )
         decoder.run()
 
     if config['decoder_results_to_binary']:
