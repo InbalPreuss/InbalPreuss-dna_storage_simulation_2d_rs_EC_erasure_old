@@ -1,10 +1,62 @@
 import json
+import uuid
 from pathlib import Path
 from textwrap import wrap
 
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+
+def load_sorted_oligos_to_df() -> pd.DataFrame:
+    output_dir = Path("data/testing")
+
+    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("["))
+
+    sorted_files = []
+
+    for run_dir in run_dirs:
+        try:
+            sorted_file = [f for f in run_dir.iterdir() if "sort_oligo_results_file" in f.name][0]
+        except IndexError:
+            continue
+        sorted_files.append(sorted_file)
+
+    info_list = []
+
+    for sorted_file in sorted_files:
+        uid = uuid.uuid4()
+        with sorted_file.open("rb") as f:
+            for line in f:
+                line = line.strip()
+                info_list.append({
+                    "uid": uid,
+                    "barcode": line[:12].decode(),
+                    "read_len": len(line[12:]),
+                })
+
+    df_reads = pd.DataFrame(info_list)
+    return df_reads
+
+
+def draw_reads_histograms(df: pd.DataFrame):
+    plt.subplots()
+    fig = sns.distplot(df["read_len"], kde=False)
+    fig.set_ylabel("count")
+    fig = plt.gcf()
+    fig.savefig("read_len_count")
+
+    groups = df.groupby(["uid", "barcode"])
+    reads_per_barcode = []
+    for _, group in groups:
+        reads_per_barcode.append({"reads": len(group)})
+
+    plt.subplots()
+    df_reads_per_barcode = pd.DataFrame(reads_per_barcode)
+    fig = sns.distplot(df_reads_per_barcode["reads"], kde=False)
+    fig.set_ylabel("count")
+    fig = plt.gcf()
+    fig.savefig("reads per barcode")
 
 
 def load_data_to_df() -> pd.DataFrame:
@@ -53,9 +105,6 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
             for col in zero_cols:
                 df_for_err = df_for_err[df_for_err[col] == 0]
             if percentage:
-                #g = sns.PairGrid(data=df_for_err, y_vars=["levenshtein_distance"], x_vars=error)
-                #g.map(sns.barplot(data=df_for_err, estimator=estimate, ax=ax, palette="Blues"))
-                #g.set(ylabel="D% [levenshtein]")
                 sns.barplot(x=error, y="levenshtein_distance", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
                 ax.set(ylabel="D% [levenshtein]")
                 fig.savefig(" ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + "success", 71)))
@@ -73,7 +122,7 @@ def draw_sampled_vs_error(df: pd.DataFrame):
     ax = sns.boxplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, ax=ax, palette="Blues")
     ax = sns.swarmplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, color=".25", ax=ax)
     ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D [levenshtein]")
-    fig.savefig("number of sampled oligos and levenshtein distance" )
+    fig.savefig("number of sampled oligos and levenshtein distance")
     plt.close(fig)
 
 
@@ -92,6 +141,9 @@ def draw_zero_error_percentage(df: pd.DataFrame):
 
 def main():
     plt.ion()
+    df_reads = load_sorted_oligos_to_df()
+    draw_reads_histograms(df=df_reads)
+    
     df = load_data_to_df()
     draw_zero_error_percentage(df=df)
     draw_boxplots(df=df)
