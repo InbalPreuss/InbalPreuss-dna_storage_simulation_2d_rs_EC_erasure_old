@@ -84,8 +84,7 @@ def run_config(config_for_run: Dict, run_number):
     main(config)
     with open(input_text, 'r', encoding='utf-8') as input_file:
         input_data = input_file.read()
-    with open(Path(output_dir) / 'simulation_data.9.text_results_file.dna', 'r',
-              encoding='utf-8') as file:
+    with open(config["text_results_file"], 'r', encoding='utf-8') as file:
         output_data = file.read()
 
     # gzip and delete files
