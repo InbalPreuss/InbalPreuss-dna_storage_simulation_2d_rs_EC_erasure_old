@@ -142,17 +142,13 @@ class Decoder:
     def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
         """ Note that missing k-mers will be removed from the oligo_accumulation """
         if self.k_mer == 1:
-            return payload_accumulation
+            return [payload_accumulation]
         k_mer_accumulation = []
         for payload in payload_accumulation:
             k_mer_list = []
             oligo_valid = True
             for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.payload_total_len * self.k_mer, self.k_mer)]:
-                try:
-                    k_mer_list.append(self.shrink_dict[k_letters])
-                except KeyError:
-                    oligo_valid = False
-                    break
+                k_mer_list.append(self.shrink_dict.get(k_letters, "Xdummy"))
             if oligo_valid:
                 k_mer_accumulation.append(k_mer_list)
         return k_mer_accumulation
