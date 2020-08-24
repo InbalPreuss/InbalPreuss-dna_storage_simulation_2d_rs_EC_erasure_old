@@ -46,7 +46,7 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
     for idx, trial_group in trials_group:
         fig, axes = plt.subplots(nrows=3)
         fig.suptitle("\n".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0], 71)))
-        fig.subplots_adjust(top=0.9)
+        fig.subplots_adjust(top=0.85, hspace=0.5)
         for ax, error in zip(axes, errors):
             zero_cols = [e for e in errors if e != error]
             df_for_err = trial_group
