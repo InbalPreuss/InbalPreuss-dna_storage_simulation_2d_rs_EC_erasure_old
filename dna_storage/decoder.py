@@ -193,7 +193,7 @@ class Decoder:
                 # BAD
                 # return [0]
                 # OK
-                reps = [('X' + str(i), i) for i in range(1, self.subset_size + 1)]
+                # reps = [('X' + str(i), i) for i in range(1, self.subset_size + 1)]
                 # BEST
                 s = set(['X' + str(i) for i in range(1, self.subset_size + 1)])
                 t = set([r[0] for r in reps])
