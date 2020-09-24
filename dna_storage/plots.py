@@ -6,6 +6,7 @@ from textwrap import wrap
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
 
 
 def load_sorted_oligos_to_df() -> pd.DataFrame:
@@ -139,6 +140,38 @@ def draw_zero_error_percentage(df: pd.DataFrame):
     plt.close(fig)
 
 
+def draw_error_per_number_of_sampled_oligos(df: pd.DataFrame):
+    for idx, row in df.iterrows():
+        if row["substitution_error"] != 0:
+            df.loc[idx, "error_type"] = "substitution_error"
+            df.loc[idx, "error"] = row["substitution_error"]
+        elif row["deletion_error"] != 0:
+            df.loc[idx, "error_type"] = "deletion_error"
+            df.loc[idx, "error"] = row["deletion_error"]
+        elif row["insertion_error"] != 0:
+            df.loc[idx, "error_type"] = "insertion_error"
+            df.loc[idx, "error"] = row["insertion_error"]
+        else:
+            df.loc[idx, "error_type"] = "no_error"
+            df.loc[idx, "error"] = 0
+
+    ax = sns.catplot(
+        data=df,
+        x="number_of_sampled_oligos_from_file",
+        y="levenshtein_distance",
+        row="error_type",
+        col="error",
+        palette="Blues",
+        kind="bar",
+    )
+
+    fig = px.bar(
+        df, x="number_of_sampled_oligos_from_file", y="levenshtein_distance",
+        facet_row="error_type", facet_col="error",
+        barmode="group",
+    )
+    fig.show()
+
 def main():
     plt.ion()
     df_reads = load_sorted_oligos_to_df()
@@ -149,6 +182,7 @@ def main():
     draw_boxplots(df=df)
     draw_boxplots(df=df, percentage=True)
     draw_sampled_vs_error(df=df)
+    draw_error_per_number_of_sampled_oligos(df=df)
     input("Hit enter to terminate")
 
 
