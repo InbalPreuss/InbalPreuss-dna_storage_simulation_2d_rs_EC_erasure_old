@@ -203,6 +203,7 @@ class Decoder:
     def payload_histogram_to_payload(self, payload_histogram: List[Counter]) -> List[str]:
         result_payload = []
         for counter in payload_histogram:
+            del counter['Xdummy']
             reps = counter.most_common(self.subset_size)
             if len(reps) != self.subset_size:
                 # BAD
