@@ -1,3 +1,4 @@
+import itertools
 from collections import Counter
 import re
 from typing import Union, Dict, List
@@ -70,8 +71,6 @@ class Decoder:
             unique_barcode_block_with_rs = []
             for idx, line in enumerate(file):
                 barcode_and_payload = line.split(sep=' ')[0].rstrip()
-                if self.wrong_barcode_and_payload_len(barcode_and_payload):
-                    continue
                 barcode = barcode_and_payload[:self.barcode_len]
                 payload = barcode_and_payload[self.barcode_len:]
 
@@ -160,13 +159,49 @@ class Decoder:
             return [payload_accumulation]
         k_mer_accumulation = []
         for payload in payload_accumulation:
-            k_mer_list = []
-            oligo_valid = True
-            for k_letters in [payload[i:i + self.k_mer] for i in range(0, self.payload_total_len * self.k_mer, self.k_mer)]:
-                k_mer_list.append(self.shrink_dict.get(k_letters, "Xdummy"))
-            if oligo_valid:
-                k_mer_accumulation.append(k_mer_list)
+            k_mer_list = self.get_transformed_oligo_with_correct_len(payload)
+            k_mer_accumulation.append(k_mer_list)
         return k_mer_accumulation
+
+    def get_transformed_oligo_with_correct_len(self, payload: str) -> List[str]:
+        k_mer_list = []
+        payload_len = len(payload)
+        delta = self.payload_total_len * self.k_mer - payload_len
+        i = 0
+        while True:
+            k_letters = payload[i:i + self.k_mer]
+            try:
+                k_mer = self.shrink_dict[k_letters]
+                k_mer_list.append(k_mer)
+            except KeyError:
+                if delta < 0:
+                    delta += 1
+                    i -= 1
+                    k_mer_list.append("Xdummy")
+                elif delta > 0:
+                    delta -= 1
+                    i += 1
+                    try:
+                        next_letter = payload[i + self.k_mer]
+                    except IndexError:
+                        k_mer_list.append("Xdummy")
+                    else:
+                        success = False
+                        for letters in itertools.combinations(k_letters, self.k_mer - 1):
+                            k_letters_try = "".join(letters) + next_letter
+                            try:
+                                k_mer = self.shrink_dict[k_letters_try]
+                                k_mer_list.append(k_mer)
+                                success = True
+                            except KeyError:
+                                pass
+                        if not success:
+                            k_mer_list.append("Xdummy")
+                else:
+                    k_mer_list.append("Xdummy")
+            i += 3
+            if len(k_mer_list) == self.payload_total_len:
+                return k_mer_list
 
     def payload_histogram(self, payload: List[List[str]]) -> List[Counter]:
         hist = []
