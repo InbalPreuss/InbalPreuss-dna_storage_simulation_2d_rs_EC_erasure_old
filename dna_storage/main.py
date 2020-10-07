@@ -94,6 +94,7 @@ def main(config):
                           payload_total_len=config['payload_total_len'],
                           input_file=config['sort_oligo_results_file'],
                           shrink_dict=shrink_dict,
+                          min_number_of_oligos_per_barcode=config['min_number_of_oligos_per_barcode'],
                           k_mer=config['k_mer'],
                           k_mer_representative_to_z=config['algorithm_config']['k_mer_representative_to_z'],
                           z_to_binary=config['algorithm_config']['z_to_binary'],
