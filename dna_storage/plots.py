@@ -1,3 +1,4 @@
+import gzip
 import json
 import uuid
 from pathlib import Path
@@ -27,7 +28,7 @@ def load_sorted_oligos_to_df() -> pd.DataFrame:
 
     for sorted_file in sorted_files:
         uid = uuid.uuid4()
-        with sorted_file.open("rb") as f:
+        with gzip.open(sorted_file, "rb") as f:
             for line in f:
                 line = line.strip()
                 info_list.append({
@@ -42,7 +43,7 @@ def load_sorted_oligos_to_df() -> pd.DataFrame:
 
 def draw_reads_histograms(df: pd.DataFrame):
     plt.subplots()
-    fig = sns.distplot(df["read_len"], kde=False)
+    fig = sns.histplot(df["read_len"], kde=False)
     fig.set_ylabel("count")
     fig = plt.gcf()
     fig.savefig("read_len_count")
@@ -53,11 +54,14 @@ def draw_reads_histograms(df: pd.DataFrame):
         reads_per_barcode.append({"reads": len(group)})
 
     plt.subplots()
+    # how many lines (sequences) was read per each barcode.
+    # (That's why we have concentrations around 20, 50, 100, 1000)
     df_reads_per_barcode = pd.DataFrame(reads_per_barcode)
-    fig = sns.distplot(df_reads_per_barcode["reads"], kde=False)
+    fig = sns.histplot(df_reads_per_barcode["reads"], kde=False, binwidth=1)
     fig.set_ylabel("count")
+    fig.set_xlabel("number of reads per barcode")
     fig = plt.gcf()
-    fig.savefig("reads per barcode")
+    fig.savefig("number of reads per barcode")
 
 
 def load_data_to_df() -> pd.DataFrame:
@@ -106,16 +110,18 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
             for col in zero_cols:
                 df_for_err = df_for_err[df_for_err[col] == 0]
             if percentage:
-                sns.barplot(x=error, y="levenshtein_distance", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
+                ax = sns.barplot(x=error, y="levenshtein_distance", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
                 ax.set(ylabel="D% [levenshtein]")
-                fig.savefig(" ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + "success", 71)))
-                plt.close(fig)
             else:
                 ax = sns.boxplot(x=error, y="levenshtein_distance", data=df_for_err, ax=ax, palette="Blues")
                 ax = sns.swarmplot(x=error, y="levenshtein_distance", data=df_for_err, color=".25", ax=ax)
                 ax.set(ylabel="D [levenshtein]")
-                fig.savefig("".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " "), 71)))
-                plt.close(fig)
+        if percentage:
+            fig.savefig(" ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + "success", 71)))
+            plt.close(fig)
+        else:
+            fig.savefig("".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " "), 71)))
+            plt.close(fig)
 
 
 def draw_sampled_vs_error(df: pd.DataFrame):
@@ -155,6 +161,7 @@ def draw_error_per_number_of_sampled_oligos(df: pd.DataFrame):
             df.loc[idx, "error_type"] = "no_error"
             df.loc[idx, "error"] = 0
 
+    fig, ax = plt.subplots()
     ax = sns.catplot(
         data=df,
         x="number_of_sampled_oligos_from_file",
@@ -164,6 +171,8 @@ def draw_error_per_number_of_sampled_oligos(df: pd.DataFrame):
         palette="Blues",
         kind="bar",
     )
+    ax.set(xlabel="error_per_number_of_sampled_oligos".replace("_", " "), ylabel="D [levenshtein]")
+    fig.savefig("error_per_number_of_sampled_oligos")
 
     fig = px.bar(
         df, x="number_of_sampled_oligos_from_file", y="levenshtein_distance",

@@ -154,7 +154,6 @@ class Decoder:
         return len(barcode_and_payload) != self.barcode_len + (self.payload_total_len * self.k_mer)
 
     def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
-        """ Note that missing k-mers will be removed from the oligo_accumulation """
         if self.k_mer == 1:
             return [payload_accumulation]
         k_mer_accumulation = []
