@@ -167,7 +167,7 @@ class Decoder:
     def get_transformed_oligo_with_correct_len(self, payload: str) -> List[str]:
         k_mer_list = []
         payload_len = len(payload)
-        delta = self.payload_total_len * self.k_mer - payload_len
+        delta = payload_len - self.payload_total_len * self.k_mer
         i = 0
         while True:
             k_letters = payload[i:i + self.k_mer]
@@ -201,7 +201,7 @@ class Decoder:
                 else:
                     k_mer_list.append("Xdummy")
             i += 3
-            if len(k_mer_list) == self.payload_total_len:
+            if len(k_mer_list) >= self.payload_total_len:
                 return k_mer_list
 
     def payload_histogram(self, payload: List[List[str]]) -> List[Counter]:
