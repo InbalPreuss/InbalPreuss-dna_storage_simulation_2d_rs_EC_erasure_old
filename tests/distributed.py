@@ -14,6 +14,38 @@ from dna_storage.config import build_config
 from dna_storage.main import main
 from dna_storage.text_handling import generate_random_text_file
 
+import multiprocessing
+import logging
+from logging.handlers import QueueHandler, QueueListener
+
+def worker_init(q):
+    # all records from worker processes go to qh and then into q
+    qh = QueueHandler(q)
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(qh)
+
+
+def logger_init():
+    q = multiprocessing.Queue()
+    # this is the handler for all log records
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)s: %(asctime)s - %(process)s - %(message)s"))
+
+    # ql gets records from the queue and sends them to the handler
+    ql = QueueListener(q, handler)
+    ql.start()
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    # add the handler to the logger so records from this process are handled
+    logger.addHandler(handler)
+    fh = logging.FileHandler('processes.log')
+    fh.setLevel(logging.DEBUG)
+    logger.addHandler(fh)
+
+    return ql, q
+
 
 def build_runs():
     number_of_oligos_per_barcode = [1000]
@@ -61,7 +93,9 @@ def build_runs():
 
 def run_config_n_times(config_for_run: Dict, n: int = 10):
     for run_number in range(n):
+        logging.info(f'STARTED {run_number:2d} {config_for_run}')
         run_config(config_for_run=config_for_run, run_number=run_number)
+        logging.info(f'FINISHED {run_number:2d} {config_for_run}')
 
 
 def run_config(config_for_run: Dict, run_number):
@@ -115,9 +149,9 @@ def run_config(config_for_run: Dict, run_number):
 def main_fn():
     from multiprocessing import Pool, cpu_count
     configs_for_run = build_runs()
-    with Pool(cpu_count()) as p:
+    q_listener, q = logger_init()
+    with Pool(cpu_count(), worker_init, [q]) as p:
         p.map(run_config_n_times, configs_for_run)
-
 
 if __name__ == '__main__':
     main_fn()
