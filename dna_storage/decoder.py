@@ -137,7 +137,13 @@ class Decoder:
         for col in range(len(unique_payload_block_with_rs[0])):
             payload = [elem[col] for elem in unique_payload_block_with_rs]
             col_without_rs = self.error_correction_payload(payload=payload, payload_or_wide='wide')
-
+            if len(col_without_rs) > self.oligos_per_block_len:
+                import logging
+                logger = logging.getLogger()
+                logger.error(f"DECODER ERROR, "
+                             f"unique_payload_block_with_rs: {unique_payload_block_with_rs}, "
+                             f"payload: {payload}, "
+                             f"col_without_rs: {col_without_rs}")
             for idx, z in enumerate(col_without_rs):
                 rs_removed[idx].append(z)
         return rs_removed
