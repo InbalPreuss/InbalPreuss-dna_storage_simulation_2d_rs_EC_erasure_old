@@ -127,7 +127,11 @@ def run_config(config_for_run: Dict, run_number):
     files = [f for f in files_in_dir if f.name not in exclude]
     files_delete = [f for f in files_in_dir if f.name in exclude]
     for file in files:
-        with open(file, "rb") as f_in, gzip.open(file.with_suffix(file.suffix + ".gz"), "wb") as f_out:
+        if file.suffix == '.gz':
+            f_out_name = file
+        else:
+            f_out_name = file.with_suffix(file.suffix + ".gz")
+        with open(file, "rb") as f_in, gzip.open(f_out_name, "wb") as f_out:
             f_out.writelines(f_in)
         os.remove(file)
     [os.remove(f) for f in files_delete]

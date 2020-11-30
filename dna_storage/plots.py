@@ -3,18 +3,29 @@ import json
 import uuid
 from pathlib import Path
 from textwrap import wrap
+import os
 
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+def delete_double_gz() -> pd.DataFrame:
+    output_dir = Path("data/testing")
+    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("["))
+    for run_dir in run_dirs:
+        files = list(run_dir.iterdir())
+        for file in files:
+            suffixes = file.suffixes
+            if len(suffixes) > 1 and suffixes[-1] == ".gz" and suffixes[-2] == ".gz":
+                with gzip.open(file, "rb") as f_in, open(file.with_suffix(""), "wb") as f_out:
+                    f_out.writelines(f_in)
+                os.remove(file)
+
 
 def load_sorted_oligos_to_df() -> pd.DataFrame:
     output_dir = Path("data/testing")
-
     run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("["))
-
     sorted_files = []
 
     for run_dir in run_dirs:
@@ -28,14 +39,18 @@ def load_sorted_oligos_to_df() -> pd.DataFrame:
 
     for sorted_file in sorted_files:
         uid = uuid.uuid4()
-        with gzip.open(sorted_file, "rb") as f:
-            for line in f:
-                line = line.strip()
-                info_list.append({
-                    "uid": uid,
-                    "barcode": line[:12].decode(),
-                    "read_len": len(line[12:]),
-                })
+        try:
+            with gzip.open(sorted_file, "rb") as f:
+                for line in f:
+                    line = line.strip()
+                    info_list.append({
+                        "uid": uid,
+                        "barcode": line[:12].decode(),
+                        "read_len": len(line[12:]),
+                    })
+        except:
+            print(sorted_file)
+            print(line)
 
     df_reads = pd.DataFrame(info_list)
     return df_reads
