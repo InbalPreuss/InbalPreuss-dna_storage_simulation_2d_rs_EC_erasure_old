@@ -93,8 +93,10 @@ class Decoder:
 
                         unique_barcode_block_with_rs.append(barcode_prev)
                         if len(unique_payload_block_with_rs) >= total_oligos_per_block_with_rs_oligos:
-                            self.save_block_to_binary(unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
-                                                      unique_payload_block_with_rs[:total_oligos_per_block_with_rs_oligos])
+                            self.save_block_to_binary(
+                                unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
+                                unique_payload_block_with_rs[:total_oligos_per_block_with_rs_oligos]
+                            )
                             unique_payload_block_with_rs = unique_payload_block_with_rs[total_oligos_per_block_with_rs_oligos:]
                             unique_barcode_block_with_rs = unique_barcode_block_with_rs[total_oligos_per_block_with_rs_oligos:]
                     payload_accumulation = [payload]
@@ -116,7 +118,10 @@ class Decoder:
                     unique_payload_block_with_rs.append(dummy_payload)
                     next_barcode_should_be = "".join(next(self.barcode_generator))
                     unique_barcode_block_with_rs.append(next_barcode_should_be)
-                self.save_block_to_binary(unique_barcode_block_with_rs, unique_payload_block_with_rs)
+                self.save_block_to_binary(
+                    unique_barcode_block_with_rs[:total_oligos_per_block_with_rs_oligos],
+                    unique_payload_block_with_rs[:total_oligos_per_block_with_rs_oligos]
+                )
 
     def dna_to_unique_payload(self, payload_accumulation: List[str]) -> List[str]:
         shrunk_payload = self.shrink_payload(payload_accumulation=payload_accumulation)
