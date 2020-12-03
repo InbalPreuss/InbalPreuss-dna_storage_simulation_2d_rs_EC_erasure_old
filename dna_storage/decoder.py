@@ -23,7 +23,6 @@ class Decoder:
                  input_file: str,
                  shrink_dict: Dict,
                  min_number_of_oligos_per_barcode: int,
-                 number_of_oligos_per_barcode: int,
                  k_mer: int,
                  k_mer_representative_to_z: Dict,
                  z_to_binary: Dict,
@@ -45,7 +44,6 @@ class Decoder:
         self.payload_total_len = payload_total_len
         self.shrink_dict = shrink_dict
         self.min_number_of_oligos_per_barcode = min_number_of_oligos_per_barcode
-        self.number_of_oligos_per_barcode = number_of_oligos_per_barcode
         self.k_mer = k_mer
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.z_to_binary = z_to_binary
@@ -64,9 +62,6 @@ class Decoder:
         self.barcode_coder = barcode_coder
         self.payload_coder = payload_coder
         self.wide_coder = wide_coder
-        self.drop_payload_accumulation_less_than = max(
-            int(0.05 * number_of_oligos_per_barcode), min_number_of_oligos_per_barcode
-        )
 
     def run(self):
         barcode_prev = ''
@@ -86,7 +81,7 @@ class Decoder:
                     if next_barcode_should_be != barcode:
                         unique_payload_block_with_rs.append(dummy_payload)
                         unique_barcode_block_with_rs.append(next_barcode_should_be)
-                    if len(payload_accumulation) > self.drop_payload_accumulation_less_than:
+                    if len(payload_accumulation) > self.min_number_of_oligos_per_barcode:
                         unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
                         self.save_z_before_rs(barcode=barcode_prev, payload=unique_payload)
                         unique_payload_corrected = self.error_correction_payload(payload=unique_payload)
@@ -109,7 +104,7 @@ class Decoder:
                 else:
                     payload_accumulation.append(payload)
 
-            if len(payload_accumulation) > self.drop_payload_accumulation_less_than:
+            if len(payload_accumulation) > self.min_number_of_oligos_per_barcode:
                 unique_payload = self.dna_to_unique_payload(payload_accumulation=payload_accumulation)
                 self.save_z_before_rs(barcode=barcode_prev, payload=unique_payload)
                 unique_payload_corrected = self.error_correction_payload(payload=unique_payload)

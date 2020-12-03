@@ -89,7 +89,9 @@ def build_config(subset_size: int = 5,
         'do_decode': True,
         'decoder_results_to_binary': True,
         'binary_results_to_text': True,
-        'min_number_of_oligos_per_barcode': 1,
+        'min_number_of_oligos_per_barcode': max(
+            int(0.1 * number_of_sampled_oligos_from_file), 1
+        ),
         'algorithm_config': {'subset_size': subset_size,
                              'bits_per_z': bits_per_z,
                              'shrink_dict_size': shrink_dict_size,
