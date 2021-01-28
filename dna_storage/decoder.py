@@ -8,6 +8,7 @@ from unireedsolomon import RSCodecError
 
 from dna_storage.rs_adapter import RSBarcodeAdapter, RSPayloadAdapter, RSWideAdapter
 from dna_storage import utils
+from dna_storage.utils import chunker
 
 
 #################################################################
