@@ -50,7 +50,7 @@ def logger_init():
 def build_runs():
     number_of_oligos_per_barcode = [1000]
     # number_of_oligos_per_barcode = [20, 100, 1000, 10000]`
-    number_of_sampled_oligos_from_file = [-1, 20, 50, 100, 1000]
+    number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200, 500, 1000]
     # number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
     oligos_and_samples = [s for s in oligos_and_samples if s[0] >= s[1]]
@@ -68,6 +68,8 @@ def build_runs():
                         (i[0] == 0 and i[1] == 0) or (i[0] == 0 and i[2] == 0) or (i[1] == 0 and i[2] == 0)]
             for prod in products:
                 if number_of_sampled_oligos_from_file == -1:
+                    if size == 5:  # because we already have 10 in number_of_sampled_oligos_from_file
+                        continue
                     was_variable = True
                     number_of_sampled_oligos_from_file = variable_number_of_sampled_oligos_from_file[size]
                 name = f'[ subset size {size}, bits per z {bits_per_z:>2} ]' \
