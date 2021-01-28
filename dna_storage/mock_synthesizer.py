@@ -1,6 +1,6 @@
 from pathlib import Path
 import random
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Sequence, Generator
 
 import numpy as np
 
@@ -13,6 +13,7 @@ class Synthesizer:
                  subset_size: int,
                  k_mer_representative_to_z: Dict,
                  k_mer_to_dna: Dict,
+                 k_mer: int,
                  mode: str):
         self.input_file = input_file
         self.results_file = results_file
@@ -22,6 +23,7 @@ class Synthesizer:
         self.subset_size = subset_size
         self.k_mer_representative_to_z = k_mer_representative_to_z
         self.k_mer_to_dna = k_mer_to_dna
+        self.k_mer = k_mer
         self.mode = mode
 
     def synthesize(self):
@@ -41,25 +43,35 @@ class Synthesizer:
                     col = np.array([tuple(self.k_mer_to_dna[k_mer]) for k_mer in vec])
                     x_mat = np.hstack((x_mat, col))
 
-                dna_list = [''.join(row) for row in x_mat]
-                dna_list = self.insertion_deletion_substitution(dna_list)
+                barcode_list = [''.join(row) for row in x_mat[:, :self.barcode_total_len]]
+                payload_list = [''.join(row) for row in x_mat[:, self.barcode_total_len:]]
+                barcode_list = self.insertion_deletion_substitution(barcode_list, group_size=1)
+                payload_list = self.insertion_deletion_substitution(payload_list, group_size=self.k_mer)
+                dna_list = [b + p for b, p in zip(barcode_list, payload_list)]
                 results_file.write('\n'.join(dna_list) + '\n')
 
-    def insertion_deletion_substitution(self, dna_list: List[str]):
+    @staticmethod
+    def chunker(seq: Sequence, size: int) -> Generator:
+        return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+    def insertion_deletion_substitution(self, dna_list: List[str], group_size: int = 1):
+        choose_from = 'ACGT' if group_size == 1 else list(self.k_mer_to_dna.values())
+        choose_from_set = set(choose_from)
+        bitmap_length = int(len(dna_list[0]) / group_size)
         for row_idx, oligo in enumerate(dna_list):
-            deletion = np.random.binomial(1, self.synthesis_config['letter_deletion_error_ratio'], len(oligo))
-            oligo = ''.join([char if deletion[idx] == 0 else '' for idx, char in enumerate(oligo)])
-            insertion_idx = np.random.binomial(1, self.synthesis_config['letter_insertion_error_ratio'], len(oligo))
-            insertion = [random.choice('ACGT') if i == 1 else '' for i in insertion_idx]
-            oligo = ''.join(''.join(x) for x in zip(oligo, insertion))
-            substitution_idx = np.random.binomial(1, self.synthesis_config['letter_substitution_error_ratio'], len(oligo))
+            deletion = np.random.binomial(1, self.synthesis_config['letter_deletion_error_ratio'], bitmap_length)
+            oligo = ''.join([group if deletion[idx] == 0 else '' for idx, group in enumerate(self.chunker(oligo, group_size))])
+            insertion_idx = np.random.binomial(1, self.synthesis_config['letter_insertion_error_ratio'], bitmap_length)
+            insertion = [random.choice(choose_from) if i == 1 else '' for i in insertion_idx]
+            oligo = ''.join(''.join(x) for x in zip(self.chunker(oligo, group_size), insertion))
+            substitution_idx = np.random.binomial(1, self.synthesis_config['letter_substitution_error_ratio'], bitmap_length)
             oligo_with_letters_substitution = [''] * len(oligo)
-            for letter_idx, letter in enumerate(oligo):
+            for letter_idx, group in enumerate(self.chunker(oligo, group_size)):
                 if substitution_idx[letter_idx] == 1:
-                    diff = {'A', 'C', 'G', 'T'} - set(letter)
-                    oligo_with_letters_substitution[letter_idx] = random.choice(''.join(diff))
+                    diff = choose_from_set - set(group)
+                    oligo_with_letters_substitution[letter_idx] = random.choice(list(diff))
                 else:
-                    oligo_with_letters_substitution[letter_idx] = letter
+                    oligo_with_letters_substitution[letter_idx] = group
             dna_list[row_idx] = ''.join(oligo_with_letters_substitution)
         return dna_list
 
