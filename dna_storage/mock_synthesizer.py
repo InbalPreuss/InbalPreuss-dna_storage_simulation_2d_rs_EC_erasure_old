@@ -1,8 +1,10 @@
 from pathlib import Path
 import random
-from typing import Union, Dict, List, Sequence, Generator
+from typing import Union, Dict, List
 
 import numpy as np
+
+from dna_storage.utils import chunker
 
 
 class Synthesizer:
@@ -50,23 +52,19 @@ class Synthesizer:
                 dna_list = [b + p for b, p in zip(barcode_list, payload_list)]
                 results_file.write('\n'.join(dna_list) + '\n')
 
-    @staticmethod
-    def chunker(seq: Sequence, size: int) -> Generator:
-        return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-
     def insertion_deletion_substitution(self, dna_list: List[str], group_size: int = 1):
         choose_from = 'ACGT' if group_size == 1 else list(self.k_mer_to_dna.values())
         choose_from_set = set(choose_from)
         bitmap_length = int(len(dna_list[0]) / group_size)
         for row_idx, oligo in enumerate(dna_list):
             deletion = np.random.binomial(1, self.synthesis_config['letter_deletion_error_ratio'], bitmap_length)
-            oligo = ''.join([group if deletion[idx] == 0 else '' for idx, group in enumerate(self.chunker(oligo, group_size))])
+            oligo = ''.join([group if deletion[idx] == 0 else '' for idx, group in enumerate(chunker(oligo, group_size))])
             insertion_idx = np.random.binomial(1, self.synthesis_config['letter_insertion_error_ratio'], bitmap_length)
             insertion = [random.choice(choose_from) if i == 1 else '' for i in insertion_idx]
-            oligo = ''.join(''.join(x) for x in zip(self.chunker(oligo, group_size), insertion))
+            oligo = ''.join(''.join(x) for x in zip(chunker(oligo, group_size), insertion))
             substitution_idx = np.random.binomial(1, self.synthesis_config['letter_substitution_error_ratio'], bitmap_length)
             oligo_with_letters_substitution = [''] * len(oligo)
-            for letter_idx, group in enumerate(self.chunker(oligo, group_size)):
+            for letter_idx, group in enumerate(chunker(oligo, group_size)):
                 if substitution_idx[letter_idx] == 1:
                     diff = choose_from_set - set(group)
                     oligo_with_letters_substitution[letter_idx] = random.choice(list(diff))

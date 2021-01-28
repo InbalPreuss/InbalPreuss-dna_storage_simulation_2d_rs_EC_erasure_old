@@ -170,9 +170,17 @@ class Decoder:
         if self.k_mer == 1:
             return [payload_accumulation]
         k_mer_accumulation = []
+        # for payload in payload_accumulation:
+        #     k_mer_list = self.get_transformed_oligo_with_correct_len(payload)
+        #     k_mer_accumulation.append(k_mer_list)
+        # return k_mer_accumulation
         for payload in payload_accumulation:
-            k_mer_list = self.get_transformed_oligo_with_correct_len(payload)
-            k_mer_accumulation.append(k_mer_list)
+            k_mer_list = []
+            oligo_valid = True
+            for k_letters in chunker(payload, size=self.k_mer):
+                k_mer_list.append(self.shrink_dict.get(k_letters, "Xdummy"))
+            if oligo_valid:
+                k_mer_accumulation.append(k_mer_list)
         return k_mer_accumulation
 
     def get_transformed_oligo_with_correct_len(self, payload: str) -> List[str]:
