@@ -47,6 +47,32 @@ def logger_init():
     return ql, q
 
 
+def compute_sigma_distance(config: Dict):
+    def file_to_string(file, stop: int = None):
+        string = ''
+        for line in file:
+            line_list = line.strip('\n').split(',')
+            if stop:
+                payload = line_list[1:stop]
+            else:
+                payload = line_list[1:]
+            string += ''.join([chr(int(v[1:])) for v in payload])
+        return string
+
+    with open(config['encoder_results_file'], 'r', encoding='utf-8') as f:
+        input_data_encoder_results_file = file_to_string(f)
+    with open(config['decoder_results_file_z_before_rs_payload'], 'r', encoding='utf-8') as f:
+        output_data_sigma_before_rs = file_to_string(f)
+    with open(config['encoder_results_file'], 'r', encoding='utf-8') as f:
+        input_data_encoder_without_rs = file_to_string(f, stop=-config['payload_rs_len'])
+    with open(config['decoder_results_file_z_after_rs_payload'], 'r', encoding='utf-8') as f:
+        output_data_sigma_after_rs = file_to_string(f)
+
+    dist_sigma_before_rs = levenshtein.distance(input_data_encoder_results_file, output_data_sigma_before_rs)
+    dist_sigma_after_rs = levenshtein.distance(input_data_encoder_without_rs, output_data_sigma_after_rs)
+    return dist_sigma_before_rs, dist_sigma_after_rs
+
+
 def build_runs():
     number_of_oligos_per_barcode = [1000]
     # number_of_oligos_per_barcode = [20, 100, 1000, 10000]`
@@ -118,10 +144,14 @@ def run_config(config_for_run: Dict, run_number):
     generate_random_text_file(size_kb=10, file=input_text)
     print(f"$$$$$$$$ Running {output_dir} $$$$$$$$")
     main(config)
-    with open(input_text, 'r', encoding='utf-8') as input_file:
-        input_data = input_file.read()
-    with open(config["text_results_file"], 'r', encoding='utf-8') as file:
-        output_data = file.read()
+
+    with open(input_text, 'r', encoding='utf-8') as f:
+        input_data = f.read()
+    with open(config["text_results_file"], 'r', encoding='utf-8') as f:
+        output_data = f.read()
+
+    dist_sigma_before_rs, dist_sigma_after_rs = compute_sigma_distance(config)
+    dist = levenshtein.distance(input_data, output_data)
 
     # gzip and delete files
     files_in_dir = list(Path(output_dir).iterdir())
@@ -139,9 +169,14 @@ def run_config(config_for_run: Dict, run_number):
     [os.remove(f) for f in files_delete]
 
     # write a json results file
-    dist = levenshtein.distance(input_data, output_data)
     res_file = Path(output_dir) / f"config_and_levenshtein_distance_{dist}.json"
-    res = {**config_for_run, "output_dir": output_dir, "levenshtein_distance": dist}
+    res = {
+        **config_for_run,
+        "output_dir": output_dir,
+        "levenshtein_distance": dist,
+        "levenshtein_distance_sigma_before_rs": dist_sigma_before_rs,
+        "levenshtein_distance_sigma_after_rs": dist_sigma_after_rs
+    }
     with open(res_file, 'w') as f:
         json.dump(res, f, indent=4)
     print(f"@@@@@@@@ Finished {output_dir} @@@@@@@@")

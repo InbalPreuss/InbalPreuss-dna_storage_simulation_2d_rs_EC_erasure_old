@@ -114,29 +114,30 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
     ])
 
     errors = ["substitution_error", "deletion_error", "insertion_error"]
-
-    for idx, trial_group in trials_group:
-        fig, axes = plt.subplots(nrows=3)
-        fig.suptitle("\n".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0], 71)))
-        fig.subplots_adjust(top=0.85, hspace=0.5)
-        for ax, error in zip(axes, errors):
-            zero_cols = [e for e in errors if e != error]
-            df_for_err = trial_group
-            for col in zero_cols:
-                df_for_err = df_for_err[df_for_err[col] == 0]
+    y_values = ["levenshtein_distance", "levenshtein_distance_sigma_before_rs", "levenshtein_distance_sigma_after_rs"]
+    for y in y_values:
+        for idx, trial_group in trials_group:
+            fig, axes = plt.subplots(nrows=3)
+            fig.suptitle("\n".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"\n{y}".replace("_", " "), 71)))
+            fig.subplots_adjust(top=0.85, hspace=0.5)
+            for ax, error in zip(axes, errors):
+                zero_cols = [e for e in errors if e != error]
+                df_for_err = trial_group
+                for col in zero_cols:
+                    df_for_err = df_for_err[df_for_err[col] == 0]
+                if percentage:
+                    ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
+                    ax.set(ylabel="D% [levenshtein]")
+                else:
+                    ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette="Blues")
+                    ax = sns.swarmplot(x=error, y=y, data=df_for_err, color=".25", ax=ax)
+                    ax.set(ylabel="D [levenshtein]")
             if percentage:
-                ax = sns.barplot(x=error, y="levenshtein_distance", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
-                ax.set(ylabel="D% [levenshtein]")
+                fig.savefig(" ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
+                plt.close(fig)
             else:
-                ax = sns.boxplot(x=error, y="levenshtein_distance", data=df_for_err, ax=ax, palette="Blues")
-                ax = sns.swarmplot(x=error, y="levenshtein_distance", data=df_for_err, color=".25", ax=ax)
-                ax.set(ylabel="D [levenshtein]")
-        if percentage:
-            fig.savefig(" ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + "success", 71)))
-            plt.close(fig)
-        else:
-            fig.savefig("".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " "), 71)))
-            plt.close(fig)
+                fig.savefig("".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y}", 71)))
+                plt.close(fig)
 
 
 def draw_sampled_vs_error(df: pd.DataFrame):
