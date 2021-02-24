@@ -40,7 +40,6 @@ class Decoder:
                  results_file_z_after_rs_payload: Union[Path, str],
                  ):
         self.input_file = input_file
-        self.input_file = Path("/Users/omri/git/DnaStorage/data/testing/[ subset size 7, bits per z 13 ][ number of oligos per barcode   1000 ][ number of oligos sampled after synthesis   1000 ][ errors, substitution 0     , deletion 0.01  , insertion 0      ] trial  0/simulation_data.6.sort_oligo_results_file.dna")
         self.barcode_len = barcode_len
         self.barcode_total_len = barcode_total_len
         self.payload_len = payload_len
