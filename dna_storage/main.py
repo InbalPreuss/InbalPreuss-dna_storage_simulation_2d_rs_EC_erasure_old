@@ -102,6 +102,7 @@ def main(config):
                           subset_size=config['algorithm_config']['subset_size'],
                           oligos_per_block_len=config['oligos_per_block_len'],
                           oligos_per_block_rs_len=config['oligos_per_block_rs_len'],
+                          drop_if_not_exact_number_of_chunks=config['drop_if_not_exact_number_of_chunks'],
                           barcode_coder=config['barcode_coder'],
                           payload_coder=config['payload_coder'],
                           wide_coder=config['wide_coder'],

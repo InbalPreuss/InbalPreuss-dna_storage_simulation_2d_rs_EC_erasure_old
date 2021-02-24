@@ -18,6 +18,7 @@ import multiprocessing
 import logging
 from logging.handlers import QueueHandler, QueueListener
 
+
 def worker_init(q):
     # all records from worker processes go to qh and then into q
     qh = QueueHandler(q)
@@ -129,6 +130,7 @@ def run_config_n_times(config_for_run: Dict, n: int = 10):
 def run_config(config_for_run: Dict, run_number):
     output_dir = f"{config_for_run['output_dir']} trial {run_number:>2}"
     input_text = output_dir + '/random_file_10_KiB.txt'
+    drop_if_not_exact_number_of_chunks = True
     config = build_config(
         subset_size=config_for_run["size"],
         bits_per_z=config_for_run["bits_per_z"],
@@ -138,7 +140,8 @@ def run_config(config_for_run: Dict, run_number):
         number_of_oligos_per_barcode=config_for_run["number_of_oligos_per_barcode"],
         number_of_sampled_oligos_from_file=config_for_run["number_of_sampled_oligos_from_file"],
         output_dir=output_dir,
-        input_text_file=input_text
+        input_text_file=input_text,
+        drop_if_not_exact_number_of_chunks=drop_if_not_exact_number_of_chunks,
     )
 
     generate_random_text_file(size_kb=10, file=input_text)

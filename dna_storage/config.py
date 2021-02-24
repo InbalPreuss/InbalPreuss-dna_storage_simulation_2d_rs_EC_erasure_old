@@ -7,15 +7,18 @@ from dna_storage.rs_adapter import RSBarcodeAdapter, RSPayloadAdapter, RSWideAda
 PathLike = Union[str, pathlib.Path]
 
 
-def build_config(subset_size: int = 5,
-                 bits_per_z: int = 12,
-                 letter_substitution_error_ratio: int = 0,
-                 letter_deletion_error_ratio: int = 0,
-                 letter_insertion_error_ratio: int = 0,
-                 number_of_oligos_per_barcode: int = 20,
-                 number_of_sampled_oligos_from_file: int = 10000,
-                 input_text_file: PathLike = pathlib.Path(r'data/testing/input_text.dna'),
-                 output_dir: PathLike = pathlib.Path(r'data/testing')):
+def build_config(
+    subset_size: int = 5,
+    bits_per_z: int = 12,
+    letter_substitution_error_ratio: int = 0,
+    letter_deletion_error_ratio: int = 0,
+    letter_insertion_error_ratio: int = 0,
+    number_of_oligos_per_barcode: int = 20,
+    number_of_sampled_oligos_from_file: int = 10000,
+    input_text_file: PathLike = pathlib.Path(r"data/testing/input_text.dna"),
+    output_dir: PathLike = pathlib.Path(r"data/testing"),
+    drop_if_not_exact_number_of_chunks: bool = False,
+):
 
     output_dir = pathlib.Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -92,6 +95,7 @@ def build_config(subset_size: int = 5,
         'min_number_of_oligos_per_barcode': max(
             int(0.1 * number_of_sampled_oligos_from_file), 1
         ),
+        'drop_if_not_exact_number_of_chunks': drop_if_not_exact_number_of_chunks,
         'algorithm_config': {'subset_size': subset_size,
                              'bits_per_z': bits_per_z,
                              'shrink_dict_size': shrink_dict_size,

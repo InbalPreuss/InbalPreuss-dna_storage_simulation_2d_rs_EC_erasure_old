@@ -30,6 +30,7 @@ class Decoder:
                  subset_size: int,
                  oligos_per_block_len: int,
                  oligos_per_block_rs_len: int,
+                 drop_if_not_exact_number_of_chunks: bool,
                  barcode_coder: RSBarcodeAdapter,
                  payload_coder: RSPayloadAdapter,
                  wide_coder: RSWideAdapter,
@@ -39,6 +40,7 @@ class Decoder:
                  results_file_z_after_rs_payload: Union[Path, str],
                  ):
         self.input_file = input_file
+        self.input_file = Path("/Users/omri/git/DnaStorage/data/testing/[ subset size 7, bits per z 13 ][ number of oligos per barcode   1000 ][ number of oligos sampled after synthesis   1000 ][ errors, substitution 0     , deletion 0.01  , insertion 0      ] trial  0/simulation_data.6.sort_oligo_results_file.dna")
         self.barcode_len = barcode_len
         self.barcode_total_len = barcode_total_len
         self.payload_len = payload_len
@@ -51,6 +53,7 @@ class Decoder:
         self.subset_size = subset_size
         self.oligos_per_block_len = oligos_per_block_len
         self.oligos_per_block_rs_len = oligos_per_block_rs_len
+        self.drop_if_not_exact_number_of_chunks = drop_if_not_exact_number_of_chunks
         self.results_file = results_file
         self.results_file_z_before_rs_payload = results_file_z_before_rs_payload
         self.results_file_z_after_rs_payload = results_file_z_after_rs_payload
@@ -63,6 +66,7 @@ class Decoder:
         self.barcode_coder = barcode_coder
         self.payload_coder = payload_coder
         self.wide_coder = wide_coder
+        self.payload_total_len_nuc = (payload_total_len * k_mer)
 
     def run(self):
         barcode_prev = ''
@@ -165,12 +169,13 @@ class Decoder:
         return "".join(binary)
 
     def wrong_barcode_and_payload_len(self, barcode_and_payload: str) -> bool:
-        return len(barcode_and_payload) != self.barcode_len + (self.payload_total_len * self.k_mer)
+        return len(barcode_and_payload) != self.barcode_len + self.payload_total_len_nuc
 
     def shrink_payload(self, payload_accumulation: List[str]) -> List[List[str]]:
         if self.k_mer == 1:
             return [payload_accumulation]
         k_mer_accumulation = []
+        # When we inserted errors per nuc (not per entire Z). we used those 3 algorithms to fix some of the errors.
         # for payload in payload_accumulation:
         #     k_mer_list = self.get_transformed_oligo_with_correct_len(payload)
         #     k_mer_accumulation.append(k_mer_list)
@@ -178,6 +183,11 @@ class Decoder:
         for payload in payload_accumulation:
             k_mer_list = []
             oligo_valid = True
+            if self.drop_if_not_exact_number_of_chunks:
+                if not self.payload_total_len_nuc - (self.k_mer - 1) <= len(payload) <= self.payload_total_len_nuc + (self.k_mer - 1):
+                    continue
+            else:
+                payload = payload.ljust(self.payload_total_len_nuc, 'R')[:self.payload_total_len_nuc]
             for k_letters in chunker(payload, size=self.k_mer):
                 k_mer_list.append(self.shrink_dict.get(k_letters, "Xdummy"))
             if oligo_valid:
@@ -187,7 +197,7 @@ class Decoder:
     def get_transformed_oligo_with_correct_len(self, payload: str) -> List[str]:
         k_mer_list = []
         payload_len = len(payload)
-        delta = payload_len - self.payload_total_len * self.k_mer
+        delta = payload_len - self.payload_total_len_nuc
         i = 0
         while True:
             k_letters = payload[i:i + self.k_mer]
