@@ -73,6 +73,14 @@
        ```console
        python3 -m dna_storage.test_dna
        ```
+    3. Run distributed:
+        ```console
+        nohup python3 -m tests.distributed &
+       ```
+    4. Run plots:
+        ```console
+        nohup python3 -m dna_storage.plots &
+        ```
        
 7. nohup is a command that lets your program run while you are disconnected from putty
     ```console
