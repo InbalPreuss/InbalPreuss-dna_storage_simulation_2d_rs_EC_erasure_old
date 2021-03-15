@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 import random
 from typing import Union, Dict, List
@@ -61,8 +62,8 @@ class Synthesizer:
             oligo = ''.join([group if deletion[idx] == 0 else '' for idx, group in enumerate(chunker(oligo, group_size))])
             insertion_idx = np.random.binomial(1, self.synthesis_config['letter_insertion_error_ratio'], bitmap_length)
             insertion = [random.choice(choose_from) if i == 1 else '' for i in insertion_idx]
-            oligo = ''.join(''.join(x) for x in zip(chunker(oligo, group_size), insertion))
-            substitution_idx = np.random.binomial(1, self.synthesis_config['letter_substitution_error_ratio'], bitmap_length)
+            oligo = ''.join(''.join(x) for x in itertools.zip_longest(chunker(oligo, group_size), insertion, fillvalue=''))
+            substitution_idx = np.random.binomial(1, self.synthesis_config['letter_substitution_error_ratio'], len(oligo))
             oligo_with_letters_substitution = [''] * len(oligo)
             for letter_idx, group in enumerate(chunker(oligo, group_size)):
                 if substitution_idx[letter_idx] == 1:
