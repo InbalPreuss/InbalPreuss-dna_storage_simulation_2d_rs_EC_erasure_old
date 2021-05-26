@@ -120,7 +120,7 @@ def build_runs():
     return runs
 
 
-def run_config_n_times(config_for_run: Dict, n: int = 10):
+def run_config_n_times(config_for_run: Dict, n: int = 50):
     for run_number in range(n):
         logging.info(f'STARTED {run_number:2d} {config_for_run}')
         run_config(config_for_run=config_for_run, run_number=run_number)
