@@ -173,15 +173,13 @@ def run_config(config_for_run: Dict, run_number):
 
     # write a json results file
     res_file = Path(output_dir) / f"config_and_levenshtein_distance_{dist}.json"
-    with open(input_text, 'r') as f:
-        input_text_len = len(f.read())
     res = {
         **config_for_run,
         "output_dir": output_dir,
         "levenshtein_distance": dist,
         "levenshtein_distance_sigma_before_rs": dist_sigma_before_rs,
         "levenshtein_distance_sigma_after_rs": dist_sigma_after_rs,
-        "input_text_len": input_text_len,
+        "input_text_len": len(input_data),
     }
     with open(res_file, 'w') as f:
         json.dump(res, f, indent=4)
