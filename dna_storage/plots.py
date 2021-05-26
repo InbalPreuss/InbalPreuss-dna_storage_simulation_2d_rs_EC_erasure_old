@@ -132,10 +132,10 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 if percentage:
-                    ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette="Set2")
+                    ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
                     ax.set(ylabel="D% [levenshtein]")
                 else:
-                    ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette="Set2")
+                    ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette="Blues")
                     ax = sns.swarmplot(x=error, y=y, data=df_for_err, color=".25", ax=ax)
                     ax.set(ylabel="D [levenshtein]")
             if percentage:
@@ -156,31 +156,31 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
     errors = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = ["levenshtein_distance", "levenshtein_distance_sigma_before_rs", "levenshtein_distance_sigma_after_rs"]
     for y_value in y_values:
-        df[y_value] = df.apply(lambda x: x[y_value] / x["input_text_len"], axis=1)
+        df[y_value] = df.apply(lambda x: x[y_value] / x.get('input_text_len', 1), axis=1)
     for y in y_values:
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
             title = trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"\n{y}".replace("_", " ")
             title = re.sub(r'\[ number of oligos sampled after synthesis[^\S\n\t]+\d+[^\S\n\t]+\]', '', title)
             fig.suptitle("\n".join(wrap(title, 71)))
-            fig.subplots_adjust(top=0.85, hspace=0.5, right=0.6)
+            fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
             for ax_idx, (ax, error) in enumerate(zip(axes, errors)):
                 zero_cols = [e for e in errors if e != error]
                 df_for_err = trial_group
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 if percentage:
-                    ax = sns.barplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, estimator=estimate, ax=ax, palette="Set2")
+                    ax = sns.barplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
                     ax.set(ylabel="D% [levenshtein]")
                 else:
-                    ax = sns.boxplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, palette="Set2")
+                    ax = sns.boxplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, palette="Blues")
 
-                    ax = sns.swarmplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, dodge=True, palette="Set2")
+                    ax = sns.swarmplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, dodge=True, palette="Blues")
                     ax.set(ylabel="D [levenshtein]")
                 if ax_idx != 0:
                     ax.get_legend().remove()
                 else:
-                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., title=)
+                    ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             if percentage:
                 fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
                 plt.close(fig)
@@ -255,6 +255,8 @@ def main():
     draw_zero_error_percentage(df=df)
     draw_boxplots(df=df)
     draw_boxplots(df=df, percentage=True)
+    draw_boxplots_all_samples(df=df)
+    draw_boxplots_all_samples(df=df, percentage=True)
     draw_sampled_vs_error(df=df)
     draw_error_per_number_of_sampled_oligos(df=df)
     input("Hit enter to terminate")
