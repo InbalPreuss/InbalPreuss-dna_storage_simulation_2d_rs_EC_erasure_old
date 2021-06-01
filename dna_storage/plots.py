@@ -30,6 +30,7 @@ def delete_double_gz() -> pd.DataFrame:
 
 
 def load_sorted_oligos_to_df() -> pd.DataFrame:
+    import csv
     output_dir = Path("data/testing")
     run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("["))
     sorted_files = []
@@ -40,25 +41,47 @@ def load_sorted_oligos_to_df() -> pd.DataFrame:
         except IndexError:
             continue
         sorted_files.append(sorted_file)
-
+    print(f'sort_oligo_results_file')
     info_list = []
 
-    for sorted_file in sorted_files:
-        uid = uuid.uuid4()
-        try:
-            with gzip.open(sorted_file, "rb") as f:
-                for line in f:
-                    line = line.strip()
-                    info_list.append({
-                        "uid": uid,
-                        "barcode": line[:12].decode(),
-                        "read_len": len(line[12:]),
-                    })
-        except:
-            print(sorted_file)
-            print(line)
+    # for sorted_file in sorted_files:
+    #     uid = uuid.uuid4()
+    #     try:
+    #         with gzip.open(sorted_file, "rb") as f:
+    #             for line in f:
+    #                 line = line.strip()
+    #                 info_list.append({
+    #                     "uid": uid,
+    #                     "barcode": line[:12].decode(),
+    #                     "read_len": len(line[12:]),
+    #                 })
+    #     except:
+    #         print(sorted_file)
+    #         print(line)
 
-    df_reads = pd.DataFrame(info_list)
+    with open("sorted_oligos.csv", 'w') as csvfile:
+        fieldnames = ["uid", "barcode", "read_len"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for sorted_file in sorted_files:
+            uid = uuid.uuid4()
+            try:
+                with gzip.open(sorted_file, "rb") as f:
+                    for line in f:
+                        line = line.strip()
+                        writer.writerow({
+                            "uid": uid,
+                            "barcode": line[:12].decode(),
+                            "read_len": len(line[12:]),
+                        })
+            except:
+                print(sorted_file)
+                print(line)
+
+    print(f'info_list')
+
+    df_reads = pd.read_csv("sorted_oligos.csv")
+    # df_reads = pd.DataFrame(info_list)
     return df_reads
 
 
