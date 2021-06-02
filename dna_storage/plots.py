@@ -177,9 +177,11 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
     ])
 
     errors = ["substitution_error", "deletion_error", "insertion_error"]
-    y_values = ["levenshtein_distance", "levenshtein_distance_sigma_before_rs", "levenshtein_distance_sigma_after_rs"]
-    for y_value in y_values:
-        df[y_value] = df.apply(lambda x: x[y_value] / x.get('input_text_len', 1), axis=1)
+    y_values = {"levenshtein_distance":"input_test_len",
+                "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+                "levenshtein_distance_sigma_after_rs": "input_data_encoder_without_rs_len"}
+    for y_value in y_values.items():
+        df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
     for y in y_values:
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
