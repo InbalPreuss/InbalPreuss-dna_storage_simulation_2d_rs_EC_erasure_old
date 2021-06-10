@@ -7,7 +7,6 @@ from textwrap import wrap
 import os
 
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 import seaborn as sns
@@ -155,7 +154,11 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 if percentage:
-                    ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
+                    if y == "levenshtein_distance":
+                        palette = "Purples"
+                    else:
+                        palette = "Blues"
+                    ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette=palette)
                     ax.set(ylabel="D% [levenshtein]")
                 else:
                     ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette="Blues")
