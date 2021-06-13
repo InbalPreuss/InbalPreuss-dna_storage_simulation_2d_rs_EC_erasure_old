@@ -65,20 +65,23 @@ def compute_sigma_distance(config: Dict):
     with open(config['decoder_results_file_z_before_rs_payload'], 'r', encoding='utf-8') as f:
         output_data_sigma_before_rs = file_to_string(f)
     with open(config['encoder_results_file'], 'r', encoding='utf-8') as f:
-        input_data_encoder_without_rs = file_to_string(f, stop=-config['payload_rs_len'])
+        input_data_encoder_without_rs_payload = file_to_string(f, stop=-config['payload_rs_len'])
     with open(config['decoder_results_file_z_after_rs_payload'], 'r', encoding='utf-8') as f:
-        output_data_sigma_after_rs = file_to_string(f)
+        output_data_sigma_after_rs_payload = file_to_string(f)
+    with open(config['encoder_results_file_without_rs_wide'], 'r', encoding='utf-8') as f:
+        input_data_encoder_without_rs_wide = file_to_string(f, stop=-config['payload_rs_len'])
+    with open(config['decoder_results_file_z_after_rs_wide'], 'r', encoding='utf-8') as f:
+        output_data_sigma_after_rs_wide = file_to_string(f)
 
     dist_sigma_before_rs = levenshtein.distance(input_data_encoder_results_file, output_data_sigma_before_rs)
-    dist_sigma_after_rs = levenshtein.distance(input_data_encoder_without_rs, output_data_sigma_after_rs)
-    return dist_sigma_before_rs, dist_sigma_after_rs, len(input_data_encoder_results_file), len(input_data_encoder_without_rs)
+    dist_sigma_after_rs_payload = levenshtein.distance(input_data_encoder_without_rs_payload, output_data_sigma_after_rs_payload)
+    dist_sigma_after_rs_wide = levenshtein.distance(input_data_encoder_without_rs_wide, output_data_sigma_after_rs_wide)
+    return dist_sigma_before_rs, dist_sigma_after_rs_payload, dist_sigma_after_rs_wide, len(input_data_encoder_results_file), len(input_data_encoder_without_rs_payload), len(input_data_encoder_without_rs_wide)
 
 
 def build_runs():
     number_of_oligos_per_barcode = [1000]
-    # number_of_oligos_per_barcode = [20, 100, 1000, 10000]`
     number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200, 500, 1000]
-    # number_of_sampled_oligos_from_file = [20, 50, 100, 1000, float('inf')]
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
     oligos_and_samples = [s for s in oligos_and_samples if s[0] >= s[1]]
 
@@ -153,7 +156,7 @@ def run_config(config_for_run: Dict, run_number):
     with open(config["text_results_file"], 'r', encoding='utf-8') as f:
         output_data = f.read()
 
-    dist_sigma_before_rs, dist_sigma_after_rs, input_data_encoder_results_file_len, input_data_encoder_without_rs_len = compute_sigma_distance(config)
+    dist_sigma_before_rs, dist_sigma_after_rs_payload, dist_sigma_after_rs_wide, input_data_encoder_results_file_len, input_data_encoder_without_rs_payload_len, input_data_encoder_without_rs_wide_len = compute_sigma_distance(config)
     dist = levenshtein.distance(input_data, output_data)
 
     # gzip and delete files
@@ -178,10 +181,12 @@ def run_config(config_for_run: Dict, run_number):
         "output_dir": output_dir,
         "levenshtein_distance": dist,
         "levenshtein_distance_sigma_before_rs": dist_sigma_before_rs,
-        "levenshtein_distance_sigma_after_rs": dist_sigma_after_rs,
+        "levenshtein_distance_sigma_after_rs_payload": dist_sigma_after_rs_payload,
+        "levenshtein_distance_sigma_after_rs_wide": dist_sigma_after_rs_wide,
         "input_text_len": len(input_data),
         "input_data_encoder_results_file_len": input_data_encoder_results_file_len,
-        "input_data_encoder_without_rs_len": input_data_encoder_without_rs_len,
+        "input_data_encoder_without_rs_payload_len": input_data_encoder_without_rs_payload_len,
+        "input_data_encoder_without_rs_wide_len": input_data_encoder_without_rs_wide_len,
     }
     with open(res_file, 'w') as f:
         json.dump(res, f, indent=4)

@@ -43,21 +43,6 @@ def load_sorted_oligos_to_df() -> pd.DataFrame:
     print(f'sort_oligo_results_file')
     info_list = []
 
-    # for sorted_file in sorted_files:
-    #     uid = uuid.uuid4()
-    #     try:
-    #         with gzip.open(sorted_file, "rb") as f:
-    #             for line in f:
-    #                 line = line.strip()
-    #                 info_list.append({
-    #                     "uid": uid,
-    #                     "barcode": line[:12].decode(),
-    #                     "read_len": len(line[12:]),
-    #                 })
-    #     except:
-    #         print(sorted_file)
-    #         print(line)
-
     with open("sorted_oligos.csv", 'w') as csvfile:
         fieldnames = ["uid", "barcode", "read_len"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -80,7 +65,6 @@ def load_sorted_oligos_to_df() -> pd.DataFrame:
     print(f'info_list')
 
     df_reads = pd.read_csv("sorted_oligos.csv")
-    # df_reads = pd.DataFrame(info_list)
     return df_reads
 
 
@@ -142,7 +126,7 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
     ])
 
     errors = ["substitution_error", "deletion_error", "insertion_error"]
-    y_values = ["levenshtein_distance", "levenshtein_distance_sigma_before_rs", "levenshtein_distance_sigma_after_rs"]
+    y_values = ["levenshtein_distance", "levenshtein_distance_sigma_before_rs", "levenshtein_distance_sigma_after_rs_payload", "levenshtein_distance_sigma_after_rs_wide"]
     for y in y_values:
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
@@ -182,7 +166,9 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
     errors = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = {"levenshtein_distance":"input_test_len",
                 "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
-                "levenshtein_distance_sigma_after_rs": "input_data_encoder_without_rs_len"}
+                "levenshtein_distance_sigma_after_rs_payload": "input_data_encoder_without_rs_payload_len",
+                "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
+                }
     for y_value in y_values.items():
         df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
     for y in y_values:

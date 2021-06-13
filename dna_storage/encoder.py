@@ -30,6 +30,7 @@ class Encoder:
                  payload_coder: RSPayloadAdapter,
                  wide_coder: RSWideAdapter,
                  results_file: Union[Path, str],
+                 results_file_without_rs_wide: Union[Path, str],
                  ):
         self.file_name = binary_file_name
         self.barcode_len = barcode_len
@@ -45,6 +46,7 @@ class Encoder:
         self.oligos_per_block_len = oligos_per_block_len
         self.oligos_per_block_rs_len = oligos_per_block_rs_len
         self.results_file = results_file
+        self.results_file_without_rs_wide = results_file_without_rs_wide
         open(self.results_file, 'w').close()
         self.barcode_generator = utils.dna_sequence_generator(sequence_len=self.barcode_len)
         self.barcode_coder = barcode_coder
@@ -65,9 +67,13 @@ class Encoder:
                 if len(z_list_accumulation_per_block) == self.oligos_per_block_len:
                     number_of_blocks += 1
                     z_list_accumulation_with_rs = self.wide_block_rs(z_list_accumulation_per_block)
+                    amount_oligos_per_block_len_to_write = self.oligos_per_block_len
                     for z_list in z_list_accumulation_with_rs:
                         oligo = self.z_to_oligo(z_list)
-                        self.save_oligo(oligo=oligo)
+                        self.save_oligo(results_file=self.results_file, oligo=oligo)
+                        if amount_oligos_per_block_len_to_write > 0:
+                            self.save_oligo(results_file=self.results_file_without_rs_wide, oligo=oligo)
+                            amount_oligos_per_block_len_to_write = amount_oligos_per_block_len_to_write - 1
                     z_list_accumulation_per_block = []
         return number_of_blocks
 
@@ -108,6 +114,6 @@ class Encoder:
         barcode_encoded = self.barcode_coder.encode(barcode=barcode)
         return barcode_encoded
 
-    def save_oligo(self, oligo: str) -> None:
-        with open(self.results_file, 'a+', encoding='utf-8') as f:
+    def save_oligo(self, results_file: Union[Path, str], oligo: str) -> None:
+        with open(results_file, 'a+', encoding='utf-8') as f:
             f.write(oligo + '\n')

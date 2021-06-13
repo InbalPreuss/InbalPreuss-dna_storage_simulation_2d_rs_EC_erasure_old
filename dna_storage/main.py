@@ -37,7 +37,8 @@ def main(config):
                           barcode_coder=config['barcode_coder'],
                           payload_coder=config['payload_coder'],
                           wide_coder=config['wide_coder'],
-                          results_file=config['encoder_results_file'])
+                          results_file=config['encoder_results_file'],
+                          results_file_without_rs_wide=config['encoder_results_file_without_rs_wide'])
         number_of_blocks = encoder.run()
 
     # Synthesize
