@@ -128,6 +128,10 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
     errors = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = ["levenshtein_distance", "levenshtein_distance_sigma_before_rs", "levenshtein_distance_sigma_after_rs_payload", "levenshtein_distance_sigma_after_rs_wide"]
     for y in y_values:
+        if y == "levenshtein_distance":
+            palette = "Purples"
+        else:
+            palette = "Blues"
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
             fig.suptitle("\n".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"\n{y}".replace("_", " "), 71)))
@@ -138,14 +142,10 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 if percentage:
-                    if y == "levenshtein_distance":
-                        palette = "Purples"
-                    else:
-                        palette = "Blues"
                     ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette=palette)
                     ax.set(ylabel="D% [levenshtein]")
                 else:
-                    ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette="Blues")
+                    ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette=palette)
                     ax = sns.swarmplot(x=error, y=y, data=df_for_err, color=".25", ax=ax)
                     ax.set(ylabel="D [levenshtein]")
             if percentage:
@@ -172,6 +172,10 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
     for y_value in y_values.items():
         df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
     for y in y_values:
+        if y == "levenshtein_distance":
+            palette = "Purples"
+        else:
+            palette = "Blues"
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
             title = trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"\n{y}".replace("_", " ")
@@ -184,12 +188,12 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 if percentage:
-                    ax = sns.barplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, estimator=estimate, ax=ax, palette="Blues")
+                    ax = sns.barplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, estimator=estimate, ax=ax, palette=palette)
                     ax.set(ylabel="D% [levenshtein]")
                 else:
-                    ax = sns.boxplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, palette="Blues")
+                    ax = sns.boxplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, palette=palette)
 
-                    ax = sns.swarmplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, dodge=True, palette="Blues")
+                    ax = sns.swarmplot(x=error, y=y, hue="number_of_sampled_oligos_from_file", data=df_for_err, ax=ax, dodge=True, palette=palette)
                     ax.set(ylabel="D [levenshtein]")
                 if ax_idx != 0:
                     ax.get_legend().remove()
@@ -205,7 +209,7 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
 
 def draw_sampled_vs_error(df: pd.DataFrame):
     fig, ax = plt.subplots()
-    ax = sns.boxplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, ax=ax, palette="Blues")
+    ax = sns.boxplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, ax=ax, palette="Purples")
     ax = sns.swarmplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, color=".25", ax=ax)
     ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D [levenshtein]")
     fig.savefig(Path("data/testing/plots") / "number of sampled oligos and levenshtein distance")
@@ -247,7 +251,7 @@ def draw_error_per_number_of_sampled_oligos(df: pd.DataFrame):
         y="levenshtein_distance",
         row="error_type",
         col="error",
-        palette="Blues",
+        palette="Purples",
         kind="bar",
     )
     ax.set(xlabel="error_per_number_of_sampled_oligos".replace("_", " "), ylabel="D [levenshtein]")
