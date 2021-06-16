@@ -72,6 +72,7 @@ def draw_reads_histograms(df: pd.DataFrame):
     plt.subplots()
     fig = sns.histplot(df["read_len"], kde=False)
     fig.set_ylabel("count")
+    plt.tight_layout()
     fig = plt.gcf()
     fig.savefig(Path("data/testing/plots") / "read_len_count")
 
@@ -87,6 +88,7 @@ def draw_reads_histograms(df: pd.DataFrame):
     fig = sns.histplot(df_reads_per_barcode["reads"], kde=False, binwidth=1)
     fig.set_ylabel("count")
     fig.set_xlabel("number of reads per barcode")
+    plt.tight_layout()
     fig = plt.gcf()
     fig.savefig(Path("data/testing/plots") / "number of reads per barcode")
 
@@ -148,6 +150,7 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
                     ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette=palette)
                     ax = sns.swarmplot(x=error, y=y, data=df_for_err, color=".25", ax=ax)
                     ax.set(ylabel="D [levenshtein]")
+            plt.tight_layout()
             if percentage:
                 fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
                 plt.close(fig)
@@ -199,6 +202,7 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
                     ax.get_legend().remove()
                 else:
                     ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            plt.tight_layout()
             if percentage:
                 fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
                 plt.close(fig)
@@ -212,6 +216,7 @@ def draw_sampled_vs_error(df: pd.DataFrame):
     ax = sns.boxplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, ax=ax, palette="Purples")
     ax = sns.swarmplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, color=".25", ax=ax)
     ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D [levenshtein]")
+    plt.tight_layout()
     fig.savefig(Path("data/testing/plots") / "number of sampled oligos and levenshtein distance")
     plt.close(fig)
 
@@ -225,6 +230,7 @@ def draw_zero_error_percentage(df: pd.DataFrame):
     fig, ax = plt.subplots()
     sns.barplot(x="number_of_sampled_oligos_from_file", y="levenshtein_distance", data=df, estimator=estimate, ax=ax, palette="Blues")
     ax.set(xlabel="number_of_sampled_oligos_from_file".replace("_", " "), ylabel="D% [levenshtein]")
+    plt.tight_layout()
     fig.savefig(Path("data/testing/plots") / "number of sampled oligos and levenshtein distance success")
     plt.close(fig)
 
@@ -255,6 +261,7 @@ def draw_error_per_number_of_sampled_oligos(df: pd.DataFrame):
         kind="bar",
     )
     ax.set(xlabel="error_per_number_of_sampled_oligos".replace("_", " "), ylabel="D [levenshtein]")
+    plt.tight_layout()
     fig.savefig(Path("data/testing/plots") / "error_per_number_of_sampled_oligos")
 
     fig = px.bar(
