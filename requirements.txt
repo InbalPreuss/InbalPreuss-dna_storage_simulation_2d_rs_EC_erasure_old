@@ -6,7 +6,7 @@ matplotlib==3.2.1
 more-itertools==8.2.0
 numpy==1.18.2
 packaging==20.3
-pandas==1.0.3
+pandas==1.5.1
 plotly==4.5.4
 pluggy==0.13.1
 py==1.8.1
@@ -22,4 +22,6 @@ tqdm==4.45.0
 wcwidth==0.1.8
 setuptools~=40.8.0
 seaborn>=0.11.0
-git+git://github.com/InbalPreuss/unireedsolomon
+git+https://github.com/InbalPreuss/unireedsolomon
+Levenshtein>=0.20.8
+Bio>=1.4.0
