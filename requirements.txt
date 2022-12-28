@@ -22,6 +22,6 @@ tqdm==4.45.0
 wcwidth==0.1.8
 setuptools~=40.8.0
 seaborn>=0.11.0
-git+https://github.com/InbalPreuss/unireedsolomon
+git+git://github.com/InbalPreuss/unireedsolomon
 Levenshtein>=0.20.8
 Bio>=1.4.0

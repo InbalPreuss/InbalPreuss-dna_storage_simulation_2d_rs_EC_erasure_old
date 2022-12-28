@@ -205,6 +205,60 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
                 fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y}", 71)))
                 plt.close(fig)
 
+def draw_lineplot_all_samples(df: pd.DataFrame, percentage: bool = False):
+    samples = [50, 100, 200, 500]
+    error_value = 0.01
+
+    trials_group = df.groupby([
+        'number_of_oligos_per_barcode',
+        'size',
+        'bits_per_z'
+    ])
+
+    errors = ["substitution_error", "deletion_error", "insertion_error"]
+    y_values = {"levenshtein_distance":"input_text_len",
+                "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+                "levenshtein_distance_sigma_after_rs_payload": "input_data_encoder_without_rs_payload_len",
+                "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
+                }
+    
+    for y_value in y_values.items():
+        df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
+    for y in y_values:
+        if y == "levenshtein_distance":
+            palette = "Purples"
+        else:
+            palette = "Blues"
+        for idx, trial_group in trials_group:
+            fig, axes = plt.subplots(nrows=3)
+            title = trial_group["output_dir"].iloc[0].split("errorsSub")[0] + f"\n{y}".replace("_", " ")
+            title = re.sub(r'\[ number of oligos sampled after synthesis[^\S\n\t]+\d+[^\S\n\t]+\]', '', title)
+            fig.suptitle("\n".join(wrap(title, 71)))
+            fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
+            for ax_idx, (ax, error) in enumerate(zip(axes, errors)):
+                zero_cols = [e for e in errors if e != error]
+                df_for_err = trial_group
+                for col in zero_cols:
+                    df_for_err = df_for_err[df_for_err[col] == 0]
+                
+                df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
+                df_for_err_filtered = df_for_err_filtered[df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
+                if percentage:
+                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y=y, data=df_for_err_filtered, estimator=estimate, ax=ax, palette=palette)
+                else:                    
+                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y=y, data=df_for_err_filtered, ax=ax, palette=palette)
+                ax.set_xlabel('sampled_oligos_from_file, error ' + error, x=0.5,y=-5)
+                fig.tight_layout()
+                ax.set_ylim(0, 1)
+                ax.set_ylabel('')
+            if percentage:
+                ax.text(-0.1, 2, 'Full reconstraction rate', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+                fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"{y} success", 71)))
+                plt.close(fig)
+            else:
+                ax.text(-0.1, 2, 'Normlized Levenshtein distance', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+                fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"{y}", 71)))
+                plt.close(fig)
 
 def draw_sampled_vs_error(df: pd.DataFrame):
     fig, ax = plt.subplots()
@@ -274,6 +328,8 @@ def main():
     draw_boxplots(df=df, percentage=True)
     draw_boxplots_all_samples(df=df)
     draw_boxplots_all_samples(df=df, percentage=True)
+    draw_lineplot_all_samples(df=df)
+    draw_lineplot_all_samples(df=df, percentage=True)
     draw_sampled_vs_error(df=df)
     draw_error_per_number_of_sampled_oligos(df=df)
     input("Hit enter to terminate")
