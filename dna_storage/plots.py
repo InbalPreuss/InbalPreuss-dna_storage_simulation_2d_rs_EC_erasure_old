@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 import seaborn as sns
+import numpy as np
 sns.set_theme(style="ticks")
 
 Path("data/testing/plots").mkdir(parents=True, exist_ok=True)
@@ -31,7 +32,7 @@ def delete_double_gz() -> pd.DataFrame:
 def load_sorted_oligos_to_df() -> pd.DataFrame:
     import csv
     output_dir = Path("data/testing")
-    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("["))
+    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("SS"))
     sorted_files = []
 
     for run_dir in run_dirs:
@@ -94,7 +95,7 @@ def draw_reads_histograms(df: pd.DataFrame):
 def load_data_to_df() -> pd.DataFrame:
     output_dir = Path("data/testing")
 
-    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("["))
+    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("SS"))
 
     json_files = []
 
@@ -134,7 +135,7 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
             palette = "Blues"
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
-            fig.suptitle("\n".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"\n{y}".replace("_", " "), 71)))
+            fig.suptitle("\n".join(wrap(trial_group["output_dir"].iloc[0].split("errorsSub")[0] + f"\n{y}".replace("_", " "), 71)))
             fig.subplots_adjust(top=0.85, hspace=0.5)
             for ax, error in zip(axes, errors):
                 zero_cols = [e for e in errors if e != error]
@@ -142,17 +143,17 @@ def draw_boxplots(df: pd.DataFrame, percentage: bool = False):
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 if percentage:
-                    ax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette=palette)
+                    זax = sns.barplot(x=error, y=y, data=df_for_err, estimator=estimate, ax=ax, palette=palette)
                     ax.set(ylabel="Full reconstraction rate")
                 else:
                     ax = sns.boxplot(x=error, y=y, data=df_for_err, ax=ax, palette=palette)
                     ax = sns.swarmplot(x=error, y=y, data=df_for_err, color=".25", ax=ax)
                     ax.set(ylabel="Normlized Levenshtein distance")
             if percentage:
-                fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
+                fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("errorsSub")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
                 plt.close(fig)
             else:
-                fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y}", 71)))
+                fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("errorsSub")[0].replace("[", " ").replace("]", " ") + f"{y}", 71)))
                 plt.close(fig)
 
 
@@ -178,7 +179,7 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
             palette = "Blues"
         for idx, trial_group in trials_group:
             fig, axes = plt.subplots(nrows=3)
-            title = trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"\n{y}".replace("_", " ")
+            title = trial_group["output_dir"].iloc[0].split("errorsSub")[0] + f"\n{y}".replace("_", " ")
             title = re.sub(r'\[ number of oligos sampled after synthesis[^\S\n\t]+\d+[^\S\n\t]+\]', '', title)
             fig.suptitle("\n".join(wrap(title, 71)))
             fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
@@ -199,15 +200,15 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
                 else:
                     ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
             if percentage:
-                fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
+                fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("errorsSub")[0].replace("[", " ").replace("]", " ") + f"{y} success", 71)))
                 plt.close(fig)
             else:
-                fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0].replace("[", " ").replace("]", " ") + f"{y}", 71)))
+                fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("errorsSub")[0].replace("[", " ").replace("]", " ") + f"{y}", 71)))
                 plt.close(fig)
 
-def draw_lineplot_all_samples(df: pd.DataFrame, percentage: bool = False):
-    samples = [50, 100, 200, 500]
-    error_value = 0.01
+def draw_lineplot_small_sample_and_high_low_error(df: pd.DataFrame, percentage: bool = False):
+    samples = [10, 20, 50, 100]
+    error_values = [0.01, 0]
 
     trials_group = df.groupby([
         'number_of_oligos_per_barcode',
@@ -224,41 +225,181 @@ def draw_lineplot_all_samples(df: pd.DataFrame, percentage: bool = False):
     
     for y_value in y_values.items():
         df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
-    for y in y_values:
-        if y == "levenshtein_distance":
-            palette = "Purples"
+    for idx, trial_group in trials_group:
+        fig, axes = plt.subplots(nrows=3)
+        title = trial_group["output_dir"].iloc[0].split("[ error")[0] + f"\n_levenshtein_distance_sigma_before_rs_".replace("_", " ") + "lineplot_small_sample_and_high_low_error"
+        # title = re.sub(r'numberOfOligosSampled\s+\d+', '', title)
+        title = re.sub(r'\[ number of oligos sampled after synthesis[^\S\n\t]+\d+[^\S\n\t]+\]', '', title)
+        #fig.suptitle("\n".join(wrap(title, 71)))
+        fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
+        for ax_idx, (ax, error) in enumerate(zip(axes, errors)):
+            zero_cols = [e for e in errors if e != error]
+            df_for_err = trial_group
+            for col in zero_cols:
+                df_for_err = df_for_err[df_for_err[col] == 0]
+
+            for error_value in error_values:
+                df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
+                df_for_err_filtered = df_for_err_filtered[df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
+
+                if percentage:
+                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y="levenshtein_distance_sigma_before_rs", data=df_for_err_filtered, estimator=estimate, ax=ax, legend="brief", label=error_value)
+                else:
+                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y="levenshtein_distance_sigma_before_rs", data=df_for_err_filtered, ax=ax, legend="brief", label=error_value)
+                ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=10, title=error.replace("_"," "))
+            ax.set_xlabel('')
+            ax.set_ylabel('')
+            fig.tight_layout()
+            ax.set_ylim(0, 1)
+        if percentage:
+            ax.text(15, -0.2, 'Number of sampled oligos from file', va='bottom', rotation='horizontal', fontsize=12)
+            ax.text(-0.1, 2, 'Full reconstraction rate', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+            fig.savefig(Path("data/testing/plots") / " ".join(wrap(title + f" success", 71)))
+            plt.close(fig)
         else:
-            palette = "Blues"
-        for idx, trial_group in trials_group:
-            fig, axes = plt.subplots(nrows=3)
-            title = trial_group["output_dir"].iloc[0].split("errorsSub")[0] + f"\n{y}".replace("_", " ")
+            ax.text(20, -0.2, 'Number of sampled oligos from file', va='bottom', rotation='horizontal', fontsize=12)
+            ax.text(-0.1, 2, 'Normlized Levenshtein distance', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+            fig.savefig(Path("data/testing/plots") / "".join(wrap(title, 71)))
+            plt.close(fig)
+
+def draw_lineplot_in_one_graph(df: pd.DataFrame, percentage: bool = False):
+    samples = [10, 20, 50, 100]
+    error_values = [0.01]
+
+    trials_group = df.groupby([
+        'number_of_oligos_per_barcode',
+        'size',
+        'bits_per_z'
+    ])
+
+    errors = ["substitution_error", "deletion_error", "insertion_error"]
+    y_values = {"levenshtein_distance":"input_text_len",
+                "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+                "levenshtein_distance_sigma_after_rs_payload": "input_data_encoder_without_rs_payload_len",
+                "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
+                }
+    
+    for y_value in y_values.items():
+        df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
+    for idx, trial_group in trials_group:
+        fig, ax = plt.subplots(nrows=1)
+        title = trial_group["output_dir"].iloc[0].split("[ error]")[0] + f"\nlevenshtein_distance_sigma_before_rs".replace("_", " ") + "_lineplot_in_one_graph.png"
+        title = re.sub(r'\[ number of oligos sampled after synthesis[^\S\n\t]+\d+[^\S\n\t]+\]', '', title)
+        #fig.suptitle("\n".join(wrap(title, 71)))
+        fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
+        for ax_idx, error in enumerate(errors):
+            zero_cols = [e for e in errors if e != error]
+            df_for_err = trial_group
+            for col in zero_cols:
+                df_for_err = df_for_err[df_for_err[col] == 0]
+
+            for error_value in error_values:
+                df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
+                df_for_err_filtered = df_for_err_filtered[df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
+
+                if percentage:
+                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y="levenshtein_distance_sigma_before_rs", data=df_for_err_filtered, estimator=estimate, ax=ax, legend="brief", label=error.replace("_"," "))
+                else:
+                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y="levenshtein_distance_sigma_before_rs", data=df_for_err_filtered, ax=ax, legend="brief", label=error.replace("_"," "))
+
+            ax.set_xlabel('sampled oligos from file', x=0.5,y=-5)
+            fig.tight_layout()
+            ax.set_ylim(0, 1)
+
+        if percentage:
+            ax.set_ylabel('Full reconstraction rate')
+            ax.text(-0.1, 2, 'Full reconstraction rate', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+            fig.savefig(Path("data/testing/plots") / " ".join(wrap(title + f" success", 71)))
+            plt.close(fig)
+        else:
+            ax.set_ylabel('Normlized Levenshtein distance')
+            ax.text(-0.1, 2, 'Normlized Levenshtein distance', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+            fig.savefig(Path("data/testing/plots") / "".join(wrap(title, 71)))
+            plt.close(fig)
+
+def draw_lineplot_before_after_rs(df: pd.DataFrame, percentage: bool = False):
+    samples = [50]
+    error_values = [0.001]
+
+    trials_group = df.groupby([
+        'number_of_oligos_per_barcode',
+        'size',
+        'bits_per_z'
+    ])
+    errors = ["substitution_error", "deletion_error", "insertion_error"]
+
+    y_values = {
+                "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+                "levenshtein_distance_sigma_after_rs_payload": "input_data_encoder_without_rs_payload_len",
+                "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
+                }   
+    for y_value in y_values.items():
+        df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
+    
+    
+    for idx, trial_group in trials_group:
+        dfs = {}
+        dfs_new = []
+        for y in y_values:
+            dfs[y] = pd.DataFrame(columns=errors)
+            title = trial_group["output_dir"].iloc[0].split("[ error]")[0] + f"\n{y}".replace("_", " ") + "_before_after_rs"
             title = re.sub(r'\[ number of oligos sampled after synthesis[^\S\n\t]+\d+[^\S\n\t]+\]', '', title)
-            fig.suptitle("\n".join(wrap(title, 71)))
-            fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
-            for ax_idx, (ax, error) in enumerate(zip(axes, errors)):
+            for error in errors:
                 zero_cols = [e for e in errors if e != error]
                 df_for_err = trial_group
                 for col in zero_cols:
                     df_for_err = df_for_err[df_for_err[col] == 0]
                 
-                df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
-                df_for_err_filtered = df_for_err_filtered[df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
-                if percentage:
-                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y=y, data=df_for_err_filtered, estimator=estimate, ax=ax, palette=palette)
-                else:                    
-                    ax = sns.lineplot(x='number_of_sampled_oligos_from_file', y=y, data=df_for_err_filtered, ax=ax, palette=palette)
-                ax.set_xlabel('sampled_oligos_from_file, error ' + error, x=0.5,y=-5)
-                fig.tight_layout()
-                ax.set_ylim(0, 1)
-                ax.set_ylabel('')
-            if percentage:
-                ax.text(-0.1, 2, 'Full reconstraction rate', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
-                fig.savefig(Path("data/testing/plots") / " ".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"{y} success", 71)))
-                plt.close(fig)
-            else:
-                ax.text(-0.1, 2, 'Normlized Levenshtein distance', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
-                fig.savefig(Path("data/testing/plots") / "".join(wrap(trial_group["output_dir"].iloc[0].split("[ errors")[0] + f"{y}", 71)))
-                plt.close(fig)
+                for error_value in error_values:
+                    df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
+                    df_for_err_filtered = df_for_err_filtered[df_for_err_filtered['number_of_sampled_oligos_from_file'] == (samples[0])]
+                    dfs[y][error] = df_for_err_filtered[y].values
+                    x=4
+            dfs_new.append(dfs[y].copy())
+
+        fig, ax = plt.subplots()
+        positions = [1,2,3]
+        colors = ['blue', 'red', 'yellow']
+
+        df_out_before_rs = dfs_new[0]
+        df_out_after_rs_payload = dfs_new[1]
+        df_out_after_rs_wide = dfs = dfs_new[2]
+
+        # test = 401
+        for error, color in zip(errors, colors):
+            my_dict = {'before_rs': df_out_before_rs[error].values, 'after_rs_payload': df_out_after_rs_payload[error].values,'after_rs_wide': df_out_after_rs_wide[error].values}
+            bplot1 = ax.boxplot(my_dict.values(),patch_artist=True)
+            ax.plot([1,2], [np.median(my_dict['before_rs']), np.median(my_dict['after_rs_payload'])], color=color)
+            ax.plot([2,3], [np.median(my_dict['after_rs_payload']), np.median(my_dict['after_rs_wide'])], color=color)
+            error_boxes = [bplot1['boxes'][0],bplot1['boxes'][1], bplot1['boxes'][2]]
+            for patch in error_boxes:
+                patch.set_facecolor(color)
+            # test -= 200
+            print(my_dict)
+      
+        # x ticks
+        arr = y_values.keys()
+        tick_labels = []
+        for s in arr:
+            s = re.sub('levenshtein_distance_sigma_', '', s)
+            s = s.replace('_', ' ')
+            s = s.title()
+            tick_labels.append(s)
+        tick_locations = range(1,len(y_values.keys()) + 1)
+        ax.set_xticks(tick_locations)
+        ax.set_xticklabels(tick_labels)
+
+        # save to file
+        if percentage:
+            ax.set_ylabel('Full reconstraction rate')
+            ax.text(-0.1, 2, 'Full reconstraction rate', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+            fig.savefig(Path("data/testing/plots") / " ".join(wrap("bits_per_z_" + str(trial_group['bits_per_z'].iat[0]) + "_samples_" + str(samples[0]) + "_error_" +str(error) + f"_success" + '.png', 71)))
+            plt.close(fig)
+        else:
+            ax.set_ylabel('Normlized Levenshtein distance')
+            ax.text(-0.1, 2, 'Normlized Levenshtein distance', va='center', rotation='vertical', ha='right', transform=ax.transAxes)
+            fig.savefig(Path("data/testing/plots") / "".join(wrap(title, 71)))
+            plt.close(fig)
 
 def draw_sampled_vs_error(df: pd.DataFrame):
     fig, ax = plt.subplots()
@@ -319,17 +460,21 @@ def draw_error_per_number_of_sampled_oligos(df: pd.DataFrame):
 
 def main():
     plt.ion()
-    df_reads = load_sorted_oligos_to_df()
-    draw_reads_histograms(df=df_reads)
+    # df_reads = load_sorted_oligos_to_df()
+    # draw_reads_histograms(df=df_reads)
     
-    df = load_data_to_df()
+    # df = load_data_to_df()
+    df = pd.read_csv('df_all_data.csv')
     draw_zero_error_percentage(df=df)
     draw_boxplots(df=df)
     draw_boxplots(df=df, percentage=True)
     draw_boxplots_all_samples(df=df)
     draw_boxplots_all_samples(df=df, percentage=True)
-    draw_lineplot_all_samples(df=df)
-    draw_lineplot_all_samples(df=df, percentage=True)
+    draw_lineplot_small_sample_and_high_low_error(df=df)
+    draw_lineplot_in_one_graph(df=df)
+    draw_lineplot_small_sample_and_high_low_error(df=df)
+    draw_lineplot_before_after_rs(df=df)
+    draw_lineplot_before_after_rs(df=df, percentage=True)
     draw_sampled_vs_error(df=df)
     draw_error_per_number_of_sampled_oligos(df=df)
     input("Hit enter to terminate")
