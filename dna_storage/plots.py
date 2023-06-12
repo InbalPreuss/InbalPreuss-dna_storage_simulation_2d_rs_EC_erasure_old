@@ -222,6 +222,8 @@ def draw_boxplots_all_samples(df: pd.DataFrame, percentage: bool = False):
                                                                                                       " ") + f"{y}",
                     71)))
                 plt.close(fig)
+
+
 '''
 Fig 1:
 Title = Normalized LD as a function of sample size (No error correction)
@@ -231,6 +233,8 @@ Y = Normalized distance (with error bars)
 Color = error level {0,0.01}
 Filter: size = 5
 Caption: ...'''
+
+
 def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, percentage: bool = False):
     samples = [10, 20, 50, 100]
     error_values = [0.01, 0]
@@ -244,8 +248,8 @@ def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, perc
 
     error_types = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = {
-                "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len"
-                }
+        "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len"
+    }
     colors = ['-b', '-r']
 
     plt.figure(figsize=(20, 15))
@@ -259,7 +263,7 @@ def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, perc
         title = 'Normalized LD as a function of sample size (No error correction)'
         # fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
         for ax_idx, error_type in enumerate(error_types):
-            plt.subplot(3,1,(ax_idx+1))
+            plt.subplot(3, 1, (ax_idx + 1))
             zero_cols = [e for e in error_types if e != error_type]
             df_for_err = trial_group
             for col in zero_cols:
@@ -267,12 +271,12 @@ def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, perc
 
             # Filter by cols error_value and number_of_sampled_oligos_from_file
             for error_value, color_value in zip(error_values, colors):
-
                 df_for_err_filtered = df_for_err.where(df_for_err[error_type] == error_value)
                 df_for_err_filtered = df_for_err_filtered[
                     df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
 
-                grouped = df_for_err_filtered.groupby('number_of_sampled_oligos_from_file')['levenshtein_distance_sigma_before_rs'].apply(list)
+                grouped = df_for_err_filtered.groupby('number_of_sampled_oligos_from_file')[
+                    'levenshtein_distance_sigma_before_rs'].apply(list)
                 result = {key: value for key, value in grouped.to_dict().items()}
 
                 std_error = np.std(list(result.values()), axis=1)
@@ -281,14 +285,12 @@ def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, perc
                 plt.errorbar(samples, mean_error, yerr=std_error, fmt=color_value, markersize=15,
                              elinewidth=1, capsize=3, label=0, linewidth=3)
 
-
             ylim = [-0.01, 1]
             yticks = np.linspace(0, 1, 6)
             plt.ylim(ylim)
             plt.yticks(yticks)
             plt.title(error_type.replace("_", " "), size=20)
             plt.legend(error_values, title='Error rate', prop={'size': 15}, title_fontsize=15)
-
 
         plt.text(20, 3.6, title, va='bottom', rotation='horizontal', fontsize=30)
         plt.text(35, -0.3, 'Number of sampled oligos from file', va='bottom', rotation='horizontal', fontsize=30)
@@ -316,17 +318,17 @@ def draw_errorbar_in_one_graph(df: pd.DataFrame, percentage: bool = False):
 
     errors = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = {
-                "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
-                }
+        "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+    }
 
     for y_value in y_values.items():
         df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
     for idx, trial_group in trials_group:
         if idx[1] not in size:
             continue
-        fig, ax = plt.subplots(figsize=(8,6))
+        fig, ax = plt.subplots(figsize=(8, 6))
 
-        title="Normalized LD as a function of sample size. Error=0.01 (No error correction)"
+        title = "Normalized LD as a function of sample size. Error=0.01 (No error correction)"
         fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
         for ax_idx, error in enumerate(errors):
             zero_cols = [e for e in errors if e != error]
@@ -368,7 +370,7 @@ def draw_errorbar_in_one_graph(df: pd.DataFrame, percentage: bool = False):
 # Color = error type {S,I,D}
 # Filter: size = 5, sample size = 50,
 
-def draw_errorbar_before_after_rs(df: pd.DataFrame, percentage: bool = False):
+def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False):
     samples = [50]
     error_values = [0.001]
     size = [5]
@@ -409,7 +411,7 @@ def draw_errorbar_before_after_rs(df: pd.DataFrame, percentage: bool = False):
                     dfs[y][error_type] = df_for_err_filtered[y].values
             dfs_new.append(dfs[y].copy())
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(constrained_layout=True)
 
         colors = ['blue', 'red', 'yellow']
 
@@ -418,41 +420,30 @@ def draw_errorbar_before_after_rs(df: pd.DataFrame, percentage: bool = False):
         df_out_after_rs_wide = dfs = dfs_new[2]
 
         for error_type, color in zip(error_types, colors):
-            my_dict = {'before_rs': df_out_before_rs[error_type].values,
-                       'after_rs_payload': df_out_after_rs_payload[error_type].values,
-                       'after_rs_wide': df_out_after_rs_wide[error_type].values}
-
-            my_dict = {'before_rs': df_out_before_rs[error_type].values,
-                       'after_rs_payload': df_out_after_rs_payload[error_type].values,
-                       'after_rs_wide': df_out_after_rs_wide[error_type].values}
-
-        results = {key: value for key, value in my_dict.items()}
-
-
+            my_dict = {'before rs': df_out_before_rs[error_type].values,
+                       'after rs payload': df_out_after_rs_payload[error_type].values,
+                       'after rs wide': df_out_after_rs_wide[error_type].values}
         if percentage:
             array_estimate = []
             for dict_value in list(my_dict.values()):
                 array_estimate.append([estimate(dict_value)])
 
-            std_error = np.std(array_estimate, axis=1)
-            mean_error = np.mean(array_estimate, axis=1)
+            # Convert the array estimate into a dataframe
+            df_estimate = pd.DataFrame(array_estimate)
 
-            plt.errorbar(my_dict.keys(), mean_error, yerr=std_error, markersize=15,
-                         elinewidth=1, capsize=3, label=error_type.replace("_error", ""), linewidth=3)
+            # Plotting the boxplot
+            ax.boxplot(df_estimate.values.T, labels=my_dict.keys())
+            ax.set_xticks(range(1, len(my_dict) + 1))
+            ax.set_xticklabels(my_dict.keys())
             title = 'Full reconstruction rates during the EC process'
             ax.set_ylabel('Full reconstruction rate')
 
         else:
-            std_error = np.std(list(my_dict.values()), axis=1)
-            mean_error = np.mean(list(my_dict.values()), axis=1)
-
-            plt.errorbar(my_dict.keys(), mean_error, yerr=std_error, markersize=15,
-                         elinewidth=1, capsize=3, label=error_type.replace("_error", ""), linewidth=3)
+            ax.boxplot(my_dict.values(), positions=range(len(my_dict)), widths=0.6)
+            ax.set_xticks(range(len(my_dict)))
+            ax.set_xticklabels(my_dict.keys())
             title = 'Normalized Reconstruction rates during the EC process'
             ax.set_ylabel('Normalized Levenshtein distance')
-
-
-        # save to file
 
         fig.savefig(Path("data/testing/plots") / "".join(wrap(title + ".png", 71)))
         plt.close(fig)
@@ -523,8 +514,8 @@ def main():
     # df_reads = load_sorted_oligos_to_df()
     # draw_reads_histograms(df=df_reads)
 
-    # df = load_data_to_df()
-    df = pd.read_csv('df_all_data.csv')
+    df = load_data_to_df()
+    # df = pd.read_csv('df_all_data.csv')
     # draw_zero_error_percentage(df=df)
     # draw_boxplots(df=df)
     # draw_boxplots(df=df, percentage=True)
@@ -537,8 +528,8 @@ def main():
     '''Graphs in paper'''
     # draw_errorbar_10_100sample_and_0_001_error_errortypes(df=df)
     # draw_errorbar_in_one_graph(df=df)
-    # draw_errorbar_before_after_rs(df=df, percentage=True)
-    # draw_errorbar_before_after_rs(df=df)
+    draw_barplot_before_after_rs(df=df, percentage=True)
+    draw_barplot_before_after_rs(df=df)
     # input("Hit enter to terminate")
 
 
