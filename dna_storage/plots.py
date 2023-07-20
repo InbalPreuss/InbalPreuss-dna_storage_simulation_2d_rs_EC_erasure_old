@@ -305,10 +305,12 @@ def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, perc
 # Y = Normalized distance (with error bars, show the zero!)
 # Color = error type {S,I,D}
 # Filter: size = 5
-def draw_errorbar_in_one_graph(df: pd.DataFrame, percentage: bool = False):
-    samples = [10, 20, 50, 100]
+def draw_errorbar_in_one_graph(df: pd.DataFrame, is_normalize_data, percentage: bool = False):
+    # samples = [10, 20, 50, 100]
+    samples = [10, 20, 50, 100, 200]
     error_values = [0.01]
     size = [5]
+    title_start = ""
 
     trials_group = df.groupby([
         'number_of_oligos_per_barcode',
@@ -319,48 +321,66 @@ def draw_errorbar_in_one_graph(df: pd.DataFrame, percentage: bool = False):
     errors = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = {
         "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+        "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
     }
+    if is_normalize_data:
+        title_start = "Normalized "
+        for y_value in y_values.items():
+            df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
 
-    for y_value in y_values.items():
-        df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
     for idx, trial_group in trials_group:
         if idx[1] not in size:
             continue
-        fig, ax = plt.subplots(figsize=(8, 6))
+        for y_value in y_values.keys():
+            title = title_start + "LD as a function of sample size. Error=0.01, 0 (No error correction)\n" + y_value
+            fig, ax = plt.subplots(figsize=(8, 6))
 
-        title = "Normalized LD as a function of sample size. Error=0.01 (No error correction)"
-        fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
-        for ax_idx, error in enumerate(errors):
-            zero_cols = [e for e in errors if e != error]
-            df_for_err = trial_group
-            for col in zero_cols:
-                df_for_err = df_for_err[df_for_err[col] == 0]
+            fig.subplots_adjust(top=0.85, hspace=0.5, right=0.8)
+            for ax_idx, error in enumerate(errors):
+                zero_cols = [e for e in errors if e != error]
+                df_for_err = trial_group
+                for col in zero_cols:
+                    df_for_err = df_for_err[df_for_err[col] == 0]
 
-            for error_value in error_values:
-                df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
-                df_for_err_filtered = df_for_err_filtered[
-                    df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
+                if error == "deletion_error":
+                    error_values.append(0)
 
-                grouped = df_for_err_filtered.groupby('number_of_sampled_oligos_from_file')[
-                    'levenshtein_distance_sigma_before_rs'].apply(list)
-                result = {key: value for key, value in grouped.to_dict().items()}
+                for error_value in error_values:
+                    df_for_err_filtered = df_for_err.where(df_for_err[error] == error_value)
+                    df_for_err_filtered = df_for_err_filtered[
+                        df_for_err_filtered['number_of_sampled_oligos_from_file'].isin(samples)]
 
-                std_error = np.std(list(result.values()), axis=1)
-                mean_error = np.mean(list(result.values()), axis=1)
+                    grouped = df_for_err_filtered.groupby('number_of_sampled_oligos_from_file')[
+                        y_value].apply(list)
+                    result = {key: value for key, value in grouped.to_dict().items()}
 
-                plt.errorbar(samples, mean_error, yerr=std_error, markersize=15,
-                             elinewidth=1, capsize=3, label=error.replace("_error", ""), linewidth=3)
+                    std_error = np.std(list(result.values()), axis=1)
+                    mean_error = np.mean(list(result.values()), axis=1)
 
-            plt.legend()
-            ax.set_xlabel('sampled oligos from file', x=0.5, y=-5)
-            ax.set_ylabel('Normalized Levenshtein distance')
+                    if error == "deletion_error" and error_value == 0:
+                        plt.errorbar(samples, mean_error + 0.004, yerr=std_error, markersize=15,
+                                     elinewidth=1, capsize=3,
+                                     label='all errors' + ' ' + str(error_value), linewidth=3)
+                    else:
+                        plt.errorbar(samples, mean_error, yerr=std_error, markersize=15,
+                                     elinewidth=1, capsize=3, label=error.replace("_error", "")+' '+str(error_value), linewidth=3)
 
-            ax.set_ylim(-0.01, 1)
+                if error == "deletion_error":  # reset your error_values list after processing substitution_error
+                    error_values.remove(0)
 
-        plt.title(title)
-        fig.tight_layout()
-        fig.savefig(Path("data/testing/plots") / "".join(wrap(title + ".png", 71)))
-        plt.close(fig)
+                plt.legend()
+                ax.set_xlabel('sampled oligos from file', x=0.5, y=-5)
+                ax.set_ylabel(title_start+'Levenshtein distance')
+
+                if is_normalize_data:
+                    ax.set_ylim(-0.01, 1)
+                else:
+                    ax.set_ylim(-0.01, 10000)
+
+            # plt.title(title)
+            fig.tight_layout()
+            fig.savefig(Path("data/testing/plots") / "".join(wrap(title + ".svg", 71)))
+            plt.close(fig)
 
 
 # Fig draw_lineplot_before_after_rs:
@@ -370,12 +390,15 @@ def draw_errorbar_in_one_graph(df: pd.DataFrame, percentage: bool = False):
 # Color = error type {S,I,D}
 # Filter: size = 5, sample size = 50,
 
-def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False):
-    samples = [50]
-    error_values = [0.001]
+def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False, is_normalize_data: bool = True):
+    samples = [100]
+    error_values = [0.01]
     size = [5]
 
-    trials_group = df.groupby([
+    df_copy = df.copy(deep=True)
+    title_start_name = ""
+
+    trials_group = df_copy.groupby([
         'number_of_oligos_per_barcode',
         'size',
         'bits_per_z'
@@ -387,8 +410,10 @@ def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False):
         "levenshtein_distance_sigma_after_rs_payload": "input_data_encoder_without_rs_payload_len",
         "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
     }
-    for y_value in y_values.items():
-        df[y_value[0]] = df.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
+    if is_normalize_data:
+        title_start_name = 'Normalized '
+        for y_value in y_values.items():
+            df_copy[y_value[0]] = df_copy.apply(lambda x: x[y_value[0]] / x.get(y_value[1], 1), axis=1)
 
     for idx, trial_group in trials_group:
         if idx[1] not in size:
@@ -411,7 +436,6 @@ def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False):
                     dfs[y][error_type] = df_for_err_filtered[y].values
             dfs_new.append(dfs[y].copy())
 
-        fig, ax = plt.subplots(constrained_layout=True)
 
         colors = ['blue', 'red', 'yellow']
 
@@ -419,34 +443,37 @@ def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False):
         df_out_after_rs_payload = dfs_new[1]
         df_out_after_rs_wide = dfs = dfs_new[2]
 
+        my_dict = {}
         for error_type, color in zip(error_types, colors):
-            my_dict = {'before rs': df_out_before_rs[error_type].values,
-                       'after rs payload': df_out_after_rs_payload[error_type].values,
-                       'after rs wide': df_out_after_rs_wide[error_type].values}
-        if percentage:
-            array_estimate = []
-            for dict_value in list(my_dict.values()):
-                array_estimate.append([estimate(dict_value)])
+            my_dict[error_type] = {'Before 2D RS decoding\n(iv)': df_out_before_rs[error_type].values,
+                       'After RS payload decoding\n(iii)': df_out_after_rs_payload[error_type].values,
+                       'After 2D RS decoding\n(ii)': df_out_after_rs_wide[error_type].values}
+        for error_type in error_types:
+            fig, ax = plt.subplots(constrained_layout=True)
+            if percentage:
+                array_estimate = []
+                for dict_value in list(my_dict[error_type].values()):
+                    array_estimate.append([estimate(dict_value)])
 
-            # Convert the array estimate into a dataframe
-            df_estimate = pd.DataFrame(array_estimate)
+                # Convert the array estimate into a dataframe
+                df_estimate = pd.DataFrame(array_estimate)
 
-            # Plotting the boxplot
-            ax.boxplot(df_estimate.values.T, labels=my_dict.keys())
-            ax.set_xticks(range(1, len(my_dict) + 1))
-            ax.set_xticklabels(my_dict.keys())
-            title = 'Full reconstruction rates during the EC process'
-            ax.set_ylabel('Full reconstruction rate')
+                # Plotting the boxplot
+                ax.boxplot(df_estimate.values.T, labels=my_dict[error_type].keys())
+                ax.set_xticks(range(1, len(my_dict[error_type]) + 1))
+                ax.set_xticklabels(my_dict[error_type].keys())
+                title = 'Full reconstruction rates during the EC process ' + error_type
+                ax.set_ylabel('Full reconstruction rate')
 
-        else:
-            ax.boxplot(my_dict.values(), positions=range(len(my_dict)), widths=0.6)
-            ax.set_xticks(range(len(my_dict)))
-            ax.set_xticklabels(my_dict.keys())
-            title = 'Normalized Reconstruction rates during the EC process'
-            ax.set_ylabel('Normalized Levenshtein distance')
+            else:
+                ax.boxplot(my_dict[error_type].values(), positions=range(len(my_dict[error_type])), widths=0.6)
+                ax.set_xticks(range(len(my_dict[error_type])))
+                ax.set_xticklabels(my_dict[error_type].keys())
+                title = title_start_name + 'Reconstruction rates during the EC process ' + error_type
+                ax.set_ylabel(title_start_name + 'Levenshtein distance')
 
-        fig.savefig(Path("data/testing/plots") / "".join(wrap(title + ".png", 71)))
-        plt.close(fig)
+            fig.savefig(Path("data/testing/plots") / "".join(wrap(title + ".svg", 71)))
+            plt.close(fig)
 
 
 def draw_sampled_vs_error(df: pd.DataFrame):
@@ -514,8 +541,8 @@ def main():
     # df_reads = load_sorted_oligos_to_df()
     # draw_reads_histograms(df=df_reads)
 
-    df = load_data_to_df()
-    # df = pd.read_csv('df_all_data.csv')
+    # df = load_data_to_df()
+    df = pd.read_csv('df_all_data.csv')
     # draw_zero_error_percentage(df=df)
     # draw_boxplots(df=df)
     # draw_boxplots(df=df, percentage=True)
@@ -527,9 +554,11 @@ def main():
 
     '''Graphs in paper'''
     # draw_errorbar_10_100sample_and_0_001_error_errortypes(df=df)
-    # draw_errorbar_in_one_graph(df=df)
+    # draw_errorbar_in_one_graph(df=df, is_normalize_data=False)
+    # draw_errorbar_in_one_graph(df=df, is_normalize_data=True)
     draw_barplot_before_after_rs(df=df, percentage=True)
-    draw_barplot_before_after_rs(df=df)
+    draw_barplot_before_after_rs(df=df, is_normalize_data=False)
+    draw_barplot_before_after_rs(df=df, is_normalize_data=True)
     # input("Hit enter to terminate")
 
 
