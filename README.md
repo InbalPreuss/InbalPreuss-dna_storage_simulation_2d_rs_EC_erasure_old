@@ -7,7 +7,7 @@ Before running the simulations, it's recommended to set up a virtual environment
 Create a venv (recommended)
 1. Clone the Repository
 ```console
-https://github.com/InbalPreuss/dna_storage_shortmer_simulation.git
+git clone https://github.com/InbalPreuss/DnaStorage.git
 cd dna_storage_shortmer_simulation
 ```
 2. Create a Virtual Environment (venv)
