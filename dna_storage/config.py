@@ -23,6 +23,23 @@ def build_config(
     output_dir = pathlib.Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # shrink_dict_3_mer = {'AAT': 'X1', #TODO: Delete this, because we are showing 8 k-mers and not 16.
+    #                      'ACA': 'X2',
+    #                      'ATG': 'X3',
+    #                      'AGC': 'X4',
+    #                      'TAA': 'X5',
+    #                      'TCT': 'X6',
+    #                      'TTC': 'X7',
+    #                      'TGG': 'X8',
+    #                      'GAG': 'X9',
+    #                      'GCC': 'X10',
+    #                      'GTT': 'X11',
+    #                      'GGA': 'X12',
+    #                      'CAC': 'X13',
+    #                      'CCG': 'X14',
+    #                      'CTA': 'X15',
+    #                      'CGT': 'X16'}
+
     shrink_dict_3_mer = {'AAT': 'X1',
                          'ACA': 'X2',
                          'ATG': 'X3',
@@ -30,15 +47,11 @@ def build_config(
                          'TAA': 'X5',
                          'TCT': 'X6',
                          'TTC': 'X7',
-                         'TGG': 'X8',
-                         'GAG': 'X9',
-                         'GCC': 'X10',
-                         'GTT': 'X11',
-                         'GGA': 'X12',
-                         'CAC': 'X13',
-                         'CCG': 'X14',
-                         'CTA': 'X15',
-                         'CGT': 'X16'}
+                         'TGG': 'X8'}
+
+    # TODO: make sure to delete this hard coded subset_size=4 and bits_per_z=6, and that the code will still run
+    subset_size = 4
+    bits_per_z = 6
 
     shrink_dict_size = len(shrink_dict_3_mer)
 
@@ -94,8 +107,8 @@ def build_config(
         'decoder_results_to_binary': True,
         'binary_results_to_text': True,
         'min_number_of_oligos_per_barcode': max(
-            int(0.1 * number_of_sampled_oligos_from_file), 1
-        ),
+            int(0.2 * number_of_sampled_oligos_from_file), 1
+        ), #TODO: make sure the 0.2 is a good number
         'drop_if_not_exact_number_of_chunks': drop_if_not_exact_number_of_chunks,
         'algorithm_config': {'subset_size': subset_size,
                              'bits_per_z': bits_per_z,
@@ -115,14 +128,15 @@ def build_config(
     }
 
     wide_n_k = {3: {'block_len': 42, 'block_rs_len': 6},
+                4: {'block_len': 30, 'block_rs_len': 2},
                 5: {'block_len': 42, 'block_rs_len': 6},
                 7: {'block_len': 42, 'block_rs_len': 6}}
 
     if config['mode'] == 'prod':
         config['barcode_len'] = 12  # in ACGT
         config['barcode_rs_len'] = 4  # in ACGT
-        config['payload_len'] = 120  # in Z
-        config['payload_rs_len'] = 14  # in Z
+        config['payload_len'] = 6  # in Z
+        config['payload_rs_len'] = 1  # in Z
         config['oligos_per_block_len'] = wide_n_k[subset_size]['block_len']
         config['oligos_per_block_rs_len'] = wide_n_k[subset_size]['block_rs_len']
         config['number_of_sampled_oligos_from_file'] = number_of_sampled_oligos_from_file * (wide_n_k[subset_size]['block_len'] + (wide_n_k[subset_size]['block_rs_len']))

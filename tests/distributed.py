@@ -74,20 +74,28 @@ def compute_sigma_distance(config: Dict):
         output_data_sigma_after_rs_wide = file_to_string(f)
 
     dist_sigma_before_rs = levenshtein.distance(input_data_encoder_results_file, output_data_sigma_before_rs)
-    dist_sigma_after_rs_payload = levenshtein.distance(input_data_encoder_without_rs_payload, output_data_sigma_after_rs_payload)
+    dist_sigma_after_rs_payload = levenshtein.distance(input_data_encoder_without_rs_payload,
+                                                       output_data_sigma_after_rs_payload)
     dist_sigma_after_rs_wide = levenshtein.distance(input_data_encoder_without_rs_wide, output_data_sigma_after_rs_wide)
-    return dist_sigma_before_rs, dist_sigma_after_rs_payload, dist_sigma_after_rs_wide, len(input_data_encoder_results_file), len(input_data_encoder_without_rs_payload), len(input_data_encoder_without_rs_wide)
+    return dist_sigma_before_rs, dist_sigma_after_rs_payload, dist_sigma_after_rs_wide, len(
+        input_data_encoder_results_file), len(input_data_encoder_without_rs_payload), len(
+        input_data_encoder_without_rs_wide)
 
 
 def build_runs():
     number_of_oligos_per_barcode = [1000]
-    number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200, 500, 1000]
+    # number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200, 500, 1000] #TODO: uncomment above
+    # number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200] #TODO: uncomment above
+    number_of_sampled_oligos_from_file = [-1, 10, 20, 30, 40, 50] #TODO: uncomment above
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
     oligos_and_samples = [s for s in oligos_and_samples if s[0] >= s[1]]
 
-    errors = [0.01, 0.001, 0.0001, 0]
-    sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)]
-    variable_number_of_sampled_oligos_from_file = {3: 5, 5: 10, 7: 15}
+    # errors = [0.01, 0.001, 0.0001, 0]
+    errors = [0.01, 0] #TODO: uncomment above an
+    # sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)] TODO: should we do a few options?
+    sizes_and_bit_sizes = [(4, 6)]
+    # variable_number_of_sampled_oligos_from_file = {3: 5, 5: 10, 7: 15} # TODO: should we keep this?
+    variable_number_of_sampled_oligos_from_file = {4: 6}
 
     runs = []
     was_variable = False
@@ -102,10 +110,14 @@ def build_runs():
                         continue
                     was_variable = True
                     number_of_sampled_oligos_from_file = variable_number_of_sampled_oligos_from_file[size]
-                name = f'[ subset size {size}, bits per z {bits_per_z:>2} ]' \
-                       f'[ number of oligos per barcode {number_of_oligos_per_barcode:>6} ]\n' \
-                       f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file:>6} ]\n' \
-                       f'[ errors, substitution {prod[0]:<6}, deletion {prod[1]:<6}, insertion {prod[2]:<6} ]\n'
+                # name = f'[ subset size {size}, bits per z {bits_per_z:>2} ]' \
+                #        f'[ number of oligos per barcode {number_of_oligos_per_barcode:>6} ]\n' \
+                #        f'[ number of oligos sampled after synthesis {number_of_sampled_oligos_from_file:>6} ]\n' \
+                #        f'[ errors, substitution {prod[0]:<6}, deletion {prod[1]:<6}, insertion {prod[2]:<6} ]\n'
+                name = f'[SS{size},bitsPerZ{bits_per_z} ]' \
+                       f'[numOPerBc{number_of_oligos_per_barcode}]\n' \
+                       f'[numOSampAfterSyn{number_of_sampled_oligos_from_file}]\n' \
+                       f'[ERR,Sub{prod[0]},Del{prod[1]},Inser{prod[2]}]\n'
                 output_dir = os.path.join("data/testing/", name.replace("\n", ""))
                 runs.append({
                     "number_of_oligos_per_barcode": number_of_oligos_per_barcode,
@@ -123,7 +135,8 @@ def build_runs():
     return runs
 
 
-def run_config_n_times(config_for_run: Dict, n: int = 30):
+# def run_config_n_times(config_for_run: Dict, n: int = 30): #TODO: uncomment this
+def run_config_n_times(config_for_run: Dict, n: int = 5): #TODO: delete this
     for run_number in range(n):
         logging.info(f'STARTED {run_number:2d} {config_for_run}')
         run_config(config_for_run=config_for_run, run_number=run_number)
@@ -147,7 +160,8 @@ def run_config(config_for_run: Dict, run_number):
         drop_if_not_exact_number_of_chunks=drop_if_not_exact_number_of_chunks,
     )
 
-    generate_random_text_file(size_kb=10, file=input_text)
+    # generate_random_text_file(size_kb=10, file=input_text) #TODO: uncomment this line
+    generate_random_text_file(size_kb=1, file=input_text) #TODO: uncomment this line
     print(f"$$$$$$$$ Running {output_dir} $$$$$$$$")
     main(config)
 
@@ -156,23 +170,24 @@ def run_config(config_for_run: Dict, run_number):
     with open(config["text_results_file"], 'r', encoding='utf-8') as f:
         output_data = f.read()
 
-    dist_sigma_before_rs, dist_sigma_after_rs_payload, dist_sigma_after_rs_wide, input_data_encoder_results_file_len, input_data_encoder_without_rs_payload_len, input_data_encoder_without_rs_wide_len = compute_sigma_distance(config)
+    dist_sigma_before_rs, dist_sigma_after_rs_payload, dist_sigma_after_rs_wide, input_data_encoder_results_file_len, input_data_encoder_without_rs_payload_len, input_data_encoder_without_rs_wide_len = compute_sigma_distance(
+        config)
     dist = levenshtein.distance(input_data, output_data)
 
-    # gzip and delete files
-    files_in_dir = list(Path(output_dir).iterdir())
-    exclude = ["temp_shuffle_db", "temp_sort_oligo_db"]
-    files = [f for f in files_in_dir if f.name not in exclude]
-    files_delete = [f for f in files_in_dir if f.name in exclude]
-    for file in files:
-        if file.suffix == '.gz':
-            f_out_name = file
-        else:
-            f_out_name = file.with_suffix(file.suffix + ".gz")
-        with open(file, "rb") as f_in, gzip.open(f_out_name, "wb") as f_out:
-            f_out.writelines(f_in)
-        os.remove(file)
-    [os.remove(f) for f in files_delete]
+    # # gzip and delete files #TODO: uncomment this and make sure it zips the files
+    # files_in_dir = list(Path(output_dir).iterdir())
+    # exclude = ["temp_shuffle_db", "temp_sort_oligo_db"]
+    # files = [f for f in files_in_dir if f.name not in exclude]
+    # files_delete = [f for f in files_in_dir if f.name in exclude]
+    # for file in files:
+    #     if file.suffix == '.gz':
+    #         f_out_name = file
+    #     else:
+    #         f_out_name = file.with_suffix(file.suffix + ".gz")
+    #     with open(file, "rb") as f_in, gzip.open(f_out_name, "wb") as f_out:
+    #         f_out.writelines(f_in)
+    #     os.remove(file)
+    # [os.remove(f) for f in files_delete]
 
     # write a json results file
     res_file = Path(output_dir) / f"config_and_levenshtein_distance_{dist}.json"
@@ -202,8 +217,9 @@ def main_fn():
     from multiprocessing import Pool, cpu_count
     configs_for_run = build_runs()
     q_listener, q = logger_init()
-    with Pool(cpu_count(), worker_init, [q]) as p:
+    with Pool(cpu_count() - 1, worker_init, [q]) as p:  # TODO: change to cpu_count() instead of 1
         p.map(run_config_n_times, configs_for_run)
+
 
 if __name__ == '__main__':
     main_fn()
