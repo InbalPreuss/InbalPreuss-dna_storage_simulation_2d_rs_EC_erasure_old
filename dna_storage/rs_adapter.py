@@ -1,8 +1,8 @@
 import itertools
 
 import numpy as np
-from unireedsolomon import rs, RSCodecError
-from unireedsolomon import ff
+from unireedsolomon.unireedsolomon import rs, RSCodecError
+from unireedsolomon.unireedsolomon import ff
 
 
 class RSBarcodeAdapter:

@@ -16,6 +16,8 @@ sns.set_theme(style="ticks")
 
 Path("data/testing/plots").mkdir(parents=True, exist_ok=True)
 
+OUTPUT_FOLDER = Path(os.path.join('..', 'tests', 'data', 'testing')) # TODO: change it to the dir above data/testing/plots
+
 
 def delete_double_gz() -> pd.DataFrame:
     output_dir = Path("data/testing")
@@ -94,9 +96,9 @@ def draw_reads_histograms(df: pd.DataFrame):
 
 
 def load_data_to_df() -> pd.DataFrame:
-    output_dir = Path("data/testing")
+    # output_dir = Path("data/testing")
 
-    run_dirs = list(f for f in output_dir.iterdir() if f.name.startswith("SS"))
+    run_dirs = list(f for f in OUTPUT_FOLDER.iterdir() if f.name.startswith("[SS"))
 
     json_files = []
 
@@ -116,6 +118,8 @@ def load_data_to_df() -> pd.DataFrame:
 
     df = pd.DataFrame(info_list)
     df["output_dir"] = df["output_dir"].apply(lambda x: x.split("data/testing/")[1].split(" trial")[0])
+
+    df.to_csv(f'{OUTPUT_FOLDER}/df_all_data.csv', index=False)
     return df
 
 
@@ -307,9 +311,10 @@ def draw_errorbar_10_100sample_and_0_001_error_errortypes(df: pd.DataFrame, perc
 # Filter: size = 5
 def draw_errorbar_in_one_graph(df: pd.DataFrame, is_normalize_data, percentage: bool = False):
     # samples = [10, 20, 50, 100]
-    samples = [10, 20, 50, 100, 200]
+    # samples = [6, 10, 15, 20, 25, 30, 35, 40]
+    samples = [30]
     error_values = [0.01]
-    size = [5]
+    size = [4]
     title_start = ""
 
     trials_group = df.groupby([
@@ -321,6 +326,7 @@ def draw_errorbar_in_one_graph(df: pd.DataFrame, is_normalize_data, percentage: 
     errors = ["substitution_error", "deletion_error", "insertion_error"]
     y_values = {
         "levenshtein_distance_sigma_before_rs": "input_data_encoder_results_file_len",
+        "levenshtein_distance_sigma_after_rs_payload": "input_data_encoder_without_rs_payload_len",
         "levenshtein_distance_sigma_after_rs_wide": "input_data_encoder_without_rs_wide_len"
     }
     if is_normalize_data:
@@ -391,9 +397,9 @@ def draw_errorbar_in_one_graph(df: pd.DataFrame, is_normalize_data, percentage: 
 # Filter: size = 5, sample size = 50,
 
 def draw_barplot_before_after_rs(df: pd.DataFrame, percentage: bool = False, is_normalize_data: bool = True):
-    samples = [100]
+    samples = [30]
     error_values = [0.01]
-    size = [5]
+    size = [4]
 
     df_copy = df.copy(deep=True)
     title_start_name = ""
@@ -541,8 +547,8 @@ def main():
     # df_reads = load_sorted_oligos_to_df()
     # draw_reads_histograms(df=df_reads)
 
-    # df = load_data_to_df()
-    df = pd.read_csv('df_all_data.csv')
+    df = load_data_to_df()
+    df = pd.read_csv(f'{OUTPUT_FOLDER}\df_all_data.csv')
     # draw_zero_error_percentage(df=df)
     # draw_boxplots(df=df)
     # draw_boxplots(df=df, percentage=True)
@@ -555,7 +561,7 @@ def main():
     '''Graphs in paper'''
     # draw_errorbar_10_100sample_and_0_001_error_errortypes(df=df)
     # draw_errorbar_in_one_graph(df=df, is_normalize_data=False)
-    # draw_errorbar_in_one_graph(df=df, is_normalize_data=True)
+    draw_errorbar_in_one_graph(df=df, is_normalize_data=True)
     draw_barplot_before_after_rs(df=df, percentage=True)
     draw_barplot_before_after_rs(df=df, is_normalize_data=False)
     draw_barplot_before_after_rs(df=df, is_normalize_data=True)
