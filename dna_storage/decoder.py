@@ -11,6 +11,7 @@ from dna_storage import utils
 from dna_storage.utils import chunker
 
 
+
 #################################################################
 # @ Class: Decoder
 # @ Description: Retrieve the oligo to the oligo that was written
