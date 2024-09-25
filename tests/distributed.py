@@ -161,7 +161,7 @@ def run_config(config_for_run: Dict, run_number):
     )
 
     generate_random_text_file(size_kb=10, file=input_text) #TODO: uncomment this line
-    # generate_random_text_file(size_kb=1, file=input_text) #TODO: uncomment this line
+    # generate_random_text_file(size_kb=1, file=input_text) #TODO: delete this line
     print(f"$$$$$$$$ Running {output_dir} $$$$$$$$")
     main(config)
 
@@ -174,20 +174,20 @@ def run_config(config_for_run: Dict, run_number):
         config)
     dist = levenshtein.distance(input_data, output_data)
 
-    # # gzip and delete files #TODO: uncomment this and make sure it zips the files
-    # files_in_dir = list(Path(output_dir).iterdir())
-    # exclude = ["temp_shuffle_db", "temp_sort_oligo_db"]
-    # files = [f for f in files_in_dir if f.name not in exclude]
-    # files_delete = [f for f in files_in_dir if f.name in exclude]
-    # for file in files:
-    #     if file.suffix == '.gz':
-    #         f_out_name = file
-    #     else:
-    #         f_out_name = file.with_suffix(file.suffix + ".gz")
-    #     with open(file, "rb") as f_in, gzip.open(f_out_name, "wb") as f_out:
-    #         f_out.writelines(f_in)
-    #     os.remove(file)
-    # [os.remove(f) for f in files_delete]
+    # gzip and delete files #TODO: uncomment this and make sure it zips the files
+    files_in_dir = list(Path(output_dir).iterdir())
+    exclude = ["temp_shuffle_db", "temp_sort_oligo_db"]
+    files = [f for f in files_in_dir if f.name not in exclude]
+    files_delete = [f for f in files_in_dir if f.name in exclude]
+    for file in files:
+        if file.suffix == '.gz':
+            f_out_name = file
+        else:
+            f_out_name = file.with_suffix(file.suffix + ".gz")
+        with open(file, "rb") as f_in, gzip.open(f_out_name, "wb") as f_out:
+            f_out.writelines(f_in)
+        os.remove(file)
+    [os.remove(f) for f in files_delete]
 
     # write a json results file
     res_file = Path(output_dir) / f"config_and_levenshtein_distance_{dist}.json"
@@ -205,6 +205,15 @@ def run_config(config_for_run: Dict, run_number):
     }
     with open(res_file, 'w') as f:
         json.dump(res, f, indent=4)
+
+    # TODO: delete this json folder, it is only to get the data from the server
+    # Replace 'testing' with 'json'
+    output_dir_jason = output_dir.replace('testing', 'json')
+    res_file_json = Path(output_dir_jason) / f"config_and_levenshtein_distance_{dist}.json"
+    res_file_json.parent.mkdir(parents=True, exist_ok=True)
+    with open(res_file_json, 'w') as f:
+        json.dump(res, f, indent=4)
+
     print(f"@@@@@@@@ Finished {output_dir} @@@@@@@@")
     finished_dir = Path('data/finished')
     finished_dir.mkdir(parents=True, exist_ok=True)
