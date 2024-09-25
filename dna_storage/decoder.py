@@ -71,7 +71,7 @@ class Decoder:
     def run(self):
         barcode_prev = ''
         payload_accumulation = []
-        dummy_payload = ['Z1' for _ in range(self.payload_len)]
+        dummy_payload = ['Z0' for _ in range(self.payload_len)]
         total_oligos_per_block_with_rs_oligos = self.oligos_per_block_len + self.oligos_per_block_rs_len
         with open(self.input_file, 'r', encoding='utf-8') as file:
             unique_payload_block_with_rs = []
@@ -246,10 +246,12 @@ class Decoder:
         if isinstance(payload, str):
             payload = [c for c in payload]
 
+        erasures_positions = [index for index, value in enumerate(payload) if value == 'Z0']
+
         if payload_or_wide == 'payload':
-            payload_decoded = self.payload_coder.decode(payload_encoded=payload)
+            payload_decoded = self.payload_coder.decode(payload_encoded=payload, erasures_positions=erasures_positions)
         else:
-            payload_decoded = self.wide_coder.decode(payload_encoded=payload)
+            payload_decoded = self.wide_coder.decode(payload_encoded=payload, erasures_positions=erasures_positions)
 
         return payload_decoded
 
@@ -277,7 +279,9 @@ class Decoder:
                 # OK
                 # reps = [('X' + str(i), i) for i in range(1, self.subset_size + 1)]
                 # BEST
-                s = set(['X' + str(i) for i in range(1, self.subset_size + 1)])
+                # s = set(['X' + str(i) for i in range(1, self.subset_size + 1)])
+                # TODO: If there is less then subset_size, we need to change the code to return Z0 only
+                s = set(['X0' + str(i) for i in range(1, self.subset_size + 1)])
                 t = set([r[0] for r in reps])
                 diff = sorted(list(s-t))
                 for missing_rep_idx in range(self.subset_size - len(reps)):
@@ -286,7 +290,7 @@ class Decoder:
             try:
                 z = self.k_mer_representative_to_z[k_mer_rep]
             except KeyError:
-                z = 'Z1'  # The X tuple is out of range
+                z = 'Z0'  # The X tuple is out of range
             result_payload.append(z)
 
         return result_payload

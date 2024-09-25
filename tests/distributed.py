@@ -86,12 +86,12 @@ def build_runs():
     number_of_oligos_per_barcode = [1000]
     # number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200, 500, 1000] #TODO: uncomment above
     # number_of_sampled_oligos_from_file = [-1, 10, 20, 50, 100, 200] #TODO: uncomment above
-    number_of_sampled_oligos_from_file = [-1, 10, 20, 30, 40, 50] #TODO: uncomment above
+    number_of_sampled_oligos_from_file = [-1, 10, 15, 20, 25, 30, 35, 40] #TODO: uncomment above
     oligos_and_samples = list(itertools.product(number_of_oligos_per_barcode, number_of_sampled_oligos_from_file))
     oligos_and_samples = [s for s in oligos_and_samples if s[0] >= s[1]]
 
-    # errors = [0.01, 0.001, 0.0001, 0]
-    errors = [0.01, 0] #TODO: uncomment above an
+    errors = [0.01, 0.001, 0.0001, 0]
+    # errors = [0.01, 0] #TODO: uncomment above an
     # sizes_and_bit_sizes = [(3, 9), (5, 12), (7, 13)] TODO: should we do a few options?
     sizes_and_bit_sizes = [(4, 6)]
     # variable_number_of_sampled_oligos_from_file = {3: 5, 5: 10, 7: 15} # TODO: should we keep this?
@@ -135,8 +135,8 @@ def build_runs():
     return runs
 
 
-# def run_config_n_times(config_for_run: Dict, n: int = 30): #TODO: uncomment this
-def run_config_n_times(config_for_run: Dict, n: int = 5): #TODO: delete this
+# def run_config_n_times(config_for_run: Dict, n: int = 5): #TODO: uncomment this
+def run_config_n_times(config_for_run: Dict, n: int = 10): #TODO: delete this
     for run_number in range(n):
         logging.info(f'STARTED {run_number:2d} {config_for_run}')
         run_config(config_for_run=config_for_run, run_number=run_number)
@@ -160,8 +160,8 @@ def run_config(config_for_run: Dict, run_number):
         drop_if_not_exact_number_of_chunks=drop_if_not_exact_number_of_chunks,
     )
 
-    # generate_random_text_file(size_kb=10, file=input_text) #TODO: uncomment this line
-    generate_random_text_file(size_kb=1, file=input_text) #TODO: uncomment this line
+    generate_random_text_file(size_kb=10, file=input_text) #TODO: uncomment this line
+    # generate_random_text_file(size_kb=1, file=input_text) #TODO: uncomment this line
     print(f"$$$$$$$$ Running {output_dir} $$$$$$$$")
     main(config)
 

@@ -1,8 +1,7 @@
 import itertools
 
 import numpy as np
-from unireedsolomon.unireedsolomon import rs, RSCodecError
-from unireedsolomon.unireedsolomon import ff
+from unireedsolomon.unireedsolomon import rs, RSCodecError, ff
 
 
 class RSBarcodeAdapter:
@@ -71,14 +70,23 @@ class RSPayloadAdapter:
         payload_encoded = [self._int_to_payload[z] for z in payload_encoded_as_polynomial]
         return payload_encoded
 
-    def decode(self, payload_encoded):
+    def decode(self, payload_encoded, erasures_positions):
         ff.set_globals(*self.ff_globals)
-        payload_as_int = [self._payload_to_int[z] for z in payload_encoded]
+        # payload_as_int = [self._payload_to_int[z] for z in payload_encoded]
+
+        # If erasure then append 0
+        payload_as_int = []
+        for z in payload_encoded:
+            if z == 'Z0':
+                payload_as_int.append(0)
+            else:
+                payload_as_int.append(self._payload_to_int[z])
+
         if self._payload_coder.check_fast(payload_as_int):
             return payload_encoded[0:self.payload_len]
         else:
             try:
-                payload_as_gf, rs_as_gf = self._payload_coder.decode(payload_as_int, nostrip=True, return_string=False)
+                payload_as_gf, rs_as_gf = self._payload_coder.decode(payload_as_int, erasures_pos=erasures_positions, nostrip=True, return_string=False)
             except RSCodecError:
                 return payload_encoded[0:self.payload_len]
             payload = [self._int_to_payload[i] for i in payload_as_gf]
